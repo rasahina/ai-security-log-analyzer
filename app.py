@@ -1,24 +1,34 @@
 import streamlit as st
 import requests
+import pandas as pd
 
 st.title("AI Security Log Analyzer")
 
-log_input = st.text_area("Paste your log here", height=200)
+st.write("ログファイルをアップロードしてください")
 
-if st.button("Analyze"):
-    response = requests.post(
-        "http://127.0.0.1:8000/analyze",
-        json={"log": log_input}
-    )
+uploaded_file = st.file_uploader("Choose a log file", type=["log", "txt"])
 
-    data = response.json()
+if uploaded_file is not None:
+    if st.button("Analyze File"):
+        files = {
+            "file": (
+                uploaded_file.name,
+                uploaded_file.getvalue(),
+                "text/plain"
+            )
+        }
 
-    for item in data:
-        level = item["risk_level"]
+        response = requests.post(
+            "http://127.0.0.1:8000/analyze-file",
+            files=files
+        )
 
-        if level == "HIGH":
-            st.error(item)
-        elif level == "MEDIUM":
-            st.warning(item)
-        else:
-            st.success(item)
+        data = response.json()
+        df = pd.DataFrame(data)
+
+        st.subheader("Analysis Result")
+        st.dataframe(df)
+
+        st.subheader("High Risk IPs")
+        high_risk_df = df[df["risk_level"] == "HIGH"]
+        st.dataframe(high_risk_df)

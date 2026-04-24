@@ -61,7 +61,7 @@
     },
     "reasons": [
       "high failure rate",
-      "Admin Access Attempts"
+      "admin access attempts"
     ]
   },
   {
@@ -107,7 +107,7 @@
       "high failure rate",
       "multiple suspicious paths",
       "repeated login attempts",
-      "Admin Access Attempts"
+      "admin access attempts"
     ]
   },
   {
