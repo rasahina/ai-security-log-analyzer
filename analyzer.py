@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 def get_risk_level(score):
     if score >= 8:
         return "HIGH"
@@ -20,10 +23,32 @@ def classify_attack_type(reasons):
     if "multiple suspicious paths" in reasons:
         attack_types.append("Reconnaissance")
 
+    if "burst access detected" in reasons:
+        attack_types.append("Burst Access")
+
     if not attack_types:
         return "Normal"
 
     return ", ".join(attack_types)
+
+def detect_burst_access(timestamps, seconds=60, threshold=5):
+    timestamps = sorted(timestamps)
+
+    for i in range(len(timestamps)):
+        count = 1
+
+        for j in range(i + 1, len(timestamps)):
+            delta = (timestamps[j] - timestamps[i]).total_seconds()
+
+            if delta <= seconds:
+                count += 1
+            else:
+                break
+
+        if count >= threshold:
+            return True
+
+    return False
 
 def recommend_action(risk_level, attack_type):
     actions = []
@@ -44,6 +69,9 @@ def recommend_action(risk_level, attack_type):
     if "Scanner" in attack_type or "Reconnaissance" in attack_type:
         actions.append("Review requested paths and consider rate limiting or blocking")
 
+    if "Burst Access" in attack_type:
+        actions.append("Apply rate limiting or temporary IP blocking")
+
     return " / ".join(actions)
 
 def analyze_log_lines(lines):
@@ -54,6 +82,8 @@ def analyze_log_lines(lines):
     suspicious_path_by_ip = {}
     status_counts = {}
     reasons_by_ip = {}
+    timestamps_by_ip={}
+
 
     SUSPICIOUS_PATHS = [
         "/admin",
@@ -76,13 +106,16 @@ def analyze_log_lines(lines):
 
         parts = line.split()
 
-        if len(parts) != 4:
+        if len(parts) != 5:
             continue
 
-        ip = parts[0]
-        method = parts[1]
-        url = parts[2]
-        status = parts[3]
+        timestamp_str=parts[0]
+        ip = parts[1]
+        method = parts[2]
+        url = parts[3]
+        status = parts[4]
+
+        timestamp=datetime.fromisoformat(timestamp_str)
 
         if ip not in ip_counts:
             ip_counts[ip] = 0
@@ -92,6 +125,9 @@ def analyze_log_lines(lines):
             suspicious_path_by_ip[ip] = []
             status_counts[ip] = {}
             reasons_by_ip[ip] = []
+            timestamps_by_ip[ip] = []
+        
+        timestamps_by_ip[ip].append(timestamp)
 
         ip_counts[ip] += 1
 
@@ -135,6 +171,9 @@ def analyze_log_lines(lines):
         if "/admin" in suspicious_path_by_ip[ip]:
             ip_scores[ip] += 3
             reasons_by_ip[ip].append("admin access attempts")
+        if detect_burst_access(timestamps_by_ip[ip]):
+            ip_scores[ip] += 3
+            reasons_by_ip[ip].append("burst access detected")
 
     results = []
 
