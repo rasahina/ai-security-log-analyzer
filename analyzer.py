@@ -25,6 +25,27 @@ def classify_attack_type(reasons):
 
     return ", ".join(attack_types)
 
+def recommend_action(risk_level, attack_type):
+    actions = []
+
+    if risk_level == "HIGH":
+        actions.append("Investigate immediately")
+    elif risk_level == "MEDIUM":
+        actions.append("Monitor closely")
+    else:
+        actions.append("No immediate action required")
+
+    if "Brute Force" in attack_type:
+        actions.append("Check login attempts and consider temporary IP blocking")
+
+    if "Admin Access" in attack_type:
+        actions.append("Review admin access logs and verify authentication controls")
+
+    if "Scanner" in attack_type or "Reconnaissance" in attack_type:
+        actions.append("Review requested paths and consider rate limiting or blocking")
+
+    return " / ".join(actions)
+
 def analyze_log_lines(lines):
     ip_counts = {}
     failed_counts = {}
@@ -120,12 +141,14 @@ def analyze_log_lines(lines):
     for ip in ip_counts:
         score = ip_scores[ip]
         level = get_risk_level(score)
+        attack_type = classify_attack_type(reasons_by_ip[ip])
 
         results.append({
             "ip": ip,
             "risk_level": level,
             "risk_score": score,
-            "attack_type": classify_attack_type(reasons_by_ip[ip]),
+            "attack_type": attack_type,
+            "recommended_action": recommend_action(level, attack_type),
             "access_count": ip_counts[ip],
             "failed_count": failed_counts[ip],
             "suspicious_paths": suspicious_path_by_ip[ip],

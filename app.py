@@ -2,6 +2,17 @@ import streamlit as st
 import requests
 import pandas as pd
 
+
+def highlight_risk(val):
+    if val == "HIGH":
+        return "background-color: #ff4d4d; color: white;"
+    elif val == "MEDIUM":
+        return "background-color: #ffa500; color: black;"
+    elif val == "LOW":
+        return "background-color: #4CAF50; color: white;"
+    return ""
+
+
 st.set_page_config(
 page_title="AI Security Log Analyzer",
 layout="wide"
@@ -50,6 +61,7 @@ if st.session_state.analysis_data is not None:
         "risk_score",
         "attack_type",
         "access_count",
+        "recommended_action",
         "failed_count",
         "suspicious_paths",
         "status_counts",
@@ -168,6 +180,7 @@ if st.session_state.analysis_data is not None:
         return summary 
     
     summary = generate_summary(df)
+
     st.markdown("## Security Summary")
     if len(df[df["risk_label"] == "HIGH"]) > 0:
         st.error(summary)
@@ -175,8 +188,24 @@ if st.session_state.analysis_data is not None:
         st.warning(summary)
     else:
         st.success(summary)
+
     st.markdown("## Analysis Table")
-    st.dataframe(df, use_container_width=True)
+
+    event = st.dataframe(
+        df.style.map(highlight_risk, subset=["risk_label"]),
+        use_container_width=True,
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row",
+    )
+
+    selected_rows = event.selection.rows
+
+    if selected_rows:
+        selected = df.iloc[selected_rows[0]]
+    else:
+        selected = df.iloc[0]
+
 
     st.markdown("## High Risk IPs")
 
@@ -187,18 +216,25 @@ if st.session_state.analysis_data is not None:
     else:
         st.dataframe(high_risk_df, use_container_width=True)
 
+
     st.markdown("## IP Detail")
-
-    selected_ip = st.selectbox("Select IP", df["ip"])
-
-    selected = df[df["ip"] == selected_ip].iloc[0]
 
     detail_col1, detail_col2 = st.columns(2)
 
     with detail_col1:
-        st.metric("Risk Level", selected["risk_label"])
+        #st.metric("Risk Level", selected["risk_label"])
+        risk = selected["risk_label"]
+        if risk == "HIGH":
+            st.markdown(f"### 🔴 Risk Level: **{risk}**")
+        elif risk == "MEDIUM":
+            st.markdown(f"### 🟠 Risk Level: **{risk}**")
+        else:
+            st.markdown(f"### 🟢 Risk Level: **{risk}**")
+        #################################################
         st.metric("Risk Score", selected["risk_score"])
-        st.metric("Attack Type", selected["attack_type"])
+        #st.metric("Attack Type", selected["attack_type"])
+        st.write("Attack Type")
+        st.info(selected["attack_type"])
 
     with detail_col2:
         st.metric("Access Count", selected["access_count"])
@@ -212,3 +248,6 @@ if st.session_state.analysis_data is not None:
 
     st.write("Reasons")
     st.write(selected["reasons"])
+
+    st.write("Recommended Action")
+    st.info(selected["recommended_action"])
