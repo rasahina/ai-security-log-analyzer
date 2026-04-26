@@ -39,9 +39,40 @@ def classify_attack_type(reasons):
         attack_types.append("Automated Scanner")
 
     if not attack_types:
+        if "high failure rate" in reasons:
+            return "Suspicious Activity"
         return "Normal"
-
+    
+    
     return ", ".join(attack_types)
+
+def simplify_attack_type(attack_type):
+    priority_order = [
+        "Coordinated Brute Force",
+        "Automated Scanner",
+        "Suspicious Admin Timing",
+        "Brute Force",
+        "Admin Access",
+        "Scanner",
+        "Reconnaissance",
+        "Burst Access",
+        "Anomalous Timing",
+        "Suspicious Activity",
+        "Normal",
+    ]
+
+    attack_types = attack_type.split(", ")
+
+    sorted_types = sorted(
+        attack_types,
+        key=lambda x: (
+            priority_order.index(x)
+            if x in priority_order
+            else 999
+        )
+    )
+
+    return ", ".join(sorted_types[:2])
 
 def detect_burst_access(timestamps, seconds=60, threshold=5):
     timestamps = sorted(timestamps)
@@ -97,6 +128,26 @@ def recommend_action(risk_level, attack_type):
         actions.append("Apply rate limiting and block scanning source if confirmed")
 
     return " / ".join(actions)
+
+def simplify_recommended_action(action):
+    priority_actions = [
+        "Block source IP and review authentication logs immediately",
+        "Apply rate limiting and block scanning source if confirmed",
+        "Verify admin activity and review privileged account usage",
+        "Investigate immediately",
+        "Monitor closely",
+        "No immediate action required",
+    ]
+
+    actions = action.split(" / ")
+
+    selected_actions = []
+
+    for priority_action in priority_actions:
+        if priority_action in actions:
+            selected_actions.append(priority_action)
+
+    return " / ".join(selected_actions[:2])
 
 def analyze_log_lines(lines):
     ip_counts = {}
@@ -238,14 +289,17 @@ def analyze_log_lines(lines):
     for ip in ip_counts:
         score = ip_scores[ip]
         level = get_risk_level(score)
-        attack_type = classify_attack_type(reasons_by_ip[ip])
+        raw_attack_type = classify_attack_type(reasons_by_ip[ip])
+        attack_type = simplify_attack_type(raw_attack_type)
+        raw_action = recommend_action(level, raw_attack_type)
+        recommended_action = simplify_recommended_action(raw_action)
 
         results.append({
             "ip": ip,
             "risk_level": level,
             "risk_score": score,
             "attack_type": attack_type,
-            "recommended_action": recommend_action(level, attack_type),
+            "recommended_action": recommended_action,
             "access_count": ip_counts[ip],
             "failed_count": failed_counts[ip],
             "suspicious_paths": suspicious_path_by_ip[ip],
