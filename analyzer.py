@@ -28,6 +28,15 @@ def classify_attack_type(reasons):
 
     if "night time access" in reasons:
         attack_types.append("Anomalous Timing")
+    
+    if "coordinated brute force pattern" in reasons:
+        attack_types.append("Coordinated Brute Force")
+
+    if "suspicious admin access timing" in reasons:
+        attack_types.append("Suspicious Admin Timing")
+
+    if "automated scanning pattern" in reasons:
+        attack_types.append("Automated Scanner")
 
     if not attack_types:
         return "Normal"
@@ -78,6 +87,14 @@ def recommend_action(risk_level, attack_type):
     if "Anomalous Timing" in attack_type:
         actions.append("Review access time patterns and user behavior")
 
+    if "Coordinated Brute Force" in attack_type:
+        actions.append("Block source IP and review authentication logs immediately")
+
+    if "Suspicious Admin Timing" in attack_type:
+        actions.append("Verify admin activity and review privileged account usage")
+
+    if "Automated Scanner" in attack_type:
+        actions.append("Apply rate limiting and block scanning source if confirmed")
 
     return " / ".join(actions)
 
@@ -190,7 +207,31 @@ def analyze_log_lines(lines):
         if night_access:
             ip_scores[ip] += 2
             reasons_by_ip[ip].append("night time access")
+
         
+        # 複合検知: Brute Force + Burst
+        if (
+            "repeated login attempts" in reasons_by_ip[ip]
+            and "burst access detected" in reasons_by_ip[ip]
+        ):
+            ip_scores[ip] += 3
+            reasons_by_ip[ip].append("coordinated brute force pattern")
+
+        # 複合検知: Admin + Night
+        if (
+            "admin access attempts" in reasons_by_ip[ip]
+            and "night time access" in reasons_by_ip[ip]
+        ):
+            ip_scores[ip] += 3
+            reasons_by_ip[ip].append("suspicious admin access timing")
+
+        # 複合検知: Scanner + Burst
+        if (
+            "many 404 responses" in reasons_by_ip[ip]
+            and "burst access detected" in reasons_by_ip[ip]
+        ):
+            ip_scores[ip] += 3
+            reasons_by_ip[ip].append("automated scanning pattern")
 
     results = []
 
