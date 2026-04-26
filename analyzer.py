@@ -26,6 +26,9 @@ def classify_attack_type(reasons):
     if "burst access detected" in reasons:
         attack_types.append("Burst Access")
 
+    if "night time access" in reasons:
+        attack_types.append("Anomalous Timing")
+
     if not attack_types:
         return "Normal"
 
@@ -71,6 +74,10 @@ def recommend_action(risk_level, attack_type):
 
     if "Burst Access" in attack_type:
         actions.append("Apply rate limiting or temporary IP blocking")
+
+    if "Anomalous Timing" in attack_type:
+        actions.append("Review access time patterns and user behavior")
+
 
     return " / ".join(actions)
 
@@ -174,6 +181,16 @@ def analyze_log_lines(lines):
         if detect_burst_access(timestamps_by_ip[ip]):
             ip_scores[ip] += 3
             reasons_by_ip[ip].append("burst access detected")
+        
+        night_access = any(
+            0 <= t.hour <5
+            for t in timestamps_by_ip[ip]
+        )
+
+        if night_access:
+            ip_scores[ip] += 2
+            reasons_by_ip[ip].append("night time access")
+        
 
     results = []
 
