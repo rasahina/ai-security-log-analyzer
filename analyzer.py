@@ -5,6 +5,25 @@ def get_risk_level(score):
         return "MEDIUM"
     return "LOW"
 
+def classify_attack_type(reasons):
+    attack_types = []
+
+    if "repeated login attempts" in reasons:
+        attack_types.append("Brute Force")
+
+    if "admin access attempts" in reasons:
+        attack_types.append("Admin Access")
+
+    if "many 404 responses" in reasons:
+        attack_types.append("Scanner")
+
+    if "multiple suspicious paths" in reasons:
+        attack_types.append("Reconnaissance")
+
+    if not attack_types:
+        return "Normal"
+
+    return ", ".join(attack_types)
 
 def analyze_log_lines(lines):
     ip_counts = {}
@@ -106,6 +125,7 @@ def analyze_log_lines(lines):
             "ip": ip,
             "risk_level": level,
             "risk_score": score,
+            "attack_type": classify_attack_type(reasons_by_ip[ip]),
             "access_count": ip_counts[ip],
             "failed_count": failed_counts[ip],
             "suspicious_paths": suspicious_path_by_ip[ip],
@@ -121,3 +141,4 @@ def analyze_log_file(file_path):
         lines = f.readlines()
 
     return analyze_log_lines(lines)
+
