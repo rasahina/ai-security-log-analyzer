@@ -1,7 +1,52 @@
 import streamlit as st
 import requests
 import pandas as pd
+import plotly.graph_objects as go
 from time_series_analysis import create_time_series
+
+#グラフ描画関数
+def create_timeline_chart(time_df, title):
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=time_df["time_bucket"],
+        y=time_df["access_count"],
+        mode="lines",
+        name="Access Count"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=time_df["time_bucket"],
+        y=time_df["failed_count"],
+        mode="lines",
+        name="Failed Count"
+    ))
+
+    anomaly_df = time_df[time_df["is_anomaly"]]
+
+    fig.add_trace(go.Scatter(
+        x=anomaly_df["time_bucket"],
+        y=anomaly_df["access_count"],
+        mode="markers",
+        name="Anomaly",
+        marker=dict(color="red", size=10),
+        text=anomaly_df["anomaly_reason"],
+        hovertemplate=(
+            "Time: %{x}<br>"
+            "Access Count: %{y}<br>"
+            "Reason: %{text}<extra></extra>"
+        )
+    ))
+
+    fig.update_layout(
+        title=title,
+        xaxis_title="Time",
+        yaxis_title="Count",
+        hovermode="x unified"
+    )
+
+    return fig
+
 
 def highlight_risk(val):
     if val == "HIGH":
@@ -164,12 +209,13 @@ if st.session_state.analysis_data is not None:
     if st.session_state.raw_logs:
         raw_df = pd.DataFrame(st.session_state.raw_logs)
         time_df = create_time_series(raw_df, interval="5min")
-
-        st.line_chart(
+        #Plotyグラフ描画
+        fig = create_timeline_chart(
             time_df,
-            x="time_bucket",
-            y=["access_count", "failed_count", "failure_rate"]
+            "Access Timeline with Anomaly Points"
         )
+
+        st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No time-series data available.")
 
@@ -182,19 +228,6 @@ if st.session_state.analysis_data is not None:
     else:
         st.dataframe(anomaly_df, use_container_width=True)
 
-
-    st.markdown("### Anomaly Timeline")
-
-    anomaly_df = time_df[time_df["is_anomaly"]]
-
-    if anomaly_df.empty:
-        st.success("No anomaly points detected.")
-    else:
-        st.line_chart(
-            anomaly_df,
-            x="time_bucket",
-            y="failure_rate"
-        )
 
     def generate_summary(df):
         high = len(df[df["risk_label"] == "HIGH"])
@@ -384,11 +417,14 @@ if st.session_state.analysis_data is not None:
     if ip_time_df.empty:
         st.info("No timeline data for this IP.")
     else:
-        st.line_chart(
+        fig_ip = create_timeline_chart(
             ip_time_df,
-            x="time_bucket",
-            y=["access_count", "failed_count", "failure_rate"]
+            f"Timeline for {selected_ip}"
         )
+
+        st.plotly_chart(fig_ip, use_container_width=True)
+
+
     st.markdown("### Selected IP Anomalies")
 
     ip_anomaly_df = ip_time_df[ip_time_df["is_anomaly"]]
