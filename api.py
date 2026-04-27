@@ -5,7 +5,7 @@ import json
 import os
 
 
-from analyzer import analyze_log_lines
+from analyzer import analyze_log_lines, parse_log_lines
 
 app = FastAPI(title="AI Security Log Analyzer API")
 
@@ -40,8 +40,14 @@ def get_results():
 @app.post("/analyze")
 def analyze(request: AnalyzeRequest):
     lines = request.log.splitlines()
+
     results = analyze_log_lines(lines)
-    return JSONResponse(content=results)
+    raw_logs = parse_log_lines(lines)
+
+    return JSONResponse(content={
+        "analysis": results,
+        "raw_logs": raw_logs
+    })
 
 
 @app.post("/analyze-file")
@@ -50,6 +56,11 @@ async def analyze_file(file: UploadFile = File(...)):
     text = content.decode("utf-8")
 
     lines = text.splitlines()
-    results = analyze_log_lines(lines)
 
-    return JSONResponse(content=results)
+    results = analyze_log_lines(lines)
+    raw_logs = parse_log_lines(lines)
+
+    return JSONResponse(content={
+        "analysis": results,
+        "raw_logs": raw_logs
+    })

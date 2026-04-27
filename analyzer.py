@@ -316,3 +316,26 @@ def analyze_log_file(file_path):
 
     return analyze_log_lines(lines)
 
+def parse_log_lines(lines):
+    parsed_logs = []
+
+    for line in lines:
+        line = line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        parts = line.split()
+
+        if len(parts) != 5:
+            continue
+
+        parsed_logs.append({
+            "timestamp": parts[0],
+            "ip": parts[1],
+            "method": parts[2],
+            "url": parts[3],
+            "status": int(parts[4])
+        })
+
+    return parsed_logs

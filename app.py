@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
-
+from time_series_analysis import create_time_series
 
 def highlight_risk(val):
     if val == "HIGH":
@@ -21,10 +21,26 @@ layout="wide"
 st.title("AI Security Log Analyzer")
 st.write("ログファイルをアップロードして、不審なアクセスを分析します。")
 
+#初期化
 if "analysis_data" not in st.session_state:
     st.session_state.analysis_data = None
+if "raw_logs" not in st.session_state:
+    st.session_state.raw_logs = None
 
 uploaded_file = st.file_uploader("Choose a log file", type=["log", "txt"])
+
+if st.button("Use Sample Log"):
+    with open("data/sample.log", "r", encoding="utf-8") as f:
+        text = f.read()
+
+    response = requests.post(
+        "http://127.0.0.1:8000/analyze",
+        json={"log": text}
+    )
+    result = response.json()
+    st.session_state.analysis_data = result["analysis"]
+    st.session_state.raw_logs = result["raw_logs"]
+
 
 if uploaded_file is not None:
     if st.button("Analyze File"):
@@ -41,7 +57,14 @@ if uploaded_file is not None:
             files=files
         )
 
-        st.session_state.analysis_data = response.json()
+        result = response.json()
+        st.session_state.analysis_data = result["analysis"]
+        st.session_state.raw_logs = result["raw_logs"]
+
+
+    result = response.json()
+    st.session_state.analysis_data = result["analysis"]
+    st.session_state.raw_logs = result["raw_logs"]
 
 if st.session_state.analysis_data is not None:
     data = st.session_state.analysis_data
@@ -90,9 +113,26 @@ if st.session_state.analysis_data is not None:
     col3.metric("Medium Risk", medium_count)
     col4.metric("Low Risk", low_count)
     col5.metric("Failed Requests", total_failed)
+
+
     st.subheader("Risk Distribution")
     risk_counts = df["risk_label"].value_counts()
     st.bar_chart(risk_counts)
+
+    st.markdown("## Time Series Analysis")
+
+    if st.session_state.raw_logs:
+        raw_df = pd.DataFrame(st.session_state.raw_logs)
+        time_df = create_time_series(raw_df, interval="5min")
+
+        st.line_chart(
+            time_df,
+            x="time_bucket",
+            y=["access_count", "failed_count", "failure_rate"]
+        )
+    else:
+        st.info("No time-series data available.")
+
 
     def generate_summary(df):
         high = len(df[df["risk_label"] == "HIGH"])
@@ -206,6 +246,8 @@ if st.session_state.analysis_data is not None:
     else:
         selected = df.iloc[0]
 
+    selected_ip = selected["ip"]
+
 
     st.markdown("## High Risk IPs")
 
@@ -251,3 +293,19 @@ if st.session_state.analysis_data is not None:
 
     st.write("Recommended Action")
     st.info(selected["recommended_action"])
+
+    st.markdown("### Selected IP Timeline")
+
+    raw_df = pd.DataFrame(st.session_state.raw_logs)
+    time_df = create_time_series(raw_df, interval="1min")
+
+    ip_time_df = time_df[time_df["ip"] == selected_ip]
+
+    if ip_time_df.empty:
+        st.info("No timeline data for this IP.")
+    else:
+        st.line_chart(
+            ip_time_df,
+            x="time_bucket",
+            y=["access_count", "failed_count", "failure_rate"]
+        )
