@@ -49,9 +49,30 @@ def create_time_series(df: pd.DataFrame, interval: str = "5min") -> pd.DataFrame
 
     grouped["failure_rate"] = (
         grouped["failed_count"] / grouped["access_count"]
-    ).fillna(0)    
+    ).fillna(0)
+
+    grouped["is_anomaly"] = (
+        (grouped["failure_rate"] > 0.5) |
+        (grouped["risk_signal_count"] >= 3)
+    )
+
+    def get_anomaly_reason(row):
+        reasons = []
+
+        if row["failure_rate"] > 0.5:
+            rate_percent = int(row["failure_rate"] * 100)
+            reasons.append(f"High failure rate ({rate_percent}%)")
+
+        if row["risk_signal_count"] >= 3:
+            reasons.append("Multiple suspicious activities detected")
+
+        return " / ".join(reasons)
+
+    grouped["anomaly_reason"] = grouped.apply(get_anomaly_reason, axis=1)
+
 
     return grouped
+
 
 #For Debug
 if __name__ == "__main__":

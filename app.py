@@ -62,15 +62,15 @@ if uploaded_file is not None:
         st.session_state.raw_logs = result["raw_logs"]
 
 
-    result = response.json()
-    st.session_state.analysis_data = result["analysis"]
-    st.session_state.raw_logs = result["raw_logs"]
-
 if st.session_state.analysis_data is not None:
     data = st.session_state.analysis_data
     df = pd.DataFrame(data)
 
     # ここから下にSummary、表、IP Detailを書く
+    #選択用変数初期化
+    selected_ip_from_top = None
+    selected_ip_from_table = None
+
 
     df["risk_label"] = df["risk_level"].map({
         "HIGH": "HIGH",
@@ -119,6 +119,46 @@ if st.session_state.analysis_data is not None:
     risk_counts = df["risk_label"].value_counts()
     st.bar_chart(risk_counts)
 
+    st.markdown("## 🔝 Top Risky IPs")
+
+    top_df = df.copy()
+
+    top_df["failure_rate"] = (
+        top_df["failed_count"] / top_df["access_count"]
+    ).fillna(0)
+        
+    top_df["priority_score"] = (
+        top_df["risk_score"] * 2
+        + top_df["failure_rate"] * 5
+    )
+
+    display_top_df = top_df.head(10).reset_index(drop=True)
+
+    event_top = st.dataframe(
+        display_top_df[[
+            "ip",
+            "priority_score",
+            "risk_score",
+            "failure_rate",
+            "attack_type",
+            "access_count",
+            "failed_count"
+        ]],
+        use_container_width=True,
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row",
+    )
+
+    selected_top_rows = event_top.selection.rows
+
+    if selected_top_rows:
+        selected_ip_from_top = display_top_df.iloc[selected_top_rows[0]]["ip"]
+    else:
+        selected_ip_from_top = None
+
+
+
     st.markdown("## Time Series Analysis")
 
     if st.session_state.raw_logs:
@@ -133,6 +173,28 @@ if st.session_state.analysis_data is not None:
     else:
         st.info("No time-series data available.")
 
+    st.markdown("## 🚨 Detected Anomalies")
+
+    anomaly_df = time_df[time_df["is_anomaly"]]
+
+    if anomaly_df.empty:
+        st.success("No anomalies detected.")
+    else:
+        st.dataframe(anomaly_df, use_container_width=True)
+
+
+    st.markdown("### Anomaly Timeline")
+
+    anomaly_df = time_df[time_df["is_anomaly"]]
+
+    if anomaly_df.empty:
+        st.success("No anomaly points detected.")
+    else:
+        st.line_chart(
+            anomaly_df,
+            x="time_bucket",
+            y="failure_rate"
+        )
 
     def generate_summary(df):
         high = len(df[df["risk_label"] == "HIGH"])
@@ -241,12 +303,21 @@ if st.session_state.analysis_data is not None:
 
     selected_rows = event.selection.rows
 
-    if selected_rows:
-        selected = df.iloc[selected_rows[0]]
-    else:
-        selected = df.iloc[0]
 
-    selected_ip = selected["ip"]
+    if selected_rows:
+        selected_ip_from_table = df.iloc[selected_rows[0]]["ip"]
+    else:
+        selected_ip_from_table = None
+
+    if selected_ip_from_top:
+        selected_ip = selected_ip_from_top
+    elif selected_ip_from_table:
+        selected_ip = selected_ip_from_table
+    else:
+        selected_ip = df.iloc[0]["ip"]
+
+    selected = df[df["ip"] == selected_ip].iloc[0]
+
 
 
     st.markdown("## High Risk IPs")
@@ -257,6 +328,15 @@ if st.session_state.analysis_data is not None:
         st.success("No high-risk IPs detected.")
     else:
         st.dataframe(high_risk_df, use_container_width=True)
+
+
+    if selected_ip:
+        selected = df[df["ip"] == selected_ip].iloc[0]
+    elif selected_rows:
+        selected = df.iloc[selected_rows[0]]
+    else:
+        selected = df.iloc[0]
+
 
 
     st.markdown("## IP Detail")
@@ -308,4 +388,24 @@ if st.session_state.analysis_data is not None:
             ip_time_df,
             x="time_bucket",
             y=["access_count", "failed_count", "failure_rate"]
+        )
+    st.markdown("### Selected IP Anomalies")
+
+    ip_anomaly_df = ip_time_df[ip_time_df["is_anomaly"]]
+
+    if ip_anomaly_df.empty:
+        st.success("No anomalies detected for this IP.")
+    else:
+        st.dataframe(
+            ip_anomaly_df[[
+                "time_bucket",
+                "ip",
+                "access_count",
+                "failed_count",
+                "failure_rate",
+                "risk_signal_count",
+                "anomaly_reason"
+            ]],
+            use_container_width=True,
+            hide_index=True
         )
