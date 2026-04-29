@@ -51,6 +51,18 @@ def create_timeline_chart(time_df, title):
 
     return fig
 
+def build_ai_payload(selected: pd.Series) -> dict:
+    return {
+        "ip": selected["ip"],
+        "event": selected["event"],
+        "risk_level": selected["risk_label"],
+        "risk_score": int(selected["risk_score"]),
+        "access_count": int(selected["access_count"]),
+        "failed_count": int(selected["failed_count"]),
+        "suspicious_paths": selected["suspicious_paths"],
+        "signals": selected["reasons"],
+        "recommended_action": selected["recommended_action"],
+    }
 
 def highlight_risk(val):
     if val == "HIGH":
@@ -522,9 +534,19 @@ if st.session_state.analysis_data is not None:
 
     st.markdown("## AI Explanation")
 
+    col1, col2 = st.columns([0.8, 0.2])
+    
+    with col2:
+        if st.button("Clear Cache"):
+            st.session_state.ai_cache = {}
+            st.rerun()
+
+
     if selected_ip not in st.session_state.ai_cache:
         with st.spinner(f"Analyzing {selected_ip}..."):
-            st.session_state.ai_cache[selected_ip] = explain_detection(selected.to_dict())
+            #st.session_state.ai_cache[selected_ip] = explain_detection(selected.to_dict())
+            ai_payload = build_ai_payload(selected)
+            st.session_state.ai_cache[selected_ip] = explain_detection(ai_payload)
 
     explanation = st.session_state.ai_cache[selected_ip]
 

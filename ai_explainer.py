@@ -46,6 +46,7 @@ Rules:
 - Do not describe the actor (e.g., attacker, entity, user).
 - Do not infer intent or purpose.
 - Describe only observed patterns.
+- Do not mention successful attempts unless success status codes are explicitly provided.
 
 Style guidance:
 - Prefer factual verbs such as "shows", "includes", "has".
@@ -68,8 +69,10 @@ Risk score: {detection_data.get("risk_score")}
 Access count: {detection_data.get("access_count")}
 Failed count: {detection_data.get("failed_count")}
 Suspicious paths: {detection_data.get("suspicious_paths")}
-Reasons: {detection_data.get("reasons")}
+Signals: {detection_data.get("signals")}
 """
+
+
 
     try:
         response = requests.post(

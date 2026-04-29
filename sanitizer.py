@@ -9,6 +9,8 @@ def sanitize_reason(text: str) -> str:
         "suggests",
         "indicating",
         "unauthorized entity",
+        "unauthorized activities",
+        "attempted",
     ]
 
     for word in forbidden:
