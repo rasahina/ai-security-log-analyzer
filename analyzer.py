@@ -1,4 +1,5 @@
 from datetime import datetime
+from response_guides import get_guides
 
 
 def get_risk_level(score):
@@ -318,6 +319,7 @@ def analyze_log_lines(lines):
         raw_action = recommend_action(level, raw_attack_type)
         recommended_action = simplify_recommended_action(raw_action)
         event = format_event(attack_type)
+        response_guides = get_guides(attack_type)
 
         results.append({
             "ip": ip,
@@ -326,6 +328,7 @@ def analyze_log_lines(lines):
             "risk_score": score,
             "attack_type": attack_type,
             "recommended_action": recommended_action,
+            "response_guides": response_guides,
             "access_count": ip_counts[ip],
             "failed_count": failed_counts[ip],
             "suspicious_paths": suspicious_path_by_ip[ip],
