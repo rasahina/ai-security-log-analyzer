@@ -1,0 +1,36 @@
+{"timestamp": "2026-04-29T14:17:06.721745", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T14:17:06.721780", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:26:17.253548", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T14:26:17.253574", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:31:45.992393", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T14:31:45.992420", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:34:35.003063", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T14:34:35.003093", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:37:01.679462", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:38:21.750468", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore_previous", "action": "blocked", "sample": "ignore_previous_instructions"}
+{"timestamp": "2026-04-29T14:38:21.750486", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:41:33.382464", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore.*previous", "action": "blocked", "sample": "ignore_previous_instructions"}
+{"timestamp": "2026-04-29T14:41:33.382483", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:43:00.479780", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:you.*are.*chatgpt", "action": "blocked", "sample": "you_are_chatgpt_now"}
+{"timestamp": "2026-04-29T14:43:00.479797", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:43:32.161068", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:system.*prompt", "action": "blocked", "sample": "system_prompt_reveal"}
+{"timestamp": "2026-04-29T14:43:32.161086", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:44:05.018700", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:execute.*code", "action": "blocked", "sample": "execute this code"}
+{"timestamp": "2026-04-29T14:44:05.018718", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:45:17.952623", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore.*previous", "action": "blocked", "sample": "ignore%20previous%20instructions"}
+{"timestamp": "2026-04-29T14:45:17.952637", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:45:37.228950", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:46:00.662906", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:46:29.209473", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore.*previous", "action": "blocked", "sample": "IgNoRe_PreVioUs_InStruCtions"}
+{"timestamp": "2026-04-29T14:46:29.209488", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:46:49.244932", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:47:15.399341", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:\\bexecute\\b", "action": "blocked", "sample": "i/api/execute_job"}
+{"timestamp": "2026-04-29T14:47:15.399359", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:47:36.859232", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore.*previous", "action": "blocked", "sample": "AAAA... (500文字) ... ignore_previous ..."}
+{"timestamp": "2026-04-29T14:47:36.859262", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:49:51.448037", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore.*previous", "action": "blocked", "sample": "ig-nore_pre.vious_instructions"}
+{"timestamp": "2026-04-29T14:49:51.448055", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T14:59:08.912534", "field": "suspicious_paths", "reason": "dangerous_phrase_detected:ignore.*previous", "action": "blocked", "sample": "ig-nore_pre.vious_instructions"}
+{"timestamp": "2026-04-29T14:59:08.912552", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T15:02:36.587080", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T15:02:36.587218", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}

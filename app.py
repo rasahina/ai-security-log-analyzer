@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from time_series_analysis import create_time_series
 from ai_explainer import explain_detection
+from security.ai_guard import build_safe_ai_payload, write_guard_logs
 
 
 #グラフ描画関数
@@ -51,18 +52,6 @@ def create_timeline_chart(time_df, title):
 
     return fig
 
-def build_ai_payload(selected: pd.Series) -> dict:
-    return {
-        "ip": selected["ip"],
-        "event": selected["event"],
-        "risk_level": selected["risk_label"],
-        "risk_score": int(selected["risk_score"]),
-        "access_count": int(selected["access_count"]),
-        "failed_count": int(selected["failed_count"]),
-        "suspicious_paths": selected["suspicious_paths"],
-        "signals": selected["reasons"],
-        "recommended_action": selected["recommended_action"],
-    }
 
 def highlight_risk(val):
     if val == "HIGH":
@@ -102,10 +91,15 @@ if "raw_logs" not in st.session_state:
     st.session_state.raw_logs = None
 if "ai_cache" not in st.session_state:
     st.session_state.ai_cache = {}
+if "ai_guard_logs" not in st.session_state:
+    st.session_state.ai_guard_logs = []
+
 
 uploaded_file = st.file_uploader("Choose a log file", type=["log", "txt"])
 
 if st.button("Use Sample Log"):
+    st.session_state.ai_cache = {}
+    st.session_state.ai_guard_logs = []
     with open("data/sample.log", "r", encoding="utf-8") as f:
         text = f.read()
 
@@ -120,6 +114,8 @@ if st.button("Use Sample Log"):
 
 if uploaded_file is not None:
     if st.button("Analyze File"):
+        st.session_state.ai_cache = {}
+        st.session_state.ai_guard_logs = []
         files = {
             "file": (
                 uploaded_file.name,
@@ -544,17 +540,27 @@ if st.session_state.analysis_data is not None:
 
     if selected_ip not in st.session_state.ai_cache:
         with st.spinner(f"Analyzing {selected_ip}..."):
-            #st.session_state.ai_cache[selected_ip] = explain_detection(selected.to_dict())
-            ai_payload = build_ai_payload(selected)
+            ai_payload, guard_logs = build_safe_ai_payload(selected.to_dict())
+            write_guard_logs(guard_logs)
+
             st.session_state.ai_cache[selected_ip] = explain_detection(ai_payload)
+            st.session_state.ai_guard_logs = guard_logs
+    else:
+        st.session_state.ai_guard_logs = []
 
     explanation = st.session_state.ai_cache[selected_ip]
 
-    #st.text_area(
-    #    "AI-generated explanation",
-    #    value=explanation,
-    #    height=220
-    #)
-
     st.info(explanation)
     st.caption(f"Cache size: {len(st.session_state.ai_cache)}")
+
+    st.markdown("### AI Guard Log")
+
+    guard_logs = st.session_state.get("ai_guard_logs", [])
+    if not guard_logs:
+        st.success("No AI Guard issues detected.")
+    else:
+        st.warning(f"AI Guard sanitized {len(guard_logs)} item(s).")
+        st.dataframe(guard_logs, use_container_width=True, hide_index=True)
+
+
+    st.caption(f"AI Guard events: {len(guard_logs)}")
