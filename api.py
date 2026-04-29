@@ -1,10 +1,14 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from database import init_db, save_analysis_run
 import json
 import os
-
+from database import (
+    init_db,
+    save_analysis_run,
+    get_analysis_runs,
+    get_detections_by_run,
+)
 
 from analyzer import analyze_log_lines, parse_log_lines
 
@@ -73,4 +77,20 @@ async def analyze_file(file: UploadFile = File(...)):
         "run_id": run_id,
         "analysis": results,
         "raw_logs": raw_logs
+    })
+
+@app.get("/history")
+def history():
+    return JSONResponse(content=get_analysis_runs())
+
+@app.get("/history/{run_id}")
+def history_detail(run_id: int):
+    detections = get_detections_by_run(run_id)
+
+    if not detections:
+        raise HTTPException(status_code=404, detail="history not found")
+
+    return JSONResponse(content={
+        "run_id": run_id,
+        "detections": detections
     })

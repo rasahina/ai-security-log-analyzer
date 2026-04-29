@@ -113,3 +113,78 @@ def save_analysis_run(results: list, source: str = "manual") -> int:
     conn.close()
 
     return run_id
+
+def get_analysis_runs(limit: int = 20):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT id, created_at, source, total_ips, high_count, medium_count, low_count
+    FROM analysis_runs
+    ORDER BY id DESC
+    LIMIT ?
+    """, (limit,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": r[0],
+            "created_at": r[1],
+            "source": r[2],
+            "total_ips": r[3],
+            "high_count": r[4],
+            "medium_count": r[5],
+            "low_count": r[6],
+        }
+        for r in rows
+    ]
+
+def get_detections_by_run(run_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT
+        id,
+        run_id,
+        ip,
+        event,
+        risk_level,
+        risk_score,
+        attack_type,
+        recommended_action,
+        access_count,
+        failed_count,
+        suspicious_paths,
+        status_counts,
+        reasons,
+        response_guides
+    FROM detections
+    WHERE run_id = ?
+    ORDER BY risk_score DESC
+    """, (run_id,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {
+            "id": r[0],
+            "run_id": r[1],
+            "ip": r[2],
+            "event": r[3],
+            "risk_level": r[4],
+            "risk_score": r[5],
+            "attack_type": r[6],
+            "recommended_action": r[7],
+            "access_count": r[8],
+            "failed_count": r[9],
+            "suspicious_paths": json.loads(r[10] or "[]"),
+            "status_counts": json.loads(r[11] or "{}"),
+            "reasons": json.loads(r[12] or "[]"),
+            "response_guides": json.loads(r[13] or "[]"),
+        }
+        for r in rows
+    ]
