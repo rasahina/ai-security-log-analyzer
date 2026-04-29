@@ -67,6 +67,19 @@ page_title="AI Security Log Analyzer",
 layout="wide"
 )
 
+st.markdown("""
+<style>
+html, body, [class*="css"]  {
+    font-size: 13px;
+}
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 st.title("AI Security Log Analyzer")
 st.write("ログファイルをアップロードして、不審なアクセスを分析します。")
 
@@ -431,19 +444,22 @@ if st.session_state.analysis_data is not None:
     with detail_col2:
         st.metric("Access Count", selected["access_count"])
         st.metric("Failed Count", selected["failed_count"])
+    col_left, col_right = st.columns(2)
 
-    st.markdown("### Suspicious Paths")
+    with col_left:
+        with st.expander("🔍 Suspicious Paths"):
+            for path in selected["suspicious_paths"]:
+                st.markdown(f"- `{path}`")
 
-    for path in selected["suspicious_paths"]:
-        st.markdown(f"- `{path}`")
-    
-    st.write("Status Counts")
-    st.json(selected["status_counts"])
+        st.markdown("### ⚡ Signals")
+        for r in selected["reasons"]:
+            st.markdown(f"- {r}")
 
-    st.markdown("### Signals")
+    with col_right:
+        with st.expander("📊 Status Counts"):
+            st.json(selected["status_counts"])
 
-    for r in selected["reasons"]:
-        st.markdown(f"- {r}")
+
 
     st.markdown("### Recommended Action")
 

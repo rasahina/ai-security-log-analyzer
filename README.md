@@ -148,3 +148,18 @@ curl http://172.30.176.1:11434/api/tags
 - Improve UI layout and filtering
 - Add persistent history
 - Add real response integrations carefully, such as firewall or WAF actions
+
+
+## Screenshots
+
+### Overview
+![Overview](screenshots/Dashboard1_Top.png)
+
+### Top Risky IPs
+![Ranking](screenshots/Dashboard2_Ranking.png)
+
+### IP Detail
+![IP Detail](screenshots/Dashboard3_IPDetails.png)
+
+### AI Explanation
+![AI Explanation](screenshots/Dashboard4_AIPart.png)
