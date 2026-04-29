@@ -1,4 +1,13 @@
 import requests
+from sanitizer import (
+    sanitize_reason,
+    normalize_reason,
+    is_valid_reason,
+    fallback_reason
+)
+
+
+
 
 OLLAMA_URL = "http://172.30.176.1:11434/api/generate"
 MODEL = "qwen2.5:3b"
@@ -75,6 +84,13 @@ Reasons: {detection_data.get("reasons")}
         )
         response.raise_for_status()
         reason = response.json().get("response", "").strip()
+        
+
+        reason = sanitize_reason(reason)
+        reason = normalize_reason(reason)
+
+        if not is_valid_reason(reason):
+            reason = fallback_reason(detection_data)
 
     except requests.exceptions.RequestException:
         reason = "AI explanation unavailable."

@@ -73,6 +73,8 @@ if "analysis_data" not in st.session_state:
     st.session_state.analysis_data = None
 if "raw_logs" not in st.session_state:
     st.session_state.raw_logs = None
+if "ai_cache" not in st.session_state:
+    st.session_state.ai_cache = {}
 
 uploaded_file = st.file_uploader("Choose a log file", type=["log", "txt"])
 
@@ -385,10 +387,10 @@ if st.session_state.analysis_data is not None:
         #################################################
         st.metric("Risk Score", selected["risk_score"])
         #st.metric("Attack Type", selected["attack_type"])
-        st.write("Event")
-        st.info(selected["event"])
-        st.write("Attack Type")
-        st.info(selected["attack_type"])
+        #st.write("Event")
+        st.markdown(f"### 🚨 {selected['event']}")
+        #st.write("Attack Type")
+        #st.info(selected["attack_type"])
 
     with detail_col2:
         st.metric("Access Count", selected["access_count"])
@@ -400,8 +402,10 @@ if st.session_state.analysis_data is not None:
     st.write("Status Counts")
     st.json(selected["status_counts"])
 
-    st.write("Reasons")
-    st.write(selected["reasons"])
+    st.markdown("### Signals")
+
+    for r in selected["reasons"]:
+        st.markdown(f"- {r}")
 
     st.write("Recommended Action")
 
@@ -451,10 +455,15 @@ if st.session_state.analysis_data is not None:
 
     st.markdown("## AI Explanation")
 
-    if st.button("Generate AI Explanation"):
-        explanation = explain_detection(selected.to_dict())
-        st.text_area(
-            "AI-generated explanation",
-            value=explanation,
-            height=220
-        )
+    if selected_ip not in st.session_state.ai_cache:
+        with st.spinner(f"Analyzing {selected_ip}..."):
+            st.session_state.ai_cache[selected_ip] = explain_detection(selected.to_dict())
+
+    explanation = st.session_state.ai_cache[selected_ip]
+
+    st.text_area(
+        "AI-generated explanation",
+        value=explanation,
+        height=220
+    )
+    st.caption(f"Cache size: {len(st.session_state.ai_cache)}")
