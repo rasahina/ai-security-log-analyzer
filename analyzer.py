@@ -8,6 +8,30 @@ def get_risk_level(score):
         return "MEDIUM"
     return "LOW"
 
+
+def format_event(attack_type: str) -> str:
+    if not attack_type or attack_type == "Normal":
+        return "Normal activity"
+
+    mapping = {
+        "Automated Scanner": "Automated scanning activity",
+        "Admin Access": "Admin access attempts",
+        "Brute Force": "Brute-force login attempts",
+        "Coordinated Brute Force": "Coordinated brute-force attack",
+        "Suspicious Admin Timing": "Suspicious admin access timing",
+    }
+
+    types = attack_type.split(", ")
+
+    formatted = [
+        mapping.get(t, t)
+        for t in types
+    ]
+
+    return " and ".join(formatted)
+
+
+
 def classify_attack_type(reasons):
     attack_types = []
 
@@ -293,9 +317,11 @@ def analyze_log_lines(lines):
         attack_type = simplify_attack_type(raw_attack_type)
         raw_action = recommend_action(level, raw_attack_type)
         recommended_action = simplify_recommended_action(raw_action)
+        event = format_event(attack_type)
 
         results.append({
             "ip": ip,
+            "event": event,
             "risk_level": level,
             "risk_score": score,
             "attack_type": attack_type,

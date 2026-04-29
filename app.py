@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 import plotly.graph_objects as go
 from time_series_analysis import create_time_series
+from ai_explainer import explain_detection
+
 
 #グラフ描画関数
 def create_timeline_chart(time_df, title):
@@ -125,6 +127,7 @@ if st.session_state.analysis_data is not None:
 
     display_columns = [
         "ip",
+        "event",
         "risk_label",
         "risk_score",
         "attack_type",
@@ -363,12 +366,6 @@ if st.session_state.analysis_data is not None:
         st.dataframe(high_risk_df, use_container_width=True)
 
 
-    if selected_ip:
-        selected = df[df["ip"] == selected_ip].iloc[0]
-    elif selected_rows:
-        selected = df.iloc[selected_rows[0]]
-    else:
-        selected = df.iloc[0]
 
 
 
@@ -388,6 +385,8 @@ if st.session_state.analysis_data is not None:
         #################################################
         st.metric("Risk Score", selected["risk_score"])
         #st.metric("Attack Type", selected["attack_type"])
+        st.write("Event")
+        st.info(selected["event"])
         st.write("Attack Type")
         st.info(selected["attack_type"])
 
@@ -405,7 +404,11 @@ if st.session_state.analysis_data is not None:
     st.write(selected["reasons"])
 
     st.write("Recommended Action")
-    st.info(selected["recommended_action"])
+
+    actions = selected["recommended_action"].split(" / ")
+
+    for a in actions:
+        st.markdown(f"- **{a}**")
 
     st.markdown("### Selected IP Timeline")
 
@@ -444,4 +447,14 @@ if st.session_state.analysis_data is not None:
             ]],
             use_container_width=True,
             hide_index=True
+        )
+
+    st.markdown("## AI Explanation")
+
+    if st.button("Generate AI Explanation"):
+        explanation = explain_detection(selected.to_dict())
+        st.text_area(
+            "AI-generated explanation",
+            value=explanation,
+            height=220
         )
