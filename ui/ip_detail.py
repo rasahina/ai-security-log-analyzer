@@ -60,7 +60,11 @@ def render_ip_detail(selected, selected_ip):
 
 def render_selected_ip_timeline(selected_ip):
     st.markdown("### Selected IP Timeline")
-
+    #履歴を表示の際にタイムラインがない場合出る。
+    if not st.session_state.raw_logs:
+        st.info("No timeline data available for this historical run.")
+        return
+    
     raw_df = pd.DataFrame(st.session_state.raw_logs)
     time_df = create_time_series(raw_df, interval="1min")
 

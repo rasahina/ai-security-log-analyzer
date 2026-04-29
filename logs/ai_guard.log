@@ -54,3 +54,9 @@
 {"timestamp": "2026-04-29T20:35:30.122241", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
 {"timestamp": "2026-04-29T20:35:38.741539", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
 {"timestamp": "2026-04-29T20:35:38.741625", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T20:38:35.585354", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T20:38:35.585432", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T20:40:37.637945", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T20:40:37.638027", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-29T20:53:02.326921", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-29T20:53:02.327004", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}

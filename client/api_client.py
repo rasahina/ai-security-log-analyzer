@@ -28,3 +28,14 @@ def analyze_uploaded_file(uploaded_file) -> dict:
     )
     response.raise_for_status()
     return response.json()
+
+def get_history():
+    response = requests.get(f"{API_BASE_URL}/history")
+    response.raise_for_status()
+    return response.json()
+
+
+def get_history_detail(run_id: int):
+    response = requests.get(f"{API_BASE_URL}/history/{run_id}")
+    response.raise_for_status()
+    return response.json()

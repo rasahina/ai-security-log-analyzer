@@ -7,6 +7,7 @@ from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
 from ui.charts import create_timeline_chart
 from client.api_client import analyze_text_log, analyze_uploaded_file
+from client.api_client import get_history, get_history_detail
 from ui.summary import generate_summary
 from ui.ip_detail import (
     render_ip_detail,
@@ -77,16 +78,38 @@ if uploaded_file is not None:
         st.session_state.analysis_data = result["analysis"]
         st.session_state.raw_logs = result["raw_logs"]
 
+st.markdown("## History")
+
+if st.button("Load History"):
+    st.session_state.history = get_history()
+
+if "history" in st.session_state and st.session_state.history:
+    history = st.session_state.history
+
+    run_options = {
+        f"Run {r['id']} | {r['created_at']} | HIGH:{r['high_count']} MED:{r['medium_count']} LOW:{r['low_count']}": r["id"]
+        for r in history
+    }
+
+    selected_run_label = st.selectbox(
+        "Select past analysis",
+        list(run_options.keys())
+    )
+
+    if st.button("Load Selected Run"):
+        run_id = run_options[selected_run_label]
+        detail = get_history_detail(run_id)
+
+        st.session_state.analysis_data = detail["detections"]
+        st.session_state.raw_logs = []
+        st.session_state.ai_cache = {}
+        st.session_state.ai_guard_logs = []
+
+        st.success(f"Loaded Run ID: {run_id}")
+
 
 if st.session_state.analysis_data is not None:
     data = st.session_state.analysis_data
-
-    # デバッグ（1件だけ確認）
-    if data:
-        st.write(data[0].get("response_guides"))
-        st.write("attack_type:", data[0].get("attack_type"))
-        st.write("response_guides:", data[0].get("response_guides"))
-    ######
 
     df = pd.DataFrame(data)
 
@@ -202,18 +225,18 @@ if st.session_state.analysis_data is not None:
             use_container_width=True,
             key="overall_timeline_chart"
         )
+        st.markdown("## 🚨 Detected Anomalies")
+
+        anomaly_df = time_df[time_df["is_anomaly"]]
+
+        if anomaly_df.empty:
+            st.success("No anomalies detected.")
+        else:
+            st.dataframe(anomaly_df, use_container_width=True)
+
+
     else:
         st.info("No time-series data available.")
-
-    st.markdown("## 🚨 Detected Anomalies")
-
-    anomaly_df = time_df[time_df["is_anomaly"]]
-
-    if anomaly_df.empty:
-        st.success("No anomalies detected.")
-    else:
-        st.dataframe(anomaly_df, use_container_width=True)
-
 
    
     summary = generate_summary(df)
