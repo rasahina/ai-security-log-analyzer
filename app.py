@@ -33,8 +33,10 @@ def create_timeline_chart(time_df, title):
         name="Anomaly",
         marker=dict(color="red", size=10),
         text=anomaly_df["anomaly_reason"],
+        customdata=anomaly_df[["ip", "anomaly_reason"]],
         hovertemplate=(
             "Time: %{x}<br>"
+            "IP: %{customdata[0]}<br>"
             "Access Count: %{y}<br>"
             "Reason: %{text}<extra></extra>"
         )
@@ -220,7 +222,12 @@ if st.session_state.analysis_data is not None:
             "Access Timeline with Anomaly Points"
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        #st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+            key="overall_timeline_chart"
+        )
     else:
         st.info("No time-series data available.")
 
@@ -329,21 +336,50 @@ if st.session_state.analysis_data is not None:
     else:
         st.success(summary)
 
+
+
+    st.markdown("## Filters")
+
+    risk_filter = st.selectbox(
+        "Filter by risk level",
+        ["ALL", "HIGH", "MEDIUM", "LOW"]
+    )
+
+    if risk_filter != "ALL":
+        df_view = df[df["risk_label"] == risk_filter]
+    else:
+        df_view = df
+
+
     st.markdown("## Analysis Table")
 
     event = st.dataframe(
-        df.style.map(highlight_risk, subset=["risk_label"]),
+        df_view.style.map(highlight_risk, subset=["risk_label"]),
         use_container_width=True,
         hide_index=True,
         on_select="rerun",
         selection_mode="single-row",
     )
 
+
+    st.markdown("### Export")
+
+    #csv = df.to_csv(index=False).encode("utf-8")
+    csv = df_view.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="Download analysis as CSV",
+        data=csv,
+        file_name="security_analysis.csv",
+        mime="text/csv"
+    )
+
+
     selected_rows = event.selection.rows
 
 
     if selected_rows:
-        selected_ip_from_table = df.iloc[selected_rows[0]]["ip"]
+        selected_ip_from_table = df_view.iloc[selected_rows[0]]["ip"]
     else:
         selected_ip_from_table = None
 
@@ -396,9 +432,11 @@ if st.session_state.analysis_data is not None:
         st.metric("Access Count", selected["access_count"])
         st.metric("Failed Count", selected["failed_count"])
 
-    st.write("Suspicious Paths")
-    st.code(selected["suspicious_paths"])
+    st.markdown("### Suspicious Paths")
 
+    for path in selected["suspicious_paths"]:
+        st.markdown(f"- `{path}`")
+    
     st.write("Status Counts")
     st.json(selected["status_counts"])
 
@@ -407,12 +445,19 @@ if st.session_state.analysis_data is not None:
     for r in selected["reasons"]:
         st.markdown(f"- {r}")
 
-    st.write("Recommended Action")
+    st.markdown("### Recommended Action")
 
     actions = selected["recommended_action"].split(" / ")
 
-    for a in actions:
-        st.markdown(f"- **{a}**")
+    for i, a in enumerate(actions):
+        col_action, col_button = st.columns([0.8, 0.2])
+
+        with col_action:
+            st.markdown(f"- **{a}**")
+
+        with col_button:
+            if st.button("Run", key=f"action-{selected_ip}-{i}"):
+                st.success(f"Triggered: {a}")
 
     st.markdown("### Selected IP Timeline")
 
@@ -429,7 +474,13 @@ if st.session_state.analysis_data is not None:
             f"Timeline for {selected_ip}"
         )
 
-        st.plotly_chart(fig_ip, use_container_width=True)
+        #st.plotly_chart(fig_ip, use_container_width=True)
+        st.plotly_chart(
+            fig_ip,
+            use_container_width=True,
+            #key=f"ip_timeline_chart_{selected_ip}_detail"
+            key="selected_ip_timeline_chart"
+        )
 
 
     st.markdown("### Selected IP Anomalies")
@@ -461,9 +512,11 @@ if st.session_state.analysis_data is not None:
 
     explanation = st.session_state.ai_cache[selected_ip]
 
-    st.text_area(
-        "AI-generated explanation",
-        value=explanation,
-        height=220
-    )
+    #st.text_area(
+    #    "AI-generated explanation",
+    #    value=explanation,
+    #    height=220
+    #)
+
+    st.info(explanation)
     st.caption(f"Cache size: {len(st.session_state.ai_cache)}")
