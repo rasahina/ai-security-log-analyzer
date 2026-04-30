@@ -1,6 +1,6 @@
 from datetime import datetime
 from response_guides import get_guides
-
+from parsers.log_parser import parse_log_lines
 
 def get_risk_level(score):
     if score >= 8:
@@ -195,27 +195,18 @@ def analyze_log_lines(lines):
         "/backup"
     ]
 
-    for line in lines:
-        line = line.strip()
+    parsed_logs = parse_log_lines(lines)
 
-        if not line:
+    for log in parsed_logs:
+        timestamp_str = log["timestamp"]
+        ip = log["ip"]
+        method = log["method"]
+        url = log["url"]
+        status = str(log["status"])
+        try:
+            timestamp = datetime.fromisoformat(timestamp_str)
+        except Exception:
             continue
-
-        if line.startswith("#"):
-            continue
-
-        parts = line.split()
-
-        if len(parts) != 5:
-            continue
-
-        timestamp_str=parts[0]
-        ip = parts[1]
-        method = parts[2]
-        url = parts[3]
-        status = parts[4]
-
-        timestamp=datetime.fromisoformat(timestamp_str)
 
         if ip not in ip_counts:
             ip_counts[ip] = 0
@@ -337,34 +328,3 @@ def analyze_log_lines(lines):
         })
 
     return results
-
-
-def analyze_log_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    return analyze_log_lines(lines)
-
-def parse_log_lines(lines):
-    parsed_logs = []
-
-    for line in lines:
-        line = line.strip()
-
-        if not line or line.startswith("#"):
-            continue
-
-        parts = line.split()
-
-        if len(parts) != 5:
-            continue
-
-        parsed_logs.append({
-            "timestamp": parts[0],
-            "ip": parts[1],
-            "method": parts[2],
-            "url": parts[3],
-            "status": int(parts[4])
-        })
-
-    return parsed_logs

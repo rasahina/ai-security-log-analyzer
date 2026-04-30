@@ -10,7 +10,8 @@ from database import (
     get_detections_by_run,
 )
 
-from analyzer import analyze_log_lines, parse_log_lines
+from analyzer import analyze_log_lines
+from parsers.log_parser import parse_log_lines
 
 app = FastAPI(title="AI Security Log Analyzer API")
 

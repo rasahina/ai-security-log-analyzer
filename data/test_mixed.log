@@ -1,0 +1,15 @@
+# simple log
+2026-04-30T10:00:01 192.168.1.1 GET /home 200
+2026-04-30T10:00:02 192.168.1.2 GET /login 401
+
+# common log
+127.0.0.1 - - [30/Apr/2026:10:00:01 +0200] "GET /login HTTP/1.1" 401 1234
+127.0.0.1 - - [30/Apr/2026:10:00:02 +0200] "POST /admin HTTP/1.1" 403 532
+
+# combined log
+203.0.113.1 - - [30/Apr/2026:10:00:03 +0200] "GET /phpmyadmin HTTP/1.1" 404 1024 "-" "Mozilla/5.0"
+203.0.113.2 - - [30/Apr/2026:10:00:04 +0200] "GET /.env HTTP/1.1" 200 2048 "-" "curl/7.68.0"
+
+# noise
+invalid log line
+another bad line
