@@ -84,3 +84,7 @@
 {"timestamp": "2026-04-30T09:32:24.295275", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
 {"timestamp": "2026-04-30T09:33:20.321633", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
 {"timestamp": "2026-04-30T09:33:20.321725", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-30T12:05:27.509786", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-30T12:05:27.509880", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-30T12:05:33.545394", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-30T12:05:33.545469", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}

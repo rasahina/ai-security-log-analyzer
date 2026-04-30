@@ -2,13 +2,24 @@
 
 ## Overview
 
-AI Security Log Analyzer is a lightweight cybersecurity log analysis tool.
+AI Security Log Analyzer is a lightweight cybersecurity log analysis tool designed to detect suspicious activity from web access logs and provide clear, actionable insights.
 
-It analyzes web access logs, detects suspicious access patterns, visualizes risk over time, and provides AI-assisted explanations for detected security events.
+It automatically identifies attack patterns such as brute-force attempts, admin access probing, and automated scanning, then explains the findings in a human-readable way.
 
-The project is designed as both a learning project and an MVP prototype for an AI-assisted security monitoring product.
+This project is both:
+- a learning project for security and AI system design
+- an MVP prototype for a future AI-assisted security monitoring product
 
----
+
+## Key Concept
+
+This is NOT an AI-driven detection system.
+
+Detection = deterministic Python logic
+AI = explanation only
+
+The system is designed to remain reliable, explainable, and secure, even without AI.
+
 
 ## Features
 
@@ -16,60 +27,80 @@ The project is designed as both a learning project and an MVP prototype for an A
 - Suspicious activity detection
   - Brute-force login attempts
   - Admin access attempts
-  - Scanning behavior
-  - Burst access patterns
-  - Night-time access
-  - Combined attack patterns
+  - Automated scanning behavior
+  - Burst traffic patterns
+  - Night-time access anomalies
 - Risk scoring per IP
-- Risk level classification: HIGH / MEDIUM / LOW
-- Time-series traffic analysis
-- Anomaly detection using:
+- Risk classification: HIGH / MEDIUM / LOW
+- Time-series traffic visualization
+- Anomaly detection based on:
   - Failure rate
-  - Risk signal count
-  - Burst patterns
-- Priority-based ranking of risky IPs
-- Interactive Streamlit UI
-- Plotly-based timeline visualization
-- Click-based IP detail view
-- AI-generated explanation using local Ollama LLM
-- AI explanation caching
-- Rule-based sanitization of AI output
+  - Access volume
+  - Signal patterns
+- Priority ranking of risky IPs
+- Interactive Streamlit dashboard
+- IP-level detailed analysis
 - CSV export
-- Simulated action buttons for recommended responses
 
----
+### AI (Optional)
+
+- Human-readable explanation generation
+- Local LLM (Ollama) integration
+- Explanation caching
+- Sanitized output (prompt injection protection)
+
 
 ## Architecture
 
 - Frontend: Streamlit
-- Backend: FastAPI
+- Backend API: FastAPI
 - Analysis Engine: Python / pandas
 - Visualization: Plotly
-- AI Explanation: Ollama local LLM
-- Environment:
-  - Windows: Ollama server
-  - WSL: FastAPI backend and Streamlit UI
+- Database: SQLite (planned PostgreSQL migration)
+- AI (optional): Ollama (local LLM)
 
----
+### Environment
 
-## AI Policy
+- WSL: FastAPI + Streamlit
+- Windows: Ollama (optional)
 
-AI is not used for detection or scoring.
 
-Detection, risk scoring, event classification, and recommended actions are handled by deterministic Python logic.
+## AI Policy (Critical Design Rules)
 
-AI is used only to generate a human-readable explanation of the already-detected result.
+### AI is strictly limited to explanation only.
 
-Security principles:
+### AI is NOT used for:
+- Attack detection
+- Risk scoring
+- Decision making
+- Recommended actions
 
-- Logs and external inputs are treated as untrusted input
-- AI must not follow instructions found inside logs
-- AI must not decide risk level
-- AI must not generate or modify recommended actions
+### AI is ONLY used for:
+- Explaining already-detected results
+
+
+### Security Principles
+
+- All logs are treated as untrusted input
+- AI must not follow instructions embedded in logs
+- AI must not infer attacker intent
+- AI must not modify detection results
 - AI output is sanitized before display
-- Explanations must stay evidence-based and avoid speculation
+- Explanations must be evidence-based
 
----
+
+## Why AI is Optional
+
+The system is designed to work fully without AI.
+
+AI OFF -> Fast, lightweight, safe
+AI ON  -> Better explanations
+
+AI is disabled by default to ensure:
+- Low resource usage
+- Stable performance
+- Safe execution
+
 
 ## Example Detection
 
@@ -80,86 +111,98 @@ Risk level:
 HIGH
 
 Reason:
-IP address 172.16.0.9 shows a high failure rate with repeated access to sensitive endpoints such as /admin and /login. The activity also includes multiple 404 responses, burst access behavior, and an automated scanning pattern.
+IP address 172.16.0.9 shows a high failure rate with repeated access to sensitive endpoints such as /admin and /login. The activity includes multiple 404 responses and burst access patterns.
 
 Recommended action:
 Apply rate limiting and block scanning source if confirmed / Investigate immediately
 
----
 
 ## Usage
 
-1. Start Ollama on Windows PowerShell
+### 1. Start Ollama (optional)
 
 ollama serve
 
-2. Run backend on WSL
+### 2. Start backend (WSL)
 
 uvicorn api:app --reload
 
-3. Run UI on WSL
+### 3. Start UI (WSL)
 
 streamlit run app.py
 
-4. Open browser
+### 4. Open browser
 
 http://localhost:8501
 
----
 
-## Ollama Configuration
+## AI Mode
 
-Ollama runs on Windows and is accessed from WSL through the Windows gateway IP.
+### AI can be toggled inside the UI.
 
-Example:
+- OFF: no AI calls, lightweight mode
+- ON: generates explanations using local LLM
+
+
+### Ollama Configuration (Optional)
+
+When using AI, Ollama runs on Windows and is accessed from WSL:
 
 OLLAMA_URL = "http://172.30.176.1:11434/api/generate"
 
-Check Ollama from Windows:
+### Check Ollama:
 
-curl http://localhost:11434/api/tags
+#### Windows:
+curl http://localhost:11434
 
-Check Ollama from WSL:
+#### WSL:
+curl http://172.30.176.1:11434
 
-curl http://172.30.176.1:11434/api/tags
-
----
 
 ## Current Status
 
-- Core detection logic implemented
+- Detection logic implemented
+- Risk scoring implemented
 - FastAPI backend implemented
 - Streamlit UI implemented
-- Plotly timeline visualization implemented
-- Time-series anomaly detection implemented
-- AI explanation integrated
-- AI output sanitization added
-- AI explanation caching added
-- CSV export added
-- Simulated recommended action buttons added
-
----
-
-## Next Steps
-
-- Improve attack phase classification
-- Support multiple log aggregation
-- Refine scoring thresholds
-- Improve UI layout and filtering
-- Add persistent history
-- Add real response integrations carefully, such as firewall or WAF actions
+- Time-series analysis implemented
+- Anomaly detection implemented
+- AI explanation integrated (optional)
+- Prompt injection defenses implemented
+- AI output sanitization implemented
+- AI caching implemented
+- CSV export implemented
+- History storage implemented (SQLite)
 
 
-## Screenshots
+## Roadmap
 
-### Overview
-![Overview](screenshots/Dashboard1_Top.png)
+### Short-term:
+- Improve detection accuracy
+- Reduce false positives
+- Expand response guides
+- Improve usability
 
-### Top Risky IPs
-![Ranking](screenshots/Dashboard2_Ranking.png)
+### Mid-term:
+- Support multiple log formats (nginx, apache, auth.log)
+- Cross-run analysis (recurring IP detection)
+- Better anomaly detection
 
-### IP Detail
-![IP Detail](screenshots/Dashboard3_IPDetails.png)
+### Long-term:
+- SaaS version
+- Multi-tenant support
+- Automated log collection agent
+- Alerting system (email / webhook)
 
-### AI Explanation
-![AI Explanation](screenshots/Dashboard4_AIPart.png)
+
+## Target Users
+
+- Developers running web services
+- Small teams without dedicated security staff
+- Anyone needing simple log-based security visibility
+
+
+## Philosophy
+
+Do not rely on AI for security decisions.
+Use AI only where it adds clarity, not risk.
