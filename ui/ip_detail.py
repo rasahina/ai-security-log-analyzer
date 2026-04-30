@@ -5,6 +5,7 @@ from time_series_analysis import create_time_series
 from ui.charts import create_timeline_chart
 from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
+from config import AI_MODE
 
 
 def render_ip_detail(selected, selected_ip):
@@ -109,6 +110,11 @@ def render_selected_ip_timeline(selected_ip):
 def render_ai_explanation(selected, selected_ip):
     st.markdown("## AI Explanation")
 
+
+    st.session_state.ai_mode = st.toggle("AI Mode", value=False)
+    ai_enabled= st.session_state.ai_mode
+    st.caption("AI Mode: local" if ai_enabled else "AI Mode: off")
+    
     col1, col2 = st.columns([0.8, 0.2])
 
     with col2:
@@ -116,17 +122,20 @@ def render_ai_explanation(selected, selected_ip):
             st.session_state.ai_cache = {}
             st.rerun()
 
-    if selected_ip not in st.session_state.ai_cache:
-        with st.spinner(f"Analyzing {selected_ip}..."):
-            ai_payload, guard_logs = build_safe_ai_payload(selected.to_dict())
-            write_guard_logs(guard_logs)
+    ai_payload, guard_logs = build_safe_ai_payload(selected.to_dict())
+    write_guard_logs(guard_logs)
+    st.session_state.ai_guard_logs = guard_logs
 
-            st.session_state.ai_cache[selected_ip] = explain_detection(ai_payload)
-            st.session_state.ai_guard_logs = guard_logs
+    if ai_enabled:
+        if selected_ip not in st.session_state.ai_cache:
+            with st.spinner(f"Analyzing {selected_ip}..."):
+                st.session_state.ai_cache[selected_ip] = explain_detection(ai_payload, True)
+
+        explanation = st.session_state.ai_cache[selected_ip]
     else:
-        st.session_state.ai_guard_logs = []
+        explanation = explain_detection(ai_payload, False)
 
-    explanation = st.session_state.ai_cache[selected_ip]
+    
 
     st.info(explanation)
     st.caption(f"Cache size: {len(st.session_state.ai_cache)}")
