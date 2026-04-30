@@ -15,6 +15,46 @@ COMBINED_LOG_PATTERN = re.compile(
     r'"(?P<referer>[^"]*)" "(?P<user_agent>[^"]*)"'
 )
 
+ERROR_LOG_PATTERN = re.compile(
+    r'(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) '
+    r'\[(?P<level>\w+)\] .*? (?P<message>.*)'
+)
+
+CLIENT_IP_PATTERN = re.compile(r"client: (?P<ip>\d+\.\d+\.\d+\.\d+)")
+
+REQUEST_PATTERN = re.compile(r'request: "(?P<method>\S+) (?P<url>\S+) [^"]+"')
+
+def parse_error_log_line(line: str):
+    match = ERROR_LOG_PATTERN.match(line.strip())
+
+    if not match:
+        return None
+
+    timestamp = datetime.strptime(
+        match.group("timestamp"),
+        "%Y/%m/%d %H:%M:%S"
+    ).isoformat()
+
+    message = match.group("message")
+    ip_match = CLIENT_IP_PATTERN.search(message)
+    request_match = REQUEST_PATTERN.search(message)
+
+    ip = ip_match.group("ip") if ip_match else None
+    method = request_match.group("method") if request_match else None
+    url = request_match.group("url") if request_match else None
+
+    return {
+        "timestamp": timestamp,
+        "ip": ip,
+        "method": method,
+        "url": url,
+        "status": None,
+        "user_agent": None,
+        "error_message": message,
+        "log_type": "error",
+        "level": match.group("level"),
+    }
+
 def parse_common_access_log_line(line: str):
     match = COMMON_LOG_PATTERN.match(line.strip())
 
@@ -34,6 +74,8 @@ def parse_common_access_log_line(line: str):
         "status": int(match.group("status")),
         "user_agent": None,
         "error_message": None,
+        "log_type": "access",
+        "level": None,
     }
 
 def parse_combined_access_log_line(line: str):
@@ -55,6 +97,8 @@ def parse_combined_access_log_line(line: str):
         "status": int(match.group("status")),
         "user_agent": match.group("user_agent"),
         "error_message": None,
+        "log_type": "access",
+        "level": None,
     }
 
 def detect_log_format(line: str) -> str:
@@ -69,6 +113,8 @@ def detect_log_format(line: str) -> str:
     if COMMON_LOG_PATTERN.match(line):
         return "common_access"
     
+    if ERROR_LOG_PATTERN.match(line):
+        return "error_log"
 
 
     parts = line.split()
@@ -102,6 +148,8 @@ def parse_access_log_line(line: str):
         "status": int(parts[4]) if parts[4].isdigit() else None,
         "user_agent": None,
         "error_message": None,
+        "log_type": "access",
+        "level": None,
     }
 
 def parse_log_lines(lines):
@@ -116,6 +164,8 @@ def parse_log_lines(lines):
             result = parse_common_access_log_line(line)
         elif fmt == "combined_access":
             result = parse_combined_access_log_line(line)
+        elif fmt == "error_log":
+            result = parse_error_log_line(line)
         else:
             result = None
 
@@ -123,3 +173,5 @@ def parse_log_lines(lines):
             parsed.append(result)
 
     return parsed
+
+
