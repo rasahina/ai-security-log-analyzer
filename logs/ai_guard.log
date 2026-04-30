@@ -98,3 +98,5 @@
 {"timestamp": "2026-04-30T15:05:55.977430", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
 {"timestamp": "2026-04-30T15:39:32.421206", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
 {"timestamp": "2026-04-30T15:39:32.421292", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-04-30T16:11:30.509288", "field": "suspicious_paths", "reason": "list_truncated", "action": "truncated", "sample": "7 items"}
+{"timestamp": "2026-04-30T16:11:30.509368", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}

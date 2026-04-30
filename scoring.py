@@ -8,5 +8,8 @@ SCORES = {
     "admin_access": 3,
     "burst_access": 3,
     "night_access": 2,
-    "correlation": 3,
+    "coordinated_brute_force": 3,
+    "suspicious_admin_timing": 3,
+    "automated_scanning": 3,
+    "access_error_correlation": 3,
 }

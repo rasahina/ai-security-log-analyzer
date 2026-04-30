@@ -179,7 +179,7 @@ def simplify_recommended_action(action):
 
 ###検知ロジック関数化
 
-def detect_brute_force(ip, path_counts, failed_count, access_count):
+def detect_brute_force(path_counts, failed_count, access_count):
     reasons = []
     score = 0
 
@@ -304,13 +304,13 @@ def analyze_log_lines(lines):
     ]
 
     parsed_logs = parse_log_lines(lines)
-    correlations = correlate_logs(parsed_logs)
-    correlated_ips = {c["ip"] for c in correlations}
+    #correlations = correlate_logs(parsed_logs)
+    #correlated_ips = {c["ip"] for c in correlations}
+    correlated_ips = set()
 
     for log in parsed_logs:
         timestamp_str = log["timestamp"]
         ip = log["ip"]
-        method = log["method"]
         url = log["url"]
         status = str(log["status"])
         try:
@@ -351,7 +351,6 @@ def analyze_log_lines(lines):
     for ip in ip_counts:
         access_count = ip_counts[ip]
         failed_count = failed_counts[ip]
-        failure_rate = failed_count / access_count if access_count > 0 else 0
 
 
         score, reasons = detect_brute_force(
