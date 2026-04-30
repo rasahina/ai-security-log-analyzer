@@ -1,6 +1,6 @@
 import json
 import os
-from analyzer import analyze_log_file
+from analyzer import analyze_log_lines, parse_log_lines
 
 INPUT_FILE = "data/sample.log"
 OUTPUT_FILE = "output/result.json"

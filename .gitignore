@@ -1,4 +1,12 @@
-venv/
-.venv/
+# Python
 __pycache__/
 *.pyc
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Local data
+data/*.db
+logs/

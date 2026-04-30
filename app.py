@@ -1,6 +1,19 @@
 import streamlit as st
-import requests
 import pandas as pd
+from time_series_analysis import create_time_series
+
+
+from ai_explainer import explain_detection
+from security.ai_guard import build_safe_ai_payload, write_guard_logs
+from ui.charts import create_timeline_chart
+from client.api_client import analyze_text_log, analyze_uploaded_file
+from client.api_client import get_history, get_history_detail
+from ui.summary import generate_summary
+from ui.ip_detail import (
+    render_ip_detail,
+    render_selected_ip_timeline,
+    render_ai_explanation,
+    )
 
 
 def highlight_risk(val):
@@ -18,36 +31,93 @@ page_title="AI Security Log Analyzer",
 layout="wide"
 )
 
+st.markdown("""
+<style>
+html, body, [class*="css"]  {
+    font-size: 13px;
+}
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 st.title("AI Security Log Analyzer")
 st.write("ログファイルをアップロードして、不審なアクセスを分析します。")
 
+#初期化
 if "analysis_data" not in st.session_state:
     st.session_state.analysis_data = None
+if "raw_logs" not in st.session_state:
+    st.session_state.raw_logs = None
+if "ai_cache" not in st.session_state:
+    st.session_state.ai_cache = {}
+if "ai_guard_logs" not in st.session_state:
+    st.session_state.ai_guard_logs = []
+
 
 uploaded_file = st.file_uploader("Choose a log file", type=["log", "txt"])
 
+if st.button("Use Sample Log"):
+    st.session_state.ai_cache = {}
+    st.session_state.ai_guard_logs = []
+    with open("data/sample.log", "r", encoding="utf-8") as f:
+        text = f.read()
+    result = analyze_text_log(text)
+    st.session_state.analysis_data = result["analysis"]
+    st.session_state.raw_logs = result["raw_logs"]
+
+
 if uploaded_file is not None:
     if st.button("Analyze File"):
-        files = {
-            "file": (
-                uploaded_file.name,
-                uploaded_file.getvalue(),
-                "text/plain"
-            )
-        }
+        st.session_state.ai_cache = {}
+        st.session_state.ai_guard_logs = []
+        result = analyze_uploaded_file(uploaded_file)
+        st.session_state.analysis_data = result["analysis"]
+        st.session_state.raw_logs = result["raw_logs"]
 
-        response = requests.post(
-            "http://127.0.0.1:8000/analyze-file",
-            files=files
-        )
+st.markdown("## History")
 
-        st.session_state.analysis_data = response.json()
+if st.button("Load History"):
+    st.session_state.history = get_history()
+
+if "history" in st.session_state and st.session_state.history:
+    history = st.session_state.history
+
+    run_options = {
+        f"Run {r['id']} | {r['created_at']} | HIGH:{r['high_count']} MED:{r['medium_count']} LOW:{r['low_count']}": r["id"]
+        for r in history
+    }
+
+    selected_run_label = st.selectbox(
+        "Select past analysis",
+        list(run_options.keys())
+    )
+
+    if st.button("Load Selected Run"):
+        run_id = run_options[selected_run_label]
+        detail = get_history_detail(run_id)
+
+        st.session_state.analysis_data = detail["detections"]
+        st.session_state.raw_logs = []
+        st.session_state.ai_cache = {}
+        st.session_state.ai_guard_logs = []
+
+        st.success(f"Loaded Run ID: {run_id}")
+
 
 if st.session_state.analysis_data is not None:
     data = st.session_state.analysis_data
+
     df = pd.DataFrame(data)
 
     # ここから下にSummary、表、IP Detailを書く
+    #選択用変数初期化
+    selected_ip_from_top = None
+    selected_ip_from_table = None
+
 
     df["risk_label"] = df["risk_level"].map({
         "HIGH": "HIGH",
@@ -57,11 +127,13 @@ if st.session_state.analysis_data is not None:
 
     display_columns = [
         "ip",
+        "event",
         "risk_label",
         "risk_score",
         "attack_type",
         "access_count",
         "recommended_action",
+        "response_guides",
         "failed_count",
         "suspicious_paths",
         "status_counts",
@@ -90,95 +162,83 @@ if st.session_state.analysis_data is not None:
     col3.metric("Medium Risk", medium_count)
     col4.metric("Low Risk", low_count)
     col5.metric("Failed Requests", total_failed)
+
+
     st.subheader("Risk Distribution")
     risk_counts = df["risk_label"].value_counts()
     st.bar_chart(risk_counts)
 
-    def generate_summary(df):
-        high = len(df[df["risk_label"] == "HIGH"])
-        medium = len(df[df["risk_label"] == "MEDIUM"])
+    st.markdown("## 🔝 Top Risky IPs")
 
-        brute_force = any(
-            df["reasons"].apply(
-                lambda x: "repeated login attempts" in x
-            )
+    top_df = df.copy()
+
+    top_df["failure_rate"] = (
+        top_df["failed_count"] / top_df["access_count"]
+    ).fillna(0)
+        
+    top_df["priority_score"] = (
+        top_df["risk_score"] * 2
+        + top_df["failure_rate"] * 5
+    )
+
+    display_top_df = top_df.head(10).reset_index(drop=True)
+
+    event_top = st.dataframe(
+        display_top_df[[
+            "ip",
+            "priority_score",
+            "risk_score",
+            "failure_rate",
+            "attack_type",
+            "access_count",
+            "failed_count"
+        ]],
+        use_container_width=True,
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row",
+    )
+
+    selected_top_rows = event_top.selection.rows
+
+    if selected_top_rows:
+        selected_ip_from_top = display_top_df.iloc[selected_top_rows[0]]["ip"]
+    else:
+        selected_ip_from_top = None
+
+
+
+    st.markdown("## Time Series Analysis")
+
+    if st.session_state.raw_logs:
+        raw_df = pd.DataFrame(st.session_state.raw_logs)
+        time_df = create_time_series(raw_df, interval="5min")
+        #Plotyグラフ描画
+        fig = create_timeline_chart(
+            time_df,
+            "Access Timeline with Anomaly Points"
         )
 
-        admin_attack = any(
-            df["reasons"].apply(
-                lambda x: "admin access attempts" in x
-            )
+        #st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+            key="overall_timeline_chart"
         )
+        st.markdown("## 🚨 Detected Anomalies")
 
-        scanning = any(
-            df["reasons"].apply(
-                lambda x: "many 404 responses" in x
-            )
-        )
+        anomaly_df = time_df[time_df["is_anomaly"]]
 
-        threat_parts = []
-
-        if brute_force:
-            threat_parts.append("a possible brute force attack")
-
-        if admin_attack:
-            threat_parts.append("unauthorized admin access attempts")
-
-        if scanning:
-            threat_parts.append("scanning activity")
-
-        if high == 0 and medium == 0 and not threat_parts:
-            return (
-                "No significant threats were detected.\n\n"
-                "No urgent action required."
-            )
-
-        summary = ""
-
-        if high > 0:
-            summary += (
-                f"The analysis indicates that {high} "
-                f"high-risk IPs were detected."
-            )
-        elif medium > 0:
-            summary += (
-                f"The analysis indicates that {medium} "
-                f"medium-risk IPs were detected."
-            )
+        if anomaly_df.empty:
+            st.success("No anomalies detected.")
         else:
-            summary += "The analysis completed successfully."
+            st.dataframe(anomaly_df, use_container_width=True)
 
-        if threat_parts:
-            if len(threat_parts) == 1:
-                threat_text = threat_parts[0]
-            elif len(threat_parts) == 2:
-                threat_text = (
-                    threat_parts[0]
-                    + " and "
-                    + threat_parts[1]
-                )
-            else:
-                threat_text = (
-                    ", ".join(threat_parts[:-1])
-                    + ", and "
-                    + threat_parts[-1]
-                )
 
-            summary += (
-                "\n\nThe observed activity suggests "
-                + threat_text
-                + "."
-            )
+    else:
+        st.info("No time-series data available.")
 
-        if high > 0:
-            summary += "\n\n⚠️ Immediate investigation is recommended."
-        elif medium > 0:
-            summary += "\n\nFurther monitoring is recommended."
-        else:
-            summary += "\n\nNo urgent action required."
-
-        return summary 
-    
+   
     summary = generate_summary(df)
 
     st.markdown("## Security Summary")
@@ -189,24 +249,67 @@ if st.session_state.analysis_data is not None:
     else:
         st.success(summary)
 
+
+
+    st.markdown("## Filters")
+
+    risk_filter = st.selectbox(
+        "Filter by risk level",
+        ["ALL", "HIGH", "MEDIUM", "LOW"]
+    )
+
+    if risk_filter != "ALL":
+        df_view = df[df["risk_label"] == risk_filter]
+    else:
+        df_view = df
+
+
     st.markdown("## Analysis Table")
 
     event = st.dataframe(
-        df.style.map(highlight_risk, subset=["risk_label"]),
+        df_view.style.map(highlight_risk, subset=["risk_label"]),
         use_container_width=True,
         hide_index=True,
         on_select="rerun",
         selection_mode="single-row",
     )
 
+
+    st.markdown("### Export")
+
+    #csv = df.to_csv(index=False).encode("utf-8")
+    csv = df_view.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="Download analysis as CSV",
+        data=csv,
+        file_name="security_analysis.csv",
+        mime="text/csv"
+    )
+
+
     selected_rows = event.selection.rows
 
+
     if selected_rows:
-        selected = df.iloc[selected_rows[0]]
+        selected_ip_from_table = df_view.iloc[selected_rows[0]]["ip"]
     else:
-        selected = df.iloc[0]
+        selected_ip_from_table = None
 
+    if selected_ip_from_top:
+        selected_ip = selected_ip_from_top
+    elif selected_ip_from_table:
+        selected_ip = selected_ip_from_table
+    else:
+        selected_ip = df.iloc[0]["ip"]
 
+    selected = df[df["ip"] == selected_ip].iloc[0]
+
+    #Debug
+    if selected["risk_label"] == "HIGH":
+        st.write("attack_type:", selected.get("attack_type"))
+        st.write("response_guides:", selected.get("response_guides"))
+    ###########
     st.markdown("## High Risk IPs")
 
     high_risk_df = df[df["risk_label"] == "HIGH"]
@@ -217,37 +320,7 @@ if st.session_state.analysis_data is not None:
         st.dataframe(high_risk_df, use_container_width=True)
 
 
-    st.markdown("## IP Detail")
-
-    detail_col1, detail_col2 = st.columns(2)
-
-    with detail_col1:
-        #st.metric("Risk Level", selected["risk_label"])
-        risk = selected["risk_label"]
-        if risk == "HIGH":
-            st.markdown(f"### 🔴 Risk Level: **{risk}**")
-        elif risk == "MEDIUM":
-            st.markdown(f"### 🟠 Risk Level: **{risk}**")
-        else:
-            st.markdown(f"### 🟢 Risk Level: **{risk}**")
-        #################################################
-        st.metric("Risk Score", selected["risk_score"])
-        #st.metric("Attack Type", selected["attack_type"])
-        st.write("Attack Type")
-        st.info(selected["attack_type"])
-
-    with detail_col2:
-        st.metric("Access Count", selected["access_count"])
-        st.metric("Failed Count", selected["failed_count"])
-
-    st.write("Suspicious Paths")
-    st.code(selected["suspicious_paths"])
-
-    st.write("Status Counts")
-    st.json(selected["status_counts"])
-
-    st.write("Reasons")
-    st.write(selected["reasons"])
-
-    st.write("Recommended Action")
-    st.info(selected["recommended_action"])
+### IP DETAIL
+    render_ip_detail(selected, selected_ip)
+    render_selected_ip_timeline(selected_ip)
+    render_ai_explanation(selected, selected_ip)
