@@ -1,6 +1,9 @@
 from datetime import datetime
 from response_guides import get_guides
 from parsers.log_parser import parse_log_lines
+from correlation import correlate_logs
+from scoring import SCORES
+
 
 def get_risk_level(score):
     if score >= 8:
@@ -174,6 +177,111 @@ def simplify_recommended_action(action):
 
     return " / ".join(selected_actions[:2])
 
+###検知ロジック関数化
+
+def detect_brute_force(ip, path_counts, failed_count, access_count):
+    reasons = []
+    score = 0
+
+    failure_rate = failed_count / access_count if access_count else 0
+
+    if failure_rate >= 0.5:
+        score += SCORES["high_failure_rate"]
+        reasons.append("high failure rate")
+
+    if "/login" in path_counts and path_counts["/login"] >= 5:
+        score += SCORES["repeated_login"]
+        reasons.append("repeated login attempts")
+
+    return score, reasons
+
+def detect_scanner(suspicious_paths_for_ip, status_counts_for_ip):
+    score = 0
+    reasons = []
+
+    if len(suspicious_paths_for_ip) >= 2:
+        score += SCORES["multiple_suspicious_paths"]
+        reasons.append("multiple suspicious paths")
+
+    if "404" in status_counts_for_ip and status_counts_for_ip["404"] >= 5:
+        score += SCORES["many_404"]
+        reasons.append("many 404 responses")
+
+    return score, reasons
+
+
+def detect_admin_access(suspicious_paths_for_ip):
+    score = 0
+    reasons = []
+
+    if "/admin" in suspicious_paths_for_ip:
+        score += SCORES["admin_access"]
+        reasons.append("admin access attempts")
+
+    return score, reasons
+
+def detect_burst_access_rule(timestamps):
+    score = 0
+    reasons = []
+
+    if detect_burst_access(timestamps):
+        score += SCORES["burst_access"]
+        reasons.append("burst access detected")
+
+    return score, reasons
+
+def detect_night_access(timestamps):
+    score = 0
+    reasons = []
+
+    night_access = any(
+        0 <= t.hour < 5
+        for t in timestamps
+    )
+
+    if night_access:
+        score += SCORES["night_access"]
+        reasons.append("night time access")
+
+    return score, reasons
+
+def detect_combined_patterns(reasons):
+    score = 0
+    new_reasons = []
+
+    if (
+        "repeated login attempts" in reasons
+        and "burst access detected" in reasons
+    ):
+        score += SCORES["coordinated_brute_force"]
+        new_reasons.append("coordinated brute force pattern")
+
+    if (
+        "admin access attempts" in reasons
+        and "night time access" in reasons
+    ):
+        score += SCORES["suspicious_admin_timing"]
+        new_reasons.append("suspicious admin access timing")
+
+    if (
+        "many 404 responses" in reasons
+        and "burst access detected" in reasons
+    ):
+        score += SCORES["automated_scanning"]
+        new_reasons.append("automated scanning pattern")
+
+    return score, new_reasons
+
+def detect_access_error_correlation(ip, correlated_ips):
+    score = 0
+    reasons = []
+
+    if ip in correlated_ips:
+        score += SCORES["access_error_correlation"]
+        reasons.append("access error correlation")
+
+    return score, reasons
+
 def analyze_log_lines(lines):
     ip_counts = {}
     failed_counts = {}
@@ -196,6 +304,8 @@ def analyze_log_lines(lines):
     ]
 
     parsed_logs = parse_log_lines(lines)
+    correlations = correlate_logs(parsed_logs)
+    correlated_ips = {c["ip"] for c in correlations}
 
     for log in parsed_logs:
         timestamp_str = log["timestamp"]
@@ -243,62 +353,59 @@ def analyze_log_lines(lines):
         failed_count = failed_counts[ip]
         failure_rate = failed_count / access_count if access_count > 0 else 0
 
-        if failure_rate >= 0.5:
-            ip_scores[ip] += 2
-            reasons_by_ip[ip].append("high failure rate")
 
-        if len(suspicious_path_by_ip[ip]) >= 2:
-            ip_scores[ip] += 2
-            reasons_by_ip[ip].append("multiple suspicious paths")
-
-        if "/login" in path_counts[ip] and path_counts[ip]["/login"] >= 5:
-            ip_scores[ip] += 3
-            reasons_by_ip[ip].append("repeated login attempts")
-
-        if "404" in status_counts[ip] and status_counts[ip]["404"] >= 5:
-            ip_scores[ip] += 2
-            reasons_by_ip[ip].append("many 404 responses")
-
-        if "/admin" in suspicious_path_by_ip[ip]:
-            ip_scores[ip] += 3
-            reasons_by_ip[ip].append("admin access attempts")
-        if detect_burst_access(timestamps_by_ip[ip]):
-            ip_scores[ip] += 3
-            reasons_by_ip[ip].append("burst access detected")
-        
-        night_access = any(
-            0 <= t.hour <5
-            for t in timestamps_by_ip[ip]
+        score, reasons = detect_brute_force(
+            path_counts[ip],
+            failed_count,
+            access_count
         )
 
-        if night_access:
-            ip_scores[ip] += 2
-            reasons_by_ip[ip].append("night time access")
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
 
-        
-        # 複合検知: Brute Force + Burst
-        if (
-            "repeated login attempts" in reasons_by_ip[ip]
-            and "burst access detected" in reasons_by_ip[ip]
-        ):
-            ip_scores[ip] += 3
-            reasons_by_ip[ip].append("coordinated brute force pattern")
+        score, reasons = detect_scanner(
+            suspicious_path_by_ip[ip],
+            status_counts[ip]
+        )
 
-        # 複合検知: Admin + Night
-        if (
-            "admin access attempts" in reasons_by_ip[ip]
-            and "night time access" in reasons_by_ip[ip]
-        ):
-            ip_scores[ip] += 3
-            reasons_by_ip[ip].append("suspicious admin access timing")
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
 
-        # 複合検知: Scanner + Burst
-        if (
-            "many 404 responses" in reasons_by_ip[ip]
-            and "burst access detected" in reasons_by_ip[ip]
-        ):
-            ip_scores[ip] += 3
-            reasons_by_ip[ip].append("automated scanning pattern")
+        score, reasons = detect_admin_access(
+            suspicious_path_by_ip[ip]
+        )
+
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
+
+        score, reasons = detect_burst_access_rule(
+            timestamps_by_ip[ip]
+        )
+
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
+
+        score, reasons = detect_night_access(
+            timestamps_by_ip[ip]
+        )
+
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
+
+
+        #最後に実行
+        score, reasons = detect_combined_patterns(reasons_by_ip[ip])
+
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
+
+        score, reasons = detect_access_error_correlation(
+            ip,
+            correlated_ips
+        )
+
+        ip_scores[ip] += score
+        reasons_by_ip[ip].extend(reasons)
 
     results = []
 
