@@ -1,91 +1,74 @@
-# Normal traffic
-2026-04-24T10:00:01 192.168.1.1 GET /home 200
-2026-04-24T10:01:01 192.168.1.1 GET /products 200
-2026-04-24T10:02:01 192.168.1.1 GET /contact 200
-2026-04-24T10:03:01 192.168.1.1 GET /about 200
-
-# Light failed login
-2026-04-24T10:05:01 192.168.1.2 POST /login 401
-2026-04-24T10:06:01 192.168.1.2 POST /login 403
-
-# Brute force
-2026-04-24T10:10:01 198.51.100.10 POST /login 401
-2026-04-24T10:10:02 198.51.100.10 POST /login 401
-2026-04-24T10:10:03 198.51.100.10 POST /login 401
-2026-04-24T10:10:04 198.51.100.10 POST /login 401
-2026-04-24T10:10:05 198.51.100.10 POST /login 403
-2026-04-24T10:10:06 198.51.100.10 POST /login 403
-
-# Scanner
-2026-04-24T10:15:01 10.0.0.6 GET /phpmyadmin 404
-2026-04-24T10:15:05 10.0.0.6 GET /.env 404
-2026-04-24T10:15:10 10.0.0.6 GET /backup 404
-2026-04-24T10:15:15 10.0.0.6 GET /config 404
-2026-04-24T10:15:20 10.0.0.6 GET /wp-admin 404
-
-# Coordinated scanner + admin access
-2026-04-24T10:20:01 172.16.0.9 GET /admin 403
-2026-04-24T10:20:02 172.16.0.9 POST /login 401
-2026-04-24T10:20:03 172.16.0.9 GET /phpmyadmin 404
-2026-04-24T10:20:04 172.16.0.9 GET /.env 404
-2026-04-24T10:20:05 172.16.0.9 GET /backup 404
-2026-04-24T10:20:06 172.16.0.9 POST /login 401
-2026-04-24T10:20:07 172.16.0.9 GET /admin 403
-2026-04-24T10:20:08 172.16.0.9 POST /login 403
-2026-04-24T10:20:09 172.16.0.9 GET /config 404
-2026-04-24T10:20:10 172.16.0.9 GET /wp-admin 404
-
-# Night admin access
-2026-04-24T02:10:01 203.0.113.50 GET /admin 403
-2026-04-24T02:10:02 203.0.113.50 GET /admin 403
-
-# Night brute force
-2026-04-24T02:15:01 198.51.100.20 POST /login 401
-2026-04-24T02:15:02 198.51.100.20 POST /login 401
-2026-04-24T02:15:03 198.51.100.20 POST /login 401
-2026-04-24T02:15:04 198.51.100.20 POST /login 403
-2026-04-24T02:15:05 198.51.100.20 POST /login 403
-
-# Prompt Injection
-2026-01-01 10:00:00 1.2.3.4 GET /login?cmd=ignore_previous_instructions 401
-
+# AI Security Log Analyzer - Sample Log File
+# Format: timestamp ip method url status
 
 # --- Normal Traffic ---
-192.168.1.10 - - [2026-05-01T10:00:01] "GET /home HTTP/1.1" 200
-192.168.1.10 - - [2026-05-01T10:00:05] "GET /products HTTP/1.1" 200
-192.168.1.11 - - [2026-05-01T10:00:07] "GET /about HTTP/1.1" 200
+2026-05-01T10:00:01 192.168.1.10 GET /home 200
+2026-05-01T10:00:05 192.168.1.10 GET /products 200
+2026-05-01T10:00:10 192.168.1.10 GET /about 200
+2026-05-01T10:00:20 192.168.1.11 GET /contact 200
+2026-05-01T10:00:30 192.168.1.11 GET /pricing 200
 
-# --- Brute Force ---
-172.16.0.5 - - [2026-05-01T10:01:00] "POST /login HTTP/1.1" 401
-172.16.0.5 - - [2026-05-01T10:01:02] "POST /login HTTP/1.1" 401
-172.16.0.5 - - [2026-05-01T10:01:04] "POST /login HTTP/1.1" 401
-172.16.0.5 - - [2026-05-01T10:01:06] "POST /login HTTP/1.1" 401
-172.16.0.5 - - [2026-05-01T10:01:08] "POST /login HTTP/1.1" 401
+# --- Light Failed Login: should stay LOW or MEDIUM depending thresholds ---
+2026-05-01T10:05:01 192.168.1.20 POST /login 401
+2026-05-01T10:06:01 192.168.1.20 POST /login 403
+2026-05-01T10:07:01 192.168.1.20 GET /home 200
+2026-05-01T10:08:01 192.168.1.20 GET /products 200
 
-# --- Admin Access ---
-172.16.0.6 - - [2026-05-01T10:02:00] "GET /admin HTTP/1.1" 200
-172.16.0.6 - - [2026-05-01T10:02:03] "GET /admin HTTP/1.1" 403
+# --- Brute Force: repeated login failures + burst ---
+2026-05-01T10:10:01 198.51.100.10 POST /login 401
+2026-05-01T10:10:02 198.51.100.10 POST /login 401
+2026-05-01T10:10:03 198.51.100.10 POST /login 401
+2026-05-01T10:10:04 198.51.100.10 POST /login 401
+2026-05-01T10:10:05 198.51.100.10 POST /login 403
+2026-05-01T10:10:06 198.51.100.10 POST /login 403
 
-# --- Scanner / Recon ---
-172.16.0.7 - - [2026-05-01T10:03:00] "GET /.env HTTP/1.1" 404
-172.16.0.7 - - [2026-05-01T10:03:01] "GET /config HTTP/1.1" 404
-172.16.0.7 - - [2026-05-01T10:03:02] "GET /backup HTTP/1.1" 404
-172.16.0.7 - - [2026-05-01T10:03:03] "GET /wp-admin HTTP/1.1" 404
-172.16.0.7 - - [2026-05-01T10:03:04] "GET /phpmyadmin HTTP/1.1" 404
+# --- Scanner / Recon: suspicious paths + many 404 ---
+2026-05-01T10:15:01 10.0.0.6 GET /phpmyadmin 404
+2026-05-01T10:15:05 10.0.0.6 GET /.env 404
+2026-05-01T10:15:10 10.0.0.6 GET /backup 404
+2026-05-01T10:15:15 10.0.0.6 GET /config 404
+2026-05-01T10:15:20 10.0.0.6 GET /wp-admin 404
 
-# --- Burst Access ---
-172.16.0.8 - - [2026-05-01T10:04:00] "GET /home HTTP/1.1" 200
-172.16.0.8 - - [2026-05-01T10:04:01] "GET /home HTTP/1.1" 200
-172.16.0.8 - - [2026-05-01T10:04:02] "GET /home HTTP/1.1" 200
-172.16.0.8 - - [2026-05-01T10:04:03] "GET /home HTTP/1.1" 200
-172.16.0.8 - - [2026-05-01T10:04:04] "GET /home HTTP/1.1" 200
+# --- Admin Access: admin path access without heavy attack pattern ---
+2026-05-01T10:18:01 203.0.113.30 GET /admin 403
+2026-05-01T10:18:10 203.0.113.30 GET /login 200
 
-# --- Night Access ---
-172.16.0.9 - - [2026-05-01T02:10:00] "GET /admin HTTP/1.1" 200
-172.16.0.9 - - [2026-05-01T02:10:05] "GET /login HTTP/1.1" 401
+# --- Coordinated Scanner + Admin + Burst: should become HIGH ---
+2026-05-01T10:20:01 172.16.0.9 GET /admin 403
+2026-05-01T10:20:02 172.16.0.9 POST /login 401
+2026-05-01T10:20:03 172.16.0.9 GET /phpmyadmin 404
+2026-05-01T10:20:04 172.16.0.9 GET /.env 404
+2026-05-01T10:20:05 172.16.0.9 GET /backup 404
+2026-05-01T10:20:06 172.16.0.9 POST /login 401
+2026-05-01T10:20:07 172.16.0.9 GET /admin 403
+2026-05-01T10:20:08 172.16.0.9 POST /login 403
+2026-05-01T10:20:09 172.16.0.9 GET /config 404
+2026-05-01T10:20:10 172.16.0.9 GET /wp-admin 404
 
-# --- Mixed Attack (Brute + Scanner) ---
-172.16.0.10 - - [2026-05-01T10:05:00] "POST /login HTTP/1.1" 401
-172.16.0.10 - - [2026-05-01T10:05:01] "POST /login HTTP/1.1" 401
-172.16.0.10 - - [2026-05-01T10:05:02] "GET /.env HTTP/1.1" 404
-172.16.0.10 - - [2026-05-01T10:05:03] "GET /backup HTTP/1.1" 404
+# --- Burst Normal Traffic: burst_access only, useful for false-positive check ---
+2026-05-01T10:30:00 172.16.0.8 GET /home 200
+2026-05-01T10:30:01 172.16.0.8 GET /home 200
+2026-05-01T10:30:02 172.16.0.8 GET /home 200
+2026-05-01T10:30:03 172.16.0.8 GET /home 200
+2026-05-01T10:30:04 172.16.0.8 GET /home 200
+
+# --- Night Admin Access: admin_access + night_access ---
+2026-05-01T02:10:01 203.0.113.50 GET /admin 403
+2026-05-01T02:10:02 203.0.113.50 GET /admin 403
+
+# --- Night Brute Force: repeated_login + burst_access + night_access ---
+2026-05-01T02:15:01 198.51.100.20 POST /login 401
+2026-05-01T02:15:02 198.51.100.20 POST /login 401
+2026-05-01T02:15:03 198.51.100.20 POST /login 401
+2026-05-01T02:15:04 198.51.100.20 POST /login 403
+2026-05-01T02:15:05 198.51.100.20 POST /login 403
+
+# --- Prompt Injection-like Payload: should be treated as suspicious URL evidence later ---
+2026-05-01T11:00:00 1.2.3.4 GET /login?cmd=ignore_previous_instructions 401
+2026-05-01T11:00:05 1.2.3.4 GET /login?prompt=forget_all_rules 401
+
+# --- Long-period low noise: should not become HIGH by simple duration ---
+2026-05-01T09:00:00 198.51.100.90 GET /login 401
+2026-05-01T12:00:00 198.51.100.90 GET /login 401
+2026-05-01T15:00:00 198.51.100.90 GET /login 401
+2026-05-01T18:00:00 198.51.100.90 GET /login 401

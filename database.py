@@ -1,6 +1,10 @@
 import sqlite3
 from datetime import datetime
+from detection_rules import load_detection_rules
 
+
+def sql_in_values(values):
+    return ",".join(["?"] * len(values))
 
 DB_FILE = "data/security_analyzer.db"
 
@@ -210,17 +214,25 @@ def save_raw_logs(run_id: int, raw_logs: list):
 
 
 def get_ip_stats(run_id: int):
+    rules = load_detection_rules()
+
+    admin_paths = rules["paths"]["admin"]
+    suspicious_paths = rules["paths"]["suspicious"]
+
+    admin_placeholders = sql_in_values(admin_paths)
+    suspicious_placeholders = sql_in_values(suspicious_paths)
+
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute("""
+    query = f"""
     SELECT
         ip,
         COUNT(*) AS access_count,
         SUM(CASE WHEN status IN (401, 403) THEN 1 ELSE 0 END) AS failed_count,
         SUM(CASE WHEN status = 404 THEN 1 ELSE 0 END) AS not_found_count,
-        SUM(CASE WHEN url IN ('/admin', '/login', '/phpmyadmin', '/wp-admin') THEN 1 ELSE 0 END) AS admin_path_count,
-        SUM(CASE WHEN url IN ('/admin', '/login', '/phpmyadmin', '/wp-admin', '/.env', '/config', '/backup') THEN 1 ELSE 0 END) AS suspicious_path_count,
+        SUM(CASE WHEN url IN ({admin_placeholders}) THEN 1 ELSE 0 END) AS admin_path_count,
+        SUM(CASE WHEN url IN ({suspicious_placeholders}) THEN 1 ELSE 0 END) AS suspicious_path_count,
         MIN(timestamp) AS first_seen,
         MAX(timestamp) AS last_seen
     FROM raw_logs
@@ -228,8 +240,15 @@ def get_ip_stats(run_id: int):
       AND ip IS NOT NULL
     GROUP BY ip
     ORDER BY access_count DESC
-    """, (run_id,))
+    """
 
+    params = (
+        admin_paths
+        + suspicious_paths
+        + [run_id]
+    )
+
+    cur.execute(query, params)
     rows = cur.fetchall()
     conn.close()
 
@@ -247,7 +266,6 @@ def get_ip_stats(run_id: int):
         }
         for r in rows
     ]
-
 
 def update_analysis_run_summary(run_id: int, results: list):
     conn = get_connection()

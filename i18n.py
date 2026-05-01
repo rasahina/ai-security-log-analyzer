@@ -155,6 +155,29 @@ UI_TEXT["ja"].update({
     "reason_multiple_suspicious": "複数の不審な挙動が検出されました",
 })
 
+UI_TEXT["ja"].update({
+    "signal_high_failure_rate": "高い失敗率",
+    "signal_repeated_login": "ログイン試行の集中",
+    "signal_multiple_suspicious_paths": "複数の不審パス",
+    "signal_many_404": "404多発",
+    "signal_admin_access": "管理画面アクセス",
+    "signal_burst_access": "短時間アクセス集中",
+    "signal_night_access": "夜間アクセス",
+    "signal_coordinated_brute_force": "協調ブルートフォース",
+    "signal_suspicious_admin_timing": "不審な時間帯の管理アクセス",
+    "signal_automated_scanning": "自動スキャン",
+    "signal_access_error_correlation": "アクセスエラー相関",
+})
+
+UI_TEXT["ja"].update({
+    "risk_high_label": "高リスク",
+    "risk_medium_label": "中リスク",
+    "risk_low_label": "低リスク",
+    "col_risk_level": "リスク",
+    "col_count": "件数",
+    "col_signals": "検知シグナル",
+})
+
 
 def t(key: str, **kwargs) -> str:
     text = UI_TEXT[LANG].get(key, key)
@@ -203,3 +226,12 @@ def translate_anomaly_reason(reason: str) -> str:
             results.append(p)
 
     return " / ".join(results)
+
+
+def translate_signals(signals: list[str]) -> str:
+    if not signals:
+        return ""
+
+    return " / ".join(
+        t(f"signal_{s}") for s in signals
+    )

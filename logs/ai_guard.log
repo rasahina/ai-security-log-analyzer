@@ -284,3 +284,11 @@
 {"timestamp": "2026-05-01T20:01:02.417377", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
 {"timestamp": "2026-05-01T20:05:16.123022", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
 {"timestamp": "2026-05-01T20:15:57.704468", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
+{"timestamp": "2026-05-01T20:57:42.215449", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
+{"timestamp": "2026-05-01T21:05:20.542993", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
+{"timestamp": "2026-05-01T21:11:30.390937", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
+{"timestamp": "2026-05-01T21:23:12.623547", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "10 items"}
+{"timestamp": "2026-05-01T21:25:39.212434", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "8 items"}
+{"timestamp": "2026-05-01T21:27:43.347395", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "8 items"}
+{"timestamp": "2026-05-01T21:29:30.571321", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-05-01T21:32:46.782166", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}

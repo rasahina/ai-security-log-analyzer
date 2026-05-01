@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from time_series_analysis import create_time_series
-from i18n import t, translate_attack_type, translate_action, translate_anomaly_reason
+from i18n import t, translate_attack_type, translate_action, translate_anomaly_reason, translate_signals
 import plotly.express as px
 
 from ai_explainer import explain_detection
@@ -107,6 +107,7 @@ if "history" in st.session_state and st.session_state.history:
             item.setdefault("failed_count", 0)
             item.setdefault("suspicious_paths", [])
             item.setdefault("status_counts", {})
+            item.setdefault("signals", [])
             item.setdefault("reasons", [])
             item.setdefault("response_guides", [])
 
@@ -146,6 +147,7 @@ if st.session_state.analysis_data is not None:
         "failed_count",
         "suspicious_paths",
         "status_counts",
+        "signals",
         "reasons",
         "response_guides",
     ]
@@ -154,6 +156,7 @@ if st.session_state.analysis_data is not None:
     df = df.sort_values(by="risk_score", ascending=False)
     df["attack_type_jp"] = df["attack_type"].apply(translate_attack_type)
     df["recommended_action_jp"] = df["recommended_action"].apply(translate_action)
+    df["signals_jp"] = df["signals"].apply(translate_signals)
 
 
     total_ips = len(df)
@@ -176,22 +179,27 @@ if st.session_state.analysis_data is not None:
 
     st.subheader(t("risk_distribution"))
 
-    risk_order = ["高リスク", "中リスク", "低リスク"]
+    risk_order = [
+        t("risk_high_label"),
+        t("risk_medium_label"),
+        t("risk_low_label"),
+    ]
 
     risk_chart_df = pd.DataFrame({
-        "リスクレベル": ["高リスク", "中リスク", "低リスク"],
-        "件数": [
+        t("col_risk_level"): risk_order,
+        t("col_count"): [
             high_count,
             medium_count,
             low_count,
         ],
     })
 
+
     fig = px.bar(
         risk_chart_df,
-        x="リスクレベル",
-        y="件数",
-        category_orders={"リスクレベル": risk_order},
+        x=t("col_risk_level"),
+        y=t("col_count"),
+        category_orders={t("col_risk_level"): risk_order},
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -296,8 +304,10 @@ if st.session_state.analysis_data is not None:
                 "failure_rate": t("col_failure_rate"),
                 "anomaly_reason": t("col_anomaly_reason"),
             })
-            anomaly_display["異常理由"] = anomaly_display["異常理由"].apply(translate_anomaly_reason)
 
+            col_anomaly = t("col_anomaly_reason")
+
+            anomaly_display[col_anomaly] = anomaly_display[col_anomaly].apply(translate_anomaly_reason)
             st.dataframe(
                 anomaly_display,
                 use_container_width=True,
@@ -324,17 +334,19 @@ if st.session_state.analysis_data is not None:
         "event",
         "risk_label",
         "risk_score",
+        "signals_jp",
         "access_count",
         "recommended_action_jp",
     ]].copy()
 
     df_display = df_display.rename(columns={
-        "ip": "IP",
-        "event": "検知内容",
-        "risk_label": "リスク",
-        "risk_score": "スコア",
-        "access_count": "アクセス数",
-        "recommended_action_jp": "推奨対応",
+        "ip": t("col_ip"),
+        "event": t("col_event"),
+        "risk_label": t("col_risk_level"),
+        "risk_score": t("col_risk_score"),
+        "signals_jp": t("signals"),
+        "access_count": t("col_access_count"),
+        "recommended_action_jp": t("recommended_action"),
     })
 
     st.markdown(f"## {t('filters')}")
@@ -344,8 +356,9 @@ if st.session_state.analysis_data is not None:
         ["ALL", "HIGH", "MEDIUM", "LOW"]
     )
 
+    risk_col = t("col_risk_level")
     if risk_filter != "ALL":
-        df_view = df_display[df_display["リスク"]  == risk_filter]
+        df_view = df_display[df_display[risk_col] == risk_filter]
     else:
         df_view = df_display
 
@@ -353,7 +366,7 @@ if st.session_state.analysis_data is not None:
     st.markdown(f"## {t('analysis_table')}")
 
     event = st.dataframe(
-        df_view.style.map(highlight_risk, subset=["リスク"]),
+        df_view.style.map(highlight_risk, subset=[risk_col]),
         use_container_width=True,
         hide_index=True,
         on_select="rerun",
@@ -377,7 +390,7 @@ if st.session_state.analysis_data is not None:
 
 
     if selected_rows:
-        selected_ip_from_table = df_view.iloc[selected_rows[0]]["ip"]
+        selected_ip_from_table = df_view.iloc[selected_rows[0]][t("col_ip")]
     else:
         selected_ip_from_table = None
 
@@ -407,12 +420,12 @@ if st.session_state.analysis_data is not None:
         ]].copy()
 
         high_risk_display = high_risk_display.rename(columns={
-            "ip": "IP",
-            "event": "検知内容",
-            "risk_label": "リスク",
-            "risk_score": "スコア",
-            "access_count": "アクセス数",
-            "recommended_action_jp": "推奨対応",
+            "ip": t("col_ip"),
+            "event": t("col_event"),
+            "risk_label": t("col_risk_level"),
+            "risk_score": t("col_risk_score"),
+            "access_count": t("col_access_count"),
+            "recommended_action_jp": t("recommended_action"),
         })
 
         st.dataframe(

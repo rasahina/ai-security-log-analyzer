@@ -1,0 +1,107 @@
+paths:
+  admin:
+    - "/admin"
+    - "/phpmyadmin"
+    - "/wp-admin"
+
+  login:
+    - "/login"
+
+  suspicious:
+    - "/admin"
+    - "/phpmyadmin"
+    - "/wp-admin"
+    - "/.env"
+    - "/config"
+    - "/backup"
+
+signals:
+  high_failure_rate:
+    score: 2
+    reason: "high failure rate"
+    min_access_count: 5
+    failure_rate: 0.5
+
+  repeated_login:
+    score: 2
+    reason: "repeated login attempts"
+    min_failed_count: 5
+
+  multiple_suspicious_paths:
+    score: 2
+    reason: "multiple suspicious paths"
+    min_count: 2
+
+  many_404:
+    score: 1
+    reason: "many 404 responses"
+    min_count: 5
+
+  admin_access:
+    score: 2
+    reason: "admin access attempts"
+    min_count: 1
+
+  burst_access:
+    score: 4
+    reason: "burst access detected"
+    seconds: 60
+    threshold: 5
+
+  night_access:
+    score: 1
+    reason: "night time access"
+    start_hour: 0
+    end_hour: 5
+
+  access_error_correlation:
+    score: 3
+    reason: "access error correlation"
+    min_count: 3
+    time_window_seconds: 60
+
+combined_signals:
+  coordinated_brute_force:
+    score: 3
+    reason: "coordinated brute force pattern"
+    requires:
+      - "repeated_login"
+      - "burst_access"
+    suppress:
+      - "repeated_login"
+      - "burst_access"
+
+  suspicious_admin_timing:
+    score: 2
+    reason: "suspicious admin access timing"
+    requires:
+      - "admin_access"
+      - "night_access"
+    suppress:
+      - "night_access"
+
+  automated_scanning:
+    score: 2
+    reason: "automated scanning pattern"
+    requires:
+      - "many_404"
+      - "burst_access"
+    suppress:
+      - "many_404"
+      - "burst_access"
+
+risk_levels:
+  high:
+    min_score: 7
+    label: "HIGH"
+
+  medium:
+    min_score: 4
+    label: "MEDIUM"
+
+  low:
+    min_score: 0
+    label: "LOW"
+
+scoring:
+  max_score_per_ip: 10
