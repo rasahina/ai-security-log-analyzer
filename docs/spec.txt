@@ -1,0 +1,160 @@
+AI Security Log Analyzer - Specification (Spec.txt)
+
+---
+
+## [Attack Type Rules]
+
+* attack_type is a comma-separated string
+* Multiple values allowed
+
+Example:
+Brute Force, Admin Access
+
+* Must match keys in guides/index.yaml exactly
+* Case-sensitive and space-sensitive
+
+Valid:
+Admin Access
+
+Invalid:
+admin access
+AdminAccess
+
+* Display limit: maximum 2 attack types
+* Selection based on priority (index.yaml order)
+
+---
+
+## [index.yaml Rules]
+
+* Single source of truth for attack types
+* Structure:
+
+attack_type: path/to/yaml
+
+Example:
+Brute Force: auth/brute_force.yaml
+
+* Order defines priority
+* Top entries = higher priority
+
+---
+
+## [Response Guide Rules]
+
+* Loaded via get_guides(attack_type)
+* Each attack_type maps to a YAML file
+
+Each guide must contain:
+
+* title
+
+* plain_explanation
+
+* immediate_actions
+
+* short_term_actions
+
+* long_term_actions
+
+* escalation
+
+* admin_support
+
+* advanced_commands
+
+* Used only for UI display
+
+* NOT used for detection or scoring
+
+---
+
+## [Event Rules]
+
+* event is generated from YAML title
+* Do NOT define event in Python
+
+Example:
+title: ブルートフォース攻撃
+→ event = ブルートフォース攻撃
+
+---
+
+## [Data Handling Rules]
+
+* df = full dataset (internal use)
+
+* df_display = UI-only subset
+
+* response_guides must remain in df
+
+* Do NOT remove response_guides from internal data
+
+---
+
+## [Detection Rules]
+
+* Detection must be deterministic (Python only)
+* Scoring uses predefined SCORES
+
+Do NOT:
+
+* Use AI for detection
+* Use YAML for scoring
+* Infer intent
+
+---
+
+## [Admin Access Detection Rule]
+
+* Admin Access requires BOTH:
+
+  * access to admin-related paths
+  * AND status code in [200, 401, 403]
+
+* If only 404:
+  → treat as Scanner / Reconnaissance
+
+---
+
+## [Combined Detection Rules]
+
+Patterns:
+
+* Brute Force + Burst → Coordinated Brute Force
+* Admin Access + Night → Suspicious Admin Timing
+* 404 + Burst → Automated Scanner
+
+---
+
+## [Advanced Commands Rules]
+
+* Display only (no execution)
+* Must include warning
+* Use {ip} placeholder for dynamic values
+
+---
+
+## [UI Rules]
+
+Table:
+
+* Shows summarized data only
+
+Detail view:
+
+* Shows response guides
+* Shows timeline
+* Shows AI explanation (collapsed)
+
+---
+
+## [AI Rules]
+
+* AI is for explanation only
+* Must not influence detection
+* Must not generate recommendations
+
+---
+
+## END OF SPEC

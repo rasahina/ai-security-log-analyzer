@@ -41,6 +41,7 @@ The system is designed to remain reliable, explainable, and secure, even without
 - Interactive Streamlit dashboard
 - IP-level detailed analysis
 - CSV export
+- Response guide system (YAML-based actionable guidance)
 
 ### AI (Optional)
 
@@ -173,6 +174,9 @@ curl http://172.30.176.1:11434
 - AI caching implemented
 - CSV export implemented
 - History storage implemented (SQLite)
+- Response guide system implemented
+- Attack type priority system implemented (index.yaml)
+- UI data/display separation implemented
 
 
 ## Roadmap
