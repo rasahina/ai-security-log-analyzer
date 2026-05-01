@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from i18n import t, translate_action
 
 from time_series_analysis import create_time_series
 from ui.charts import create_timeline_chart
@@ -8,39 +9,39 @@ from security.ai_guard import build_safe_ai_payload, write_guard_logs
 from config import AI_MODE
 
 def render_ip_detail(selected, selected_ip):
-    st.markdown("## IP Detail")
+    st.markdown(f"## {t('ip_detail')}")
 
     detail_col1, detail_col2 = st.columns(2)
 
     with detail_col1:
         risk = selected["risk_label"]
         if risk == "HIGH":
-            st.markdown(f"### 🔴 Risk Level: **{risk}**")
+            st.markdown(f"### 🔴 {t('risk_level')}: **{risk}**")
         elif risk == "MEDIUM":
-            st.markdown(f"### 🟠 Risk Level: **{risk}**")
+            st.markdown(f"### 🟠 {t('risk_level')}: **{risk}**")
         else:
-            st.markdown(f"### 🟢 Risk Level: **{risk}**")
+            st.markdown(f"### 🟢 {t('risk_level')}: **{risk}**")
 
-        st.metric("Risk Score", selected["risk_score"])
+        st.metric(t("risk_score"), selected["risk_score"])
         st.markdown(f"### 🚨 {selected['event']}")
 
     with detail_col2:
-        st.metric("Access Count", selected["access_count"])
-        st.metric("Failed Count", selected["failed_count"])
+        st.metric(t("access_count"), selected["access_count"])
+        st.metric(t("failed_count"), selected["failed_count"])
 
     # =========================
     # 🚨 Recommended Action
     # =========================
-    st.markdown("### 🚨 Recommended Action")
+    st.markdown(f"### 🚨 {t('recommended_action')}")
 
     actions = selected["recommended_action"].split(" / ")
     for a in actions:
-        st.markdown(f"- **{a}**")
+        st.markdown(f"- **{translate_action(a)}**")
 
     # =========================
     # 🛠 Response Guide
     # =========================
-    st.markdown("### 🛠 Response Guide")
+    st.markdown(f"### 🛠 {t('response_guide')}")
 
     guides = selected.get("response_guides", [])
 
@@ -56,28 +57,28 @@ def render_ip_detail(selected, selected_ip):
                 st.write(guide.get("plain_explanation", ""))
 
                 if guide.get("immediate_actions"):
-                    st.markdown("**🚨 Immediate Actions**")
+                    st.markdown(f"**🚨 {t('immediate_actions')}**")
                     for a in guide["immediate_actions"]:
                         st.markdown(f"- {a}")
 
                 if guide.get("short_term_actions"):
-                    with st.expander("Short-term Actions"):
+                    with st.expander(t("short_term_actions")):
                         for a in guide["short_term_actions"]:
                             st.markdown(f"- {a}")
 
                 if guide.get("long_term_actions"):
-                    with st.expander("Long-term Actions"):
+                    with st.expander(t("long_term_actions")):
                         for a in guide["long_term_actions"]:
                             st.markdown(f"- {a}")
 
                 if guide.get("escalation"):
-                    with st.expander("Escalation"):
+                    with st.expander(t("escalation")):
                         for a in guide["escalation"]:
                             st.markdown(f"- {a}")
 
                 advanced = guide.get("advanced_commands", {})
                 if advanced.get("enabled"):
-                    with st.expander("⚙️ Advanced Commands"):
+                    with st.expander(f"⚙️ {t('advanced_commands')}"):
                         st.warning(advanced.get("warning", ""))
 
                         for cmd in advanced.get("commands", []):
@@ -90,19 +91,19 @@ def render_ip_detail(selected, selected_ip):
     # =========================
     # 🔧 Technical Details（まとめる）
     # =========================
-    with st.expander("🔧 Technical Details"):
+    with st.expander(f"🔧 {t('technical_details')}"):
         if selected["suspicious_paths"]:
-            st.markdown("**Suspicious Paths**")
+            st.markdown(f"**{t('suspicious_paths')}**")
             for path in selected["suspicious_paths"]:
                 st.markdown(f"- `{path}`")
 
         if selected["reasons"]:
-            st.markdown("**Signals**")
+            st.markdown(f"**{t('signals')}**")
             for r in selected["reasons"]:
                 st.markdown(f"- {r}")
 
         if selected["status_counts"]:
-            st.markdown("**Status Counts**")
+            st.markdown(f"**{t('status_counts')}**")
             st.json(selected["status_counts"])
 
 def render_selected_ip_timeline(selected_ip):
