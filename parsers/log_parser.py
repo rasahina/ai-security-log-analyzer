@@ -5,7 +5,7 @@ from datetime import datetime
 COMMON_LOG_PATTERN = re.compile(
     r'(?P<ip>\S+) \S+ \S+ \[(?P<timestamp>[^\]]+)\] '
     r'"(?P<method>\S+) (?P<url>\S+) (?P<protocol>[^"]+)" '
-    r'(?P<status>\d{3}) (?P<size>\S+)'
+    r'(?P<status>\d{3})(?: (?P<size>\S+))?'
 )
 
 COMBINED_LOG_PATTERN = re.compile(
@@ -24,16 +24,33 @@ CLIENT_IP_PATTERN = re.compile(r"client: (?P<ip>\d+\.\d+\.\d+\.\d+)")
 
 REQUEST_PATTERN = re.compile(r'request: "(?P<method>\S+) (?P<url>\S+) [^"]+"')
 
+def parse_timestamp(value: str):
+    formats = [
+        "%d/%b/%Y:%H:%M:%S %z",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y/%m/%d %H:%M:%S",
+    ]
+
+    for fmt in formats:
+        try:
+            return datetime.strptime(value, fmt).isoformat()
+        except ValueError:
+            pass
+
+    try:
+        return datetime.fromisoformat(value).isoformat()
+    except ValueError:
+        return value
+    
+
 def parse_error_log_line(line: str):
     match = ERROR_LOG_PATTERN.match(line.strip())
 
     if not match:
         return None
 
-    timestamp = datetime.strptime(
-        match.group("timestamp"),
-        "%Y/%m/%d %H:%M:%S"
-    ).isoformat()
+    timestamp = parse_timestamp(match.group("timestamp"))
 
     message = match.group("message")
     ip_match = CLIENT_IP_PATTERN.search(message)
@@ -61,10 +78,7 @@ def parse_common_access_log_line(line: str):
     if not match:
         return None
 
-    timestamp = datetime.strptime(
-        match.group("timestamp"),
-        "%d/%b/%Y:%H:%M:%S %z"
-    ).isoformat()
+    timestamp = parse_timestamp(match.group("timestamp"))
 
     return {
         "timestamp": timestamp,
@@ -84,10 +98,7 @@ def parse_combined_access_log_line(line: str):
     if not match:
         return None
 
-    timestamp = datetime.strptime(
-        match.group("timestamp"),
-        "%d/%b/%Y:%H:%M:%S %z"
-    ).isoformat()
+    timestamp = parse_timestamp(match.group("timestamp"))
 
     return {
         "timestamp": timestamp,
@@ -154,6 +165,7 @@ def parse_access_log_line(line: str):
 
 def parse_log_lines(lines):
     parsed = []
+    skipped = []
 
     for line in lines:
         fmt = detect_log_format(line)
@@ -171,7 +183,9 @@ def parse_log_lines(lines):
 
         if result:
             parsed.append(result)
+        else:
+            skipped.append(line)
 
-    return parsed
+    return parsed, skipped
 
 

@@ -4,6 +4,8 @@ from parsers.log_parser import parse_log_lines
 from correlation import correlate_logs
 from scoring import SCORES
 from response_guides import get_guides, get_attack_type_priority
+from database import get_ip_stats, get_ip_timestamps
+from detection_rules import load_detection_rules
 
 
 def get_risk_level(score):
@@ -86,21 +88,17 @@ def simplify_attack_type(attack_type):
 def detect_burst_access(timestamps, seconds=60, threshold=5):
     timestamps = sorted(timestamps)
 
-    for i in range(len(timestamps)):
-        count = 1
+    left = 0
 
-        for j in range(i + 1, len(timestamps)):
-            delta = (timestamps[j] - timestamps[i]).total_seconds()
+    for right in range(len(timestamps)):
+        while (timestamps[right] - timestamps[left]).total_seconds() > seconds:
+            left += 1
 
-            if delta <= seconds:
-                count += 1
-            else:
-                break
-
-        if count >= threshold:
+        if right - left + 1 >= threshold:
             return True
 
     return False
+
 
 def recommend_action(risk_level, attack_type):
     actions = []
@@ -283,17 +281,20 @@ def analyze_log_lines(lines):
     timestamps_by_ip={}
 
 
-    SUSPICIOUS_PATHS = [
-        "/admin",
-        "/login",
-        "/phpmyadmin",
-        "/wp-admin",
-        "/.env",
-        "/config",
-        "/backup"
-    ]
+    rules = load_detection_rules()
+    SUSPICIOUS_PATHS = rules["suspicious_paths"]
+    # SUSPICIOUS_PATHS = [
+    #     "/admin",
+    #     "/login",
+    #     "/phpmyadmin",
+    #     "/wp-admin",
+    #     "/.env",
+    #     "/config",
+    #     "/backup"
+    # ]
 
-    parsed_logs = parse_log_lines(lines)
+    # skippedは今は使わない
+    parsed_logs,skipped = parse_log_lines(lines)
     #correlations = correlate_logs(parsed_logs)
     #correlated_ips = {c["ip"] for c in correlations}
     correlated_ips = set()
@@ -422,6 +423,94 @@ def analyze_log_lines(lines):
             "suspicious_paths": suspicious_path_by_ip[ip],
             "status_counts": status_counts[ip],
             "reasons": reasons_by_ip[ip]
+        })
+
+    return results
+
+def analyze_run_from_db(run_id: int):
+    ip_stats = get_ip_stats(run_id)
+
+    results = []
+
+    timestamps_by_ip = get_ip_timestamps(run_id)
+
+
+    for stat in ip_stats:
+        ip = stat["ip"]
+        access_count = stat["access_count"]
+        failed_count = stat["failed_count"]
+
+        score = 0
+        reasons = []
+
+        failure_rate = stat["failure_rate"]
+
+        if failure_rate >= 0.5:
+            score += SCORES["high_failure_rate"]
+            reasons.append("high failure rate")
+
+        if failed_count >= 5:
+            score += SCORES["repeated_login"]
+            reasons.append("repeated login attempts")
+
+        if stat["suspicious_path_count"] >= 2:
+            score += SCORES["multiple_suspicious_paths"]
+            reasons.append("multiple suspicious paths")
+
+        if stat["not_found_count"] >= 5:
+            score += SCORES["many_404"]
+            reasons.append("many 404 responses")
+
+        if stat["admin_path_count"] > 0:
+            score += SCORES["admin_access"]
+            reasons.append("admin access attempts")
+
+        timestamps = timestamps_by_ip.get(ip, [])
+
+        # burst
+        score_add, reasons_add = detect_burst_access_rule(timestamps)
+        score += score_add
+        reasons.extend(reasons_add)
+
+        # night
+        score_add, reasons_add = detect_night_access(timestamps)
+        score += score_add
+        reasons.extend(reasons_add)
+
+        # ★これを戻す
+        score_add, reasons_add = detect_combined_patterns(reasons)
+        score += score_add
+        reasons.extend(reasons_add)
+
+        # ★これも（今は空だけど構造維持）
+        score_add, reasons_add = detect_access_error_correlation(ip, set())
+        score += score_add
+        reasons.extend(reasons_add)
+        
+        raw_attack_type = classify_attack_type(reasons)
+        attack_type = simplify_attack_type(raw_attack_type)
+
+        level = get_risk_level(score)
+
+        raw_action = recommend_action(level, raw_attack_type)
+        recommended_action = simplify_recommended_action(raw_action)
+
+        response_guides = get_guides(attack_type)
+        event = format_event(response_guides)
+
+        results.append({
+            "ip": ip,
+            "event": event,
+            "risk_level": level,
+            "risk_score": score,
+            "attack_type": attack_type,
+            "recommended_action": recommended_action,
+            "access_count": access_count,
+            "failed_count": failed_count,
+            "suspicious_paths": [],
+            "status_counts": {},
+            "reasons": reasons,
+            "response_guides": response_guides,
         })
 
     return results

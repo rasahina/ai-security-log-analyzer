@@ -99,8 +99,17 @@ if "history" in st.session_state and st.session_state.history:
     if st.button("Load Selected Run"):
         run_id = run_options[selected_run_label]
         detail = get_history_detail(run_id)
+        data = detail["detections"]
+        # 足りないカラムを補完
+        for item in data:
+            item.setdefault("access_count", 0)
+            item.setdefault("failed_count", 0)
+            item.setdefault("suspicious_paths", [])
+            item.setdefault("status_counts", {})
+            item.setdefault("reasons", [])
+            item.setdefault("response_guides", [])
 
-        st.session_state.analysis_data = detail["detections"]
+        st.session_state.analysis_data = data
         st.session_state.raw_logs = []
         st.session_state.ai_cache = {}
         st.session_state.ai_guard_logs = []
@@ -171,11 +180,11 @@ if st.session_state.analysis_data is not None:
     st.markdown("## 🔝 Top Risky IPs")
 
     top_df = df.copy()
-
+    #AVOID 0 Division
     top_df["failure_rate"] = (
         top_df["failed_count"] / top_df["access_count"]
-    ).fillna(0)
-        
+    ).replace([float("inf"), -float("inf")], 0).fillna(0)
+
     top_df["priority_score"] = (
         top_df["risk_score"] * 2
         + top_df["failure_rate"] * 5

@@ -8,9 +8,11 @@ from database import (
     save_analysis_run,
     get_analysis_runs,
     get_detections_by_run,
+    save_raw_logs,
+    update_analysis_run_summary,
 )
 
-from analyzer import analyze_log_lines
+from analyzer import analyze_run_from_db
 from parsers.log_parser import parse_log_lines
 
 app = FastAPI(title="AI Security Log Analyzer API")
@@ -25,6 +27,13 @@ RESULT_FILE = "output/result.json"
 class AnalyzeRequest(BaseModel):
     log: str
 
+def parse_logs_for_analysis(lines):
+    parsed_logs, skipped_logs = parse_log_lines(lines)
+
+    return {
+        "raw_logs": parsed_logs,
+        "skipped_logs": skipped_logs,
+    }
 
 @app.get("/")
 def root():
@@ -51,10 +60,15 @@ def get_results():
 def analyze(request: AnalyzeRequest):
     lines = request.log.splitlines()
 
-    results = analyze_log_lines(lines)
-    raw_logs = parse_log_lines(lines)
+    parsed = parse_logs_for_analysis(lines)
+    raw_logs = parsed["raw_logs"]
+    skipped_logs = parsed["skipped_logs"]
 
-    run_id = save_analysis_run(results, source="text")
+    run_id = save_analysis_run([], source="text")
+    save_raw_logs(run_id, raw_logs)
+
+    results = analyze_run_from_db(run_id)
+    update_analysis_run_summary(run_id, results)
 
     return JSONResponse(content={
         "run_id": run_id,
@@ -69,10 +83,15 @@ async def analyze_file(file: UploadFile = File(...)):
 
     lines = text.splitlines()
 
-    results = analyze_log_lines(lines)
-    raw_logs = parse_log_lines(lines)
+    parsed = parse_logs_for_analysis(lines)
+    raw_logs = parsed["raw_logs"]
+    skipped_logs = parsed["skipped_logs"]
 
-    run_id = save_analysis_run(results, source=file.filename)
+    run_id = save_analysis_run([], source=file.filename)
+    save_raw_logs(run_id, raw_logs)
+
+    results = analyze_run_from_db(run_id)
+    update_analysis_run_summary(run_id, results)
 
     return JSONResponse(content={
         "run_id": run_id,

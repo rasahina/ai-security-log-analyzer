@@ -1,5 +1,4 @@
 import sqlite3
-import json
 from datetime import datetime
 
 
@@ -36,15 +35,26 @@ def init_db():
         risk_score INTEGER,
         attack_type TEXT,
         recommended_action TEXT,
-        access_count INTEGER,
-        failed_count INTEGER,
-        suspicious_paths TEXT,
-        status_counts TEXT,
-        reasons TEXT,
-        response_guides TEXT,
         FOREIGN KEY (run_id) REFERENCES analysis_runs(id)
     )
     """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS raw_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        log_type TEXT,
+        ip TEXT,
+        timestamp TEXT,
+        method TEXT,
+        url TEXT,
+        status INTEGER,
+        error_message TEXT,
+        FOREIGN KEY (run_id) REFERENCES analysis_runs(id)
+    )
+    """)
+
+
 
     conn.commit()
     conn.close()
@@ -84,15 +94,9 @@ def save_analysis_run(results: list, source: str = "manual") -> int:
             risk_level,
             risk_score,
             attack_type,
-            recommended_action,
-            access_count,
-            failed_count,
-            suspicious_paths,
-            status_counts,
-            reasons,
-            response_guides
+            recommended_action
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id,
             item.get("ip"),
@@ -101,18 +105,13 @@ def save_analysis_run(results: list, source: str = "manual") -> int:
             item.get("risk_score"),
             item.get("attack_type"),
             item.get("recommended_action"),
-            item.get("access_count"),
-            item.get("failed_count"),
-            json.dumps(item.get("suspicious_paths", []), ensure_ascii=False),
-            json.dumps(item.get("status_counts", {}), ensure_ascii=False),
-            json.dumps(item.get("reasons", []), ensure_ascii=False),
-            json.dumps(item.get("response_guides", []), ensure_ascii=False),
         ))
 
     conn.commit()
     conn.close()
 
     return run_id
+
 
 def get_analysis_runs(limit: int = 20):
     conn = get_connection()
@@ -141,6 +140,7 @@ def get_analysis_runs(limit: int = 20):
         for r in rows
     ]
 
+
 def get_detections_by_run(run_id: int):
     conn = get_connection()
     cur = conn.cursor()
@@ -154,13 +154,7 @@ def get_detections_by_run(run_id: int):
         risk_level,
         risk_score,
         attack_type,
-        recommended_action,
-        access_count,
-        failed_count,
-        suspicious_paths,
-        status_counts,
-        reasons,
-        response_guides
+        recommended_action
     FROM detections
     WHERE run_id = ?
     ORDER BY risk_score DESC
@@ -179,12 +173,132 @@ def get_detections_by_run(run_id: int):
             "risk_score": r[5],
             "attack_type": r[6],
             "recommended_action": r[7],
-            "access_count": r[8],
-            "failed_count": r[9],
-            "suspicious_paths": json.loads(r[10] or "[]"),
-            "status_counts": json.loads(r[11] or "{}"),
-            "reasons": json.loads(r[12] or "[]"),
-            "response_guides": json.loads(r[13] or "[]"),
         }
         for r in rows
     ]
+
+def save_raw_logs(run_id: int, raw_logs: list):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    for log in raw_logs:
+        cur.execute("""
+        INSERT INTO raw_logs (
+            run_id,
+            log_type,
+            ip,
+            timestamp,
+            method,
+            url,
+            status,
+            error_message
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            run_id,
+            log.get("log_type"),
+            log.get("ip"),
+            log.get("timestamp"),
+            log.get("method"),
+            log.get("url"),
+            log.get("status"),
+            log.get("error_message"),
+        ))
+
+    conn.commit()
+    conn.close()
+
+
+def get_ip_stats(run_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT
+        ip,
+        COUNT(*) AS access_count,
+        SUM(CASE WHEN status IN (401, 403) THEN 1 ELSE 0 END) AS failed_count,
+        SUM(CASE WHEN status = 404 THEN 1 ELSE 0 END) AS not_found_count,
+        SUM(CASE WHEN url IN ('/admin', '/login', '/phpmyadmin', '/wp-admin') THEN 1 ELSE 0 END) AS admin_path_count,
+        SUM(CASE WHEN url IN ('/admin', '/login', '/phpmyadmin', '/wp-admin', '/.env', '/config', '/backup') THEN 1 ELSE 0 END) AS suspicious_path_count,
+        MIN(timestamp) AS first_seen,
+        MAX(timestamp) AS last_seen
+    FROM raw_logs
+    WHERE run_id = ?
+      AND ip IS NOT NULL
+    GROUP BY ip
+    ORDER BY access_count DESC
+    """, (run_id,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {
+            "ip": r[0],
+            "access_count": r[1],
+            "failed_count": r[2],
+            "not_found_count": r[3],
+            "admin_path_count": r[4],
+            "suspicious_path_count": r[5],
+            "first_seen": r[6],
+            "last_seen": r[7],
+            "failure_rate": (r[2] / r[1]) if r[1] else 0,
+        }
+        for r in rows
+    ]
+
+
+def update_analysis_run_summary(run_id: int, results: list):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    total_ips = len(results)
+    high_count = len([r for r in results if r.get("risk_level") == "HIGH"])
+    medium_count = len([r for r in results if r.get("risk_level") == "MEDIUM"])
+    low_count = len([r for r in results if r.get("risk_level") == "LOW"])
+
+    cur.execute("""
+    UPDATE analysis_runs
+    SET total_ips = ?, high_count = ?, medium_count = ?, low_count = ?
+    WHERE id = ?
+    """, (
+        total_ips,
+        high_count,
+        medium_count,
+        low_count,
+        run_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+def get_ip_timestamps(run_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT ip, timestamp
+    FROM raw_logs
+    WHERE run_id = ?
+      AND ip IS NOT NULL
+    ORDER BY ip, timestamp
+    """, (run_id,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    timestamps_by_ip = {}
+
+    for ip, ts in rows:
+        try:
+            t = datetime.fromisoformat(ts)
+        except:
+            continue
+
+        if ip not in timestamps_by_ip:
+            timestamps_by_ip[ip] = []
+
+        timestamps_by_ip[ip].append(t)
+
+    return timestamps_by_ip
