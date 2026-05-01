@@ -1,0 +1,36 @@
+title: "スキャン・探索行為"
+
+plain_explanation: |
+  存在しないページ（404）への大量アクセスが確認されています。
+  攻撃者が脆弱なポイントを探している可能性があります。
+
+immediate_actions:
+  - "同一IPからの大量アクセスが続いていないか確認する"
+  - "必要に応じて一時的にIPをブロックする"
+
+short_term_actions:
+  - "アクセスされたURLを確認し、不要なファイルが公開されていないか確認する"
+  - "アクセスログを継続的に監視する"
+
+long_term_actions:
+  - "WAFやレート制限を導入する"
+  - "不要なエンドポイントを公開しない"
+
+escalation:
+  - "複数IPから同様のスキャンが確認される場合は広範囲攻撃として調査する"
+
+admin_support:
+  - "WAF/CDNの導入を検討する"
+
+advanced_commands:
+  enabled: true
+  warning: "以下は内容を理解している管理者向けです。誤って実行すると通信に影響する可能性があります。"
+
+  commands:
+    - label: "ログイン失敗の確認"
+      description: "直近のログイン失敗を確認する"
+      command: "sudo grep '401\\|403' /var/log/nginx/access.log | grep '/login'"
+
+    - label: "IPを一時ブロックする例"
+      description: "攻撃元IPを遮断する"
+      command: "sudo iptables -A INPUT -s {ip} -j DROP"

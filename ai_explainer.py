@@ -72,14 +72,4 @@ def explain_detection(detection_data: dict, ai_enabled: bool) -> str:
         reason = "AI explanation unavailable."
 
     # 👇ここが重要：Pythonで整形
-    return f"""Event:
-{event}
-
-Risk level:
-{risk_level}
-
-Reason:
-{reason}
-
-Recommended action:
-{recommended_action}"""
+    return reason

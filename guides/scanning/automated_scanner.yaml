@@ -1,0 +1,35 @@
+title: "自動スキャン攻撃"
+
+plain_explanation: |
+  高速かつ大量のアクセスパターンが確認されており、
+  自動ツールによるスキャンの可能性があります。
+
+immediate_actions:
+  - "該当IPからのアクセスを一時的に制限またはブロックする"
+
+short_term_actions:
+  - "アクセス頻度と対象URLを確認する"
+  - "同様のパターンが他IPでも発生していないか確認する"
+
+long_term_actions:
+  - "レート制限を導入する"
+  - "WAFで自動ツールをブロックする"
+
+escalation:
+  - "攻撃が継続する場合は広範囲攻撃として対応する"
+
+admin_support:
+  - "WAFやCDNの設定を見直す"
+
+advanced_commands:
+  enabled: true
+  warning: "以下は内容を理解している管理者向けです。誤って実行すると通信に影響する可能性があります。"
+
+  commands:
+    - label: "ログイン失敗の確認"
+      description: "直近のログイン失敗を確認する"
+      command: "sudo grep '401\\|403' /var/log/nginx/access.log | grep '/login'"
+
+    - label: "IPを一時ブロックする例"
+      description: "攻撃元IPを遮断する"
+      command: "sudo iptables -A INPUT -s {ip} -j DROP"

@@ -1,0 +1,22 @@
+title: "通常のアクセス"
+
+plain_explanation: |
+  現時点では異常なアクセスは確認されていません。
+
+immediate_actions:
+  - "特に対応は不要です"
+
+short_term_actions:
+  - "定期的にログを確認する"
+
+long_term_actions:
+  - "セキュリティ対策を継続する"
+
+escalation:
+  - "なし"
+
+admin_support:
+  - "なし"
+
+advanced_commands:
+  enabled: false

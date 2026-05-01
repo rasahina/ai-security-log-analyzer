@@ -35,7 +35,7 @@ def is_valid_reason(text: str) -> bool:
     if not text:
         return False
 
-    if len(text.split()) < 8:
+    if len(text) < 20:
         return False
 
     return True
@@ -43,6 +43,5 @@ def is_valid_reason(text: str) -> bool:
 
 def fallback_reason(data: dict) -> str:
     return (
-        f"IP address {data['ip']} shows repeated failed access attempts "
-        f"targeting sensitive endpoints such as /login."
+        f"IP {data['ip']} では、ログイン関連エンドポイントへの繰り返しの失敗アクセスが確認されています。"
     )

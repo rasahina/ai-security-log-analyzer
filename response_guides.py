@@ -1,27 +1,74 @@
+from pathlib import Path
 import yaml
 
-GUIDE_FILE = "guides/response_guides.yaml"
+BASE_DIR = Path(__file__).resolve().parent
+GUIDES_DIR = BASE_DIR / "guides"
+INDEX_PATH = GUIDES_DIR / "index.yaml"
 
-def load_guides():
-    with open(GUIDE_FILE, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def load_yaml(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
 
-GUIDES = load_guides()
 
-def normalize_attack_type(attack_type: str) -> str:
-    return attack_type.replace(" ", "_")
+def load_index():
+    print("INDEX_PATH:", INDEX_PATH)
+    print("INDEX_EXISTS:", INDEX_PATH.exists())
+    return load_yaml(INDEX_PATH)
 
-def get_guides(attack_type: str):
-    if not attack_type:
-        return []
+def get_attack_type_priority():
+    index = load_index()
+    return list(index.keys())
 
-    result = []
 
-    for t in attack_type.split(", "):
-        key = normalize_attack_type(t)
-        guide = GUIDES.get(key)
+def is_known_attack_type(attack_type: str) -> bool:
+    return attack_type in load_index()
+
+
+def get_guide(attack_type):
+    index = load_index()
+
+
+    guide_path = index.get(attack_type)
+    print("DEBUG attack_type:", attack_type)
+
+
+    if not guide_path:
+        print(f"[WARN] No guide found for: {attack_type}")
+        guide_path = index.get("Suspicious Activity")
+
+    if not guide_path:
+        return None
+    
+    full_path = GUIDES_DIR / guide_path
+
+    if not full_path.exists():
+        print(f"[WARN] Guide file not found: {full_path}")
+        return None
+
+
+    return load_yaml(full_path)
+
+def get_guides(attack_type):
+    guides = []
+
+    for attack in attack_type.split(", "):
+        guide = get_guide(attack)
+
+        if not guide:
+            print(f"[WARN] Guide returned None for: {attack}")
 
         if guide:
-            result.append(guide)
+            guides.append({
+                "attack_type": attack,
+                "guide": guide
+            })
 
-    return result
+    return guides
+
+def get_attack_type_priority():
+    index = load_index()
+    return list(index.keys())
+
+
+def is_known_attack_type(attack_type: str) -> bool:
+    return attack_type in load_index()

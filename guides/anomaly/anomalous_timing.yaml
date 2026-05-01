@@ -1,0 +1,22 @@
+title: "異常な時間帯アクセス"
+
+plain_explanation: |
+  通常とは異なる時間帯（深夜など）にアクセスが確認されています。
+
+immediate_actions:
+  - "アクセスが正当なものか確認する"
+
+short_term_actions:
+  - "ログイン履歴や操作履歴を確認する"
+
+long_term_actions:
+  - "アクセス時間帯の制限を検討する"
+
+escalation:
+  - "不審な操作がある場合は専門家へ相談する"
+
+admin_support:
+  - "アクセス制御設定を見直す"
+
+advanced_commands:
+  enabled: false

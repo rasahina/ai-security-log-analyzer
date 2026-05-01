@@ -7,7 +7,6 @@ from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
 from config import AI_MODE
 
-
 def render_ip_detail(selected, selected_ip):
     st.markdown("## IP Detail")
 
@@ -29,35 +28,82 @@ def render_ip_detail(selected, selected_ip):
         st.metric("Access Count", selected["access_count"])
         st.metric("Failed Count", selected["failed_count"])
 
-    col_left, col_right = st.columns(2)
+    # =========================
+    # 🚨 Recommended Action
+    # =========================
+    st.markdown("### 🚨 Recommended Action")
 
-    with col_left:
-        with st.expander("🔍 Suspicious Paths"):
+    actions = selected["recommended_action"].split(" / ")
+    for a in actions:
+        st.markdown(f"- **{a}**")
+
+    # =========================
+    # 🛠 Response Guide
+    # =========================
+    st.markdown("### 🛠 Response Guide")
+
+    guides = selected.get("response_guides", [])
+
+    if not guides:
+        st.info("No response guide available.")
+    else:
+        for item in guides:
+            attack = item.get("attack_type")
+            guide = item.get("guide", {})
+
+            with st.container(border=True):
+                st.markdown(f"**🔎 {attack}**")
+                st.write(guide.get("plain_explanation", ""))
+
+                if guide.get("immediate_actions"):
+                    st.markdown("**🚨 Immediate Actions**")
+                    for a in guide["immediate_actions"]:
+                        st.markdown(f"- {a}")
+
+                if guide.get("short_term_actions"):
+                    with st.expander("Short-term Actions"):
+                        for a in guide["short_term_actions"]:
+                            st.markdown(f"- {a}")
+
+                if guide.get("long_term_actions"):
+                    with st.expander("Long-term Actions"):
+                        for a in guide["long_term_actions"]:
+                            st.markdown(f"- {a}")
+
+                if guide.get("escalation"):
+                    with st.expander("Escalation"):
+                        for a in guide["escalation"]:
+                            st.markdown(f"- {a}")
+
+                advanced = guide.get("advanced_commands", {})
+                if advanced.get("enabled"):
+                    with st.expander("⚙️ Advanced Commands"):
+                        st.warning(advanced.get("warning", ""))
+
+                        for cmd in advanced.get("commands", []):
+                            st.markdown(f"**{cmd.get('label', 'Command')}**")
+                            if cmd.get("description"):
+                                st.caption(cmd["description"])
+                            command = cmd.get("command", "").replace("{ip}", selected_ip)
+                            st.code(command, language="bash")
+
+    # =========================
+    # 🔧 Technical Details（まとめる）
+    # =========================
+    with st.expander("🔧 Technical Details"):
+        if selected["suspicious_paths"]:
+            st.markdown("**Suspicious Paths**")
             for path in selected["suspicious_paths"]:
                 st.markdown(f"- `{path}`")
 
-        st.markdown("### ⚡ Signals")
-        for r in selected["reasons"]:
-            st.markdown(f"- {r}")
+        if selected["reasons"]:
+            st.markdown("**Signals**")
+            for r in selected["reasons"]:
+                st.markdown(f"- {r}")
 
-    with col_right:
-        with st.expander("📊 Status Counts"):
+        if selected["status_counts"]:
+            st.markdown("**Status Counts**")
             st.json(selected["status_counts"])
-
-    st.markdown("### Recommended Action")
-
-    actions = selected["recommended_action"].split(" / ")
-
-    for i, a in enumerate(actions):
-        col_action, col_button = st.columns([0.8, 0.2])
-
-        with col_action:
-            st.markdown(f"- **{a}**")
-
-        with col_button:
-            if st.button("Run", key=f"action-{selected_ip}-{i}"):
-                st.success(f"Triggered: {a}")
-
 
 def render_selected_ip_timeline(selected_ip):
     st.markdown("### Selected IP Timeline")
@@ -113,6 +159,7 @@ def render_ai_explanation(selected, selected_ip):
 
     st.session_state.ai_mode = st.toggle("AI Mode", value=False)
     ai_enabled= st.session_state.ai_mode
+
     st.caption("AI Mode: local" if ai_enabled else "AI Mode: off")
     
     col1, col2 = st.columns([0.8, 0.2])
@@ -135,20 +182,18 @@ def render_ai_explanation(selected, selected_ip):
     else:
         explanation = explain_detection(ai_payload, False)
 
-    
+    # explanation = explain_detection(ai_payload, True)
 
     st.info(explanation)
     st.caption(f"Cache size: {len(st.session_state.ai_cache)}")
 
-    st.markdown("### AI Guard Log")
-
     guard_logs = st.session_state.get("ai_guard_logs", [])
 
-    if not guard_logs:
-        st.success("No AI Guard issues detected.")
-    else:
-        st.warning(f"AI Guard sanitized {len(guard_logs)} item(s).")
-        st.dataframe(guard_logs, use_container_width=True, hide_index=True)
+    with st.expander("🛡 AI Guard Log"):
+        if not guard_logs:
+            st.success("No AI Guard issues detected.")
+        else:
+            st.warning(f"AI Guard sanitized {len(guard_logs)} item(s).")
+            st.dataframe(guard_logs, use_container_width=True, hide_index=True)
 
-    st.caption(f"AI Guard events: {len(guard_logs)}")
 

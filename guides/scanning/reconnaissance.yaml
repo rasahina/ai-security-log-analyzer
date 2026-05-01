@@ -1,0 +1,25 @@
+title: "情報収集（偵察）"
+
+plain_explanation: |
+  複数の管理系・設定系パスへのアクセスが確認されています。
+  攻撃前の情報収集の可能性があります。
+
+immediate_actions:
+  - "アクセスされたパスに重要情報が含まれていないか確認する"
+
+short_term_actions:
+  - "不要な公開ディレクトリや設定ファイルを削除する"
+  - "公開範囲の見直しを行う"
+
+long_term_actions:
+  - "アクセス制御を強化する"
+  - "内部構成を推測されにくい設計にする"
+
+escalation:
+  - "その後に攻撃が発生していないか監視する"
+
+admin_support:
+  - "サーバの公開設定を管理者に確認する"
+
+advanced_commands:
+  enabled: false

@@ -3,6 +3,7 @@ from response_guides import get_guides
 from parsers.log_parser import parse_log_lines
 from correlation import correlate_logs
 from scoring import SCORES
+from response_guides import get_guides, get_attack_type_priority
 
 
 def get_risk_level(score):
@@ -13,26 +14,16 @@ def get_risk_level(score):
     return "LOW"
 
 
-def format_event(attack_type: str) -> str:
-    if not attack_type or attack_type == "Normal":
+def format_event(response_guides):
+    if not response_guides:
         return "Normal activity"
 
-    mapping = {
-        "Automated Scanner": "Automated scanning activity",
-        "Admin Access": "Admin access attempts",
-        "Brute Force": "Brute-force login attempts",
-        "Coordinated Brute Force": "Coordinated brute-force attack",
-        "Suspicious Admin Timing": "Suspicious admin access timing",
-    }
-
-    types = attack_type.split(", ")
-
-    formatted = [
-        mapping.get(t, t)
-        for t in types
+    titles = [
+        g["guide"].get("title", "")
+        for g in response_guides
     ]
 
-    return " and ".join(formatted)
+    return " / ".join(titles)
 
 
 
@@ -66,6 +57,9 @@ def classify_attack_type(reasons):
     if "automated scanning pattern" in reasons:
         attack_types.append("Automated Scanner")
 
+    if "access error correlation" in reasons:
+        attack_types.append("Access Error Correlation")
+
     if not attack_types:
         if "high failure rate" in reasons:
             return "Suspicious Activity"
@@ -75,20 +69,7 @@ def classify_attack_type(reasons):
     return ", ".join(attack_types)
 
 def simplify_attack_type(attack_type):
-    priority_order = [
-        "Coordinated Brute Force",
-        "Automated Scanner",
-        "Suspicious Admin Timing",
-        "Brute Force",
-        "Admin Access",
-        "Scanner",
-        "Reconnaissance",
-        "Burst Access",
-        "Anomalous Timing",
-        "Suspicious Activity",
-        "Normal",
-    ]
-
+    priority_order = get_attack_type_priority()
     attack_types = attack_type.split(", ")
 
     sorted_types = sorted(
@@ -210,11 +191,20 @@ def detect_scanner(suspicious_paths_for_ip, status_counts_for_ip):
     return score, reasons
 
 
-def detect_admin_access(suspicious_paths_for_ip):
+def detect_admin_access(path_counts_for_ip, status_counts_for_ip):
     score = 0
     reasons = []
 
-    if "/admin" in suspicious_paths_for_ip:
+    # 管理画面系パス
+    admin_paths = ["/admin", "/login", "/phpmyadmin", "/wp-admin"]
+
+    has_admin_path = any(path in path_counts_for_ip for path in admin_paths)
+
+    if not has_admin_path:
+        return score, reasons
+
+    # 成功 or 認証系レスポンスがある場合のみ
+    if any(code in status_counts_for_ip for code in ["200", "401", "403"]):
         score += SCORES["admin_access"]
         reasons.append("admin access attempts")
 
@@ -371,7 +361,8 @@ def analyze_log_lines(lines):
         reasons_by_ip[ip].extend(reasons)
 
         score, reasons = detect_admin_access(
-            suspicious_path_by_ip[ip]
+            path_counts[ip],
+            status_counts[ip]
         )
 
         ip_scores[ip] += score
@@ -415,8 +406,8 @@ def analyze_log_lines(lines):
         attack_type = simplify_attack_type(raw_attack_type)
         raw_action = recommend_action(level, raw_attack_type)
         recommended_action = simplify_recommended_action(raw_action)
-        event = format_event(attack_type)
         response_guides = get_guides(attack_type)
+        event = format_event(response_guides)
 
         results.append({
             "ip": ip,

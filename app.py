@@ -133,11 +133,11 @@ if st.session_state.analysis_data is not None:
         "attack_type",
         "access_count",
         "recommended_action",
-        "response_guides",
         "failed_count",
         "suspicious_paths",
         "status_counts",
         "reasons",
+        "response_guides",
     ]
 
     df = df[display_columns]
@@ -250,6 +250,15 @@ if st.session_state.analysis_data is not None:
         st.success(summary)
 
 
+    df_display = df[[
+        "ip",
+        "event",
+        "risk_label",
+        "risk_score",
+        "attack_type",
+        "access_count",
+        "recommended_action",
+    ]]
 
     st.markdown("## Filters")
 
@@ -259,9 +268,9 @@ if st.session_state.analysis_data is not None:
     )
 
     if risk_filter != "ALL":
-        df_view = df[df["risk_label"] == risk_filter]
+        df_view = df_display[df_display["risk_label"] == risk_filter]
     else:
-        df_view = df
+        df_view = df_display
 
 
     st.markdown("## Analysis Table")
@@ -305,11 +314,6 @@ if st.session_state.analysis_data is not None:
 
     selected = df[df["ip"] == selected_ip].iloc[0]
 
-    #Debug
-    if selected["risk_label"] == "HIGH":
-        st.write("attack_type:", selected.get("attack_type"))
-        st.write("response_guides:", selected.get("response_guides"))
-    ###########
     st.markdown("## High Risk IPs")
 
     high_risk_df = df[df["risk_label"] == "HIGH"]
@@ -322,5 +326,7 @@ if st.session_state.analysis_data is not None:
 
 ### IP DETAIL
     render_ip_detail(selected, selected_ip)
-    render_selected_ip_timeline(selected_ip)
-    render_ai_explanation(selected, selected_ip)
+    with st.expander("📈 Timeline Analysis"):
+        render_selected_ip_timeline(selected_ip)
+    with st.expander("🤖 AI Explanation(for deeper analysis)"):
+        render_ai_explanation(selected, selected_ip)

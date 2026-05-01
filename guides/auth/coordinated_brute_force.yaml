@@ -1,0 +1,39 @@
+title: "協調ブルートフォース攻撃"
+
+plain_explanation: |
+  ログイン試行が短時間に集中しており、複数の条件からブルートフォース攻撃の可能性が高い状態です。
+  通常のログイン失敗よりも危険度が高く、アカウント突破を狙った攻撃である可能性があります。
+
+immediate_actions:
+  - "管理者アカウントに不審なログイン成功がないか確認する"
+  - "該当IPからのアクセスを一時的に制限またはブロックする"
+  - "対象アカウントのパスワード変更を検討する"
+
+short_term_actions:
+  - "ログイン履歴を確認し、攻撃対象のアカウントを特定する"
+  - "同様の試行が他IPからも発生していないか確認する"
+
+long_term_actions:
+  - "2段階認証(2FA)を有効化する"
+  - "ログイン試行回数制限を導入する"
+  - "レート制限やWAFによる保護を設定する"
+
+escalation:
+  - "ログイン成功の疑いがある場合は、即座に専門家へ相談する"
+  - "複数IPから継続している場合は広範囲攻撃として調査する"
+
+admin_support:
+  - "ログイン制限、IP制限、2FAの設定を管理者に依頼する"
+
+advanced_commands:
+  enabled: true
+  warning: "以下は内容を理解している管理者向けです。誤って実行すると通信に影響する可能性があります。"
+
+  commands:
+    - label: "ログイン失敗の確認"
+      description: "直近のログイン失敗を確認する"
+      command: "sudo grep '401\\|403' /var/log/nginx/access.log | grep '/login'"
+
+    - label: "IPを一時ブロックする例"
+      description: "攻撃元IPを遮断する"
+      command: "sudo iptables -A INPUT -s {ip} -j DROP"
