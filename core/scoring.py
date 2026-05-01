@@ -1,4 +1,4 @@
-from detection_rules import load_detection_rules
+from core.detection_rules import load_detection_rules
 
 
 def get_signal_scores():

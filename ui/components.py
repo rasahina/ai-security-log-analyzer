@@ -1,12 +1,105 @@
+import plotly.graph_objects as go
 import streamlit as st
 import pandas as pd
 from i18n import t, translate_action
 
 from time_series_analysis import create_time_series
-from ui.charts import create_timeline_chart
 from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
-from config import AI_MODE
+
+
+#グラフ描画関数
+def create_timeline_chart(time_df, title):
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=time_df["time_bucket"],
+        y=time_df["access_count"],
+        mode="lines",
+        name="Access Count"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=time_df["time_bucket"],
+        y=time_df["failed_count"],
+        mode="lines",
+        name="Failed Count"
+    ))
+
+    anomaly_df = time_df[time_df["is_anomaly"]]
+
+    fig.add_trace(go.Scatter(
+        x=anomaly_df["time_bucket"],
+        y=anomaly_df["access_count"],
+        mode="markers",
+        name="Anomaly",
+        marker=dict(color="red", size=10),
+        text=anomaly_df["anomaly_reason"],
+        customdata=anomaly_df[["ip", "anomaly_reason"]],
+        hovertemplate=(
+            "Time: %{x}<br>"
+            "IP: %{customdata[0]}<br>"
+            "Access Count: %{y}<br>"
+            "Reason: %{text}<extra></extra>"
+        )
+    ))
+
+    fig.update_layout(
+        title=title,
+        xaxis_title="Time",
+        yaxis_title="Count",
+        hovermode="x unified"
+    )
+
+    return fig
+
+def extract_attack_types(df):
+    attack_types = set()
+
+    for value in df["attack_type"].dropna():
+        for attack_type in str(value).split(", "):
+            attack_types.add(attack_type)
+
+    return attack_types
+
+
+def generate_summary(df):
+    high_count = len(df[df["risk_label"] == "HIGH"])
+    medium_count = len(df[df["risk_label"] == "MEDIUM"])
+
+    attack_types = extract_attack_types(df)
+
+    if high_count > 0:
+        messages = [
+            t("summary_high_detected", count=high_count)
+        ]
+
+        if "Brute Force" in attack_types or "Coordinated Brute Force" in attack_types:
+            messages.append(t("summary_brute_force"))
+
+        if "Admin Access" in attack_types or "Suspicious Admin Timing" in attack_types:
+            messages.append(t("summary_admin_access"))
+
+        if "Scanner" in attack_types or "Reconnaissance" in attack_types or "Automated Scanner" in attack_types:
+            messages.append(t("summary_scanner"))
+
+        if "Burst Access" in attack_types:
+            messages.append(t("summary_burst"))
+
+        messages.append(t("summary_investigate"))
+        return "\n\n".join(messages)
+
+    if medium_count > 0:
+        return "\n\n".join([
+            t("summary_medium_detected", count=medium_count),
+            t("summary_monitor"),
+        ])
+
+    return "\n\n".join([
+        t("summary_no_risk"),
+        t("summary_no_action"),
+    ])
+
 
 def render_ip_detail(selected, selected_ip):
     st.markdown(f"## {t('ip_detail')}")

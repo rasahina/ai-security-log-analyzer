@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import json
 import os
-from database import (
+from data_layer.database import (
     init_db,
     save_analysis_run,
     get_analysis_runs,
@@ -12,8 +12,8 @@ from database import (
     update_analysis_run_summary,
 )
 
-from analyzer import analyze_run_from_db
-from parsers.log_parser import parse_log_lines
+from core.analyzer import analyze_run_from_db
+from data_layer.log_parser import parse_log_lines
 
 app = FastAPI(title="AI Security Log Analyzer API")
 

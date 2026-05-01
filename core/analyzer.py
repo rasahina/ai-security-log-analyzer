@@ -1,12 +1,12 @@
 from datetime import datetime
-from response_guides import get_guides
-from parsers.log_parser import parse_log_lines
-from correlation import correlate_logs
-from scoring import  calculate_score
-from response_guides import get_guides, get_attack_type_priority
-from database import get_ip_stats, get_ip_timestamps
-from detection_rules import load_detection_rules
-from scoring import calculate_score, get_risk_level, signals_to_reasons
+from core.response_guides import get_guides
+from data_layer.log_parser import parse_log_lines
+from core.correlation import correlate_logs
+from core.scoring import  calculate_score
+from core.response_guides import get_guides, get_attack_type_priority
+from data_layer.database import get_ip_stats, get_ip_timestamps
+from core.detection_rules import load_detection_rules
+from core.scoring import calculate_score, get_risk_level, signals_to_reasons
 
 
 def get_risk_level(score):

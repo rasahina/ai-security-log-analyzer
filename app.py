@@ -6,15 +6,17 @@ import plotly.express as px
 
 from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
-from ui.charts import create_timeline_chart
 from client.api_client import analyze_text_log, analyze_uploaded_file
 from client.api_client import get_history, get_history_detail
-from ui.summary import generate_summary
-from ui.ip_detail import (
+
+from ui.components import (
+    create_timeline_chart,
+    generate_summary,
     render_ip_detail,
     render_selected_ip_timeline,
     render_ai_explanation,
-    )
+)
+
 
 
 def highlight_risk(val):

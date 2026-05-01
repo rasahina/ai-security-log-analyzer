@@ -1,8 +1,8 @@
 from pathlib import Path
 import yaml
 
-BASE_DIR = Path(__file__).resolve().parent
-GUIDES_DIR = BASE_DIR / "guides"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+GUIDES_DIR = PROJECT_ROOT / "guides"
 INDEX_PATH = GUIDES_DIR / "index.yaml"
 
 def load_yaml(path):

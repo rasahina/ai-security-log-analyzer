@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-from detection_rules import load_detection_rules
+from core.detection_rules import load_detection_rules
 
 
 def sql_in_values(values):
