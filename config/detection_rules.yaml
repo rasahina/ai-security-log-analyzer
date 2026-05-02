@@ -89,7 +89,14 @@ combined_signals:
     suppress:
       - "many_404"
       - "burst_access"
+fallback_rules:
+  suspicious_activity:
+    attack_type: "Suspicious Activity"
+    when: "signals_exist_but_no_attack_matched"
 
+  normal:
+    attack_type: "Normal"
+    when: "no_signals_and_no_attack_matched"
 risk_levels:
   high:
     min_score: 7

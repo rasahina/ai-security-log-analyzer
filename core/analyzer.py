@@ -6,7 +6,9 @@ from core.scoring import  calculate_score
 from core.response_guides import get_guides, get_attack_type_priority
 from data_layer.database import get_ip_stats, get_ip_timestamps
 from core.detection_rules import load_detection_rules
-from core.scoring import calculate_score, get_risk_level, signals_to_reasons
+from core.scoring import calculate_score, get_risk_level
+from core.signal_detector import detect_signals
+from core.attack_detector import detect_attacks
 
 
 def get_risk_level(score):
@@ -159,29 +161,11 @@ def simplify_recommended_action(action):
 
 
 
-def signals_to_reasons(signals):
-    mapping = {
-        "high_failure_rate": "high failure rate",
-        "repeated_login": "repeated login attempts",
-        "multiple_suspicious_paths": "multiple suspicious paths",
-        "many_404": "many 404 responses",
-        "admin_access": "admin access attempts",
-        "burst_access": "burst access detected",
-        "night_access": "night time access",
-        "coordinated_brute_force": "coordinated brute force pattern",
-        "suspicious_admin_timing": "suspicious admin access timing",
-        "automated_scanning": "automated scanning pattern",
-        "access_error_correlation": "access error correlation",
-    }
-
-    return [mapping[s] for s in signals if s in mapping]
-
-
 
 def analyze_run_from_db(run_id: int):
     rules = load_detection_rules()
-    signals_config = rules.get("signals", {})
-    combined_config = rules.get("combined_signals", {})
+    #signals_config = rules.get("signals", {})
+    #combined_config = rules.get("combined_signals", {})
 
     ip_stats = get_ip_stats(run_id)
     results = []
@@ -191,69 +175,18 @@ def analyze_run_from_db(run_id: int):
         ip = stat["ip"]
         access_count = stat["access_count"]
         failed_count = stat["failed_count"]
-        failure_rate = stat["failure_rate"]
-
-        signals = set()
-
-        high_failure_rule = signals_config["high_failure_rate"]
-        if (
-            access_count >= high_failure_rule["min_access_count"]
-            and failure_rate >= high_failure_rule["failure_rate"]
-        ):
-            signals.add("high_failure_rate")
-
-        repeated_login_rule = signals_config["repeated_login"]
-        if failed_count >= repeated_login_rule["min_failed_count"]:
-            signals.add("repeated_login")
-
-        suspicious_rule = signals_config["multiple_suspicious_paths"]
-        if stat["suspicious_path_count"] >= suspicious_rule["min_count"]:
-            signals.add("multiple_suspicious_paths")
-
-        many_404_rule = signals_config["many_404"]
-        if stat["not_found_count"] >= many_404_rule["min_count"]:
-            signals.add("many_404")
-
-        admin_rule = signals_config["admin_access"]
-        if stat["admin_path_count"] >= admin_rule.get("min_count", 1):
-            signals.add("admin_access")
-
+        #failure_rate = stat["failure_rate"]
         timestamps = timestamps_by_ip.get(ip, [])
+        signals = detect_signals(stat, timestamps, rules)
+        attacks = detect_attacks(signals, rules)
+        attack_type = ", ".join(attacks) if attacks else "Normal"
 
-        burst_rule = signals_config["burst_access"]
-        if detect_burst_access(
-            timestamps,
-            seconds=burst_rule["seconds"],
-            threshold=burst_rule["threshold"],
-        ):
-            signals.add("burst_access")
-
-        night_rule = signals_config["night_access"]
-        start_hour = night_rule["start_hour"]
-        end_hour = night_rule["end_hour"]
-
-        if any(start_hour <= t.hour < end_hour for t in timestamps):
-            signals.add("night_access")
-
-        for signal_name, config in combined_config.items():
-            required = set(config.get("requires", []))
-
-            if required.issubset(signals):
-                signals.add(signal_name)
-
-                for suppressed in config.get("suppress", []):
-                    signals.discard(suppressed)
-
-        score = calculate_score(signals)
+        score = calculate_score(signals,attacks)
         level = get_risk_level(score)
 
-        reasons = signals_to_reasons(signals)
-
-        raw_attack_type = classify_attack_type(reasons)
-        attack_type = simplify_attack_type(raw_attack_type)
-
-        raw_action = recommend_action(level, raw_attack_type)
+        raw_action = recommend_action(level, attack_type)
         recommended_action = simplify_recommended_action(raw_action)
+
 
         response_guides = get_guides(attack_type)
         event = format_event(response_guides)
@@ -265,12 +198,14 @@ def analyze_run_from_db(run_id: int):
             "risk_score": score,
             "attack_type": attack_type,
             "recommended_action": recommended_action,
+            #Raw Facts
             "access_count": access_count,
             "failed_count": failed_count,
             "suspicious_paths": [],
             "status_counts": {},
+            #layer outputs
             "signals": list(signals),
-            "reasons": reasons,
+            "attacks": attacks,
             "response_guides": response_guides,
         })
 

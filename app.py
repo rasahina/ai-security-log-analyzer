@@ -128,7 +128,8 @@ if "history" in st.session_state and st.session_state.history:
             item.setdefault("suspicious_paths", [])
             item.setdefault("status_counts", {})
             item.setdefault("signals", [])
-            item.setdefault("reasons", [])
+            item.setdefault("attacks", [])
+            item.setdefault("response_guides", [])
             item.setdefault("response_guides", [])
 
         st.session_state.analysis_data = data
@@ -172,9 +173,11 @@ if st.session_state.analysis_data is not None:
         "suspicious_paths",
         "status_counts",
         "signals",
-        "reasons",
+        "attacks",
         "response_guides",
     ]
+    
+    display_columns = [c for c in display_columns if c in df.columns]
 
     df = df[display_columns]
     df = df.sort_values(by="risk_score", ascending=False)
@@ -190,6 +193,7 @@ if st.session_state.analysis_data is not None:
     total_access = df["access_count"].sum()
     total_failed = df["failed_count"].sum()
 
+#ログ読み込み結果=============================
     if st.session_state.log_stats:
         stats = st.session_state.log_stats
         with st.expander("ログ読み込み結果"):
@@ -205,7 +209,18 @@ if st.session_state.analysis_data is not None:
             if stats.get("skipped", 0) > 0:
                 st.warning(f"{stats.get('skipped', 0)} 件のログを解析できませんでした")
 
+#エラーログ=============================================
+    if st.session_state.skipped_logs:
+        with st.expander("読み込めなかったログを表示"):
+            st.caption(f"{len(st.session_state.skipped_logs)} 件のログを解析できませんでした。")
 
+            preview_logs = st.session_state.skipped_logs[:20]
+
+            st.code("\n".join(preview_logs), language="text")
+
+            if len(st.session_state.skipped_logs) > 20:
+                st.caption("最初の20件のみ表示しています。")
+#============================================
     st.markdown(f"## {t('overview')}")
 
     col1, col2, col3, col4, col5 = st.columns(5)
