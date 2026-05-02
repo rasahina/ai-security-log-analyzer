@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from i18n import t, translate_action
 
-from time_series_analysis import create_time_series
+from core.time_series import create_time_series
 from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
 

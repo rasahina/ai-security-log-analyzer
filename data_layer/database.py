@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from core.detection_rules import load_detection_rules
 
 
@@ -47,6 +47,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS raw_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         run_id INTEGER NOT NULL,
+        file_id INTEGER,
         log_type TEXT,
         ip TEXT,
         timestamp TEXT,
@@ -54,6 +55,24 @@ def init_db():
         url TEXT,
         status INTEGER,
         error_message TEXT,
+        FOREIGN KEY (run_id) REFERENCES analysis_runs(id),
+        FOREIGN KEY (file_id) REFERENCES analysis_files(id)
+    )
+    """)
+
+    try:
+        cur.execute("ALTER TABLE raw_logs ADD COLUMN file_id INTEGER")
+    except sqlite3.OperationalError:
+        pass
+
+
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        file_name TEXT NOT NULL,
+        created_at TEXT NOT NULL,
         FOREIGN KEY (run_id) REFERENCES analysis_runs(id)
     )
     """)
@@ -63,6 +82,29 @@ def init_db():
     conn.commit()
     conn.close()
 
+def create_analysis_file(run_id: int, file_name: str) -> int:
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    INSERT INTO analysis_files (
+        run_id,
+        file_name,
+        created_at
+    )
+    VALUES (?, ?, ?)
+    """, (
+        run_id,
+        file_name,
+        datetime.now(timezone.utc).isoformat(),
+    ))
+
+    file_id = cur.lastrowid
+
+    conn.commit()
+    conn.close()
+
+    return file_id
 
 def save_analysis_run(results: list, source: str = "manual") -> int:
     conn = get_connection()
@@ -79,7 +121,7 @@ def save_analysis_run(results: list, source: str = "manual") -> int:
     )
     VALUES (?, ?, ?, ?, ?, ?)
     """, (
-        datetime.utcnow().isoformat(),
+        datetime.now(timezone.utc).isoformat(),
         source,
         total_ips,
         high_count,
@@ -181,7 +223,7 @@ def get_detections_by_run(run_id: int):
         for r in rows
     ]
 
-def save_raw_logs(run_id: int, raw_logs: list):
+def save_raw_logs(run_id: int, raw_logs: list, file_id: int | None = None):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -189,6 +231,7 @@ def save_raw_logs(run_id: int, raw_logs: list):
         cur.execute("""
         INSERT INTO raw_logs (
             run_id,
+            file_id,
             log_type,
             ip,
             timestamp,
@@ -197,9 +240,10 @@ def save_raw_logs(run_id: int, raw_logs: list):
             status,
             error_message
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id,
+            file_id,
             log.get("log_type"),
             log.get("ip"),
             log.get("timestamp"),
@@ -311,6 +355,8 @@ def get_ip_timestamps(run_id: int):
     for ip, ts in rows:
         try:
             t = datetime.fromisoformat(ts)
+            if t.tzinfo is not None:
+                t = t.replace(tzinfo=None)       
         except:
             continue
 

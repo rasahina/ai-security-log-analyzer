@@ -39,3 +39,20 @@ def get_history_detail(run_id: int):
     response = requests.get(f"{API_BASE_URL}/history/{run_id}")
     response.raise_for_status()
     return response.json()
+
+def analyze_multiple_uploaded_files(files):
+    import requests
+
+    url = "http://localhost:8000/analyze-files"
+
+    files_payload = []
+
+    for f in files:
+        files_payload.append(
+            ("files", (f.name, f, "text/plain"))
+        )
+
+    response = requests.post(url, files=files_payload)
+    response.raise_for_status()
+
+    return response.json()

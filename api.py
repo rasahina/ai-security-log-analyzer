@@ -5,14 +5,12 @@ import json
 import os
 from data_layer.database import (
     init_db,
-    save_analysis_run,
     get_analysis_runs,
     get_detections_by_run,
-    save_raw_logs,
-    update_analysis_run_summary,
 )
 
 from core.analyzer import analyze_run_from_db
+from core.analyzer import analyze_single_file, analyze_multiple_files
 from data_layer.log_parser import parse_log_lines
 
 app = FastAPI(title="AI Security Log Analyzer API")
@@ -58,46 +56,41 @@ def get_results():
 
 @app.post("/analyze")
 def analyze(request: AnalyzeRequest):
-    lines = request.log.splitlines()
+    result = analyze_single_file(
+        text=request.log,
+        source="text"
+    )
 
-    parsed = parse_logs_for_analysis(lines)
-    raw_logs = parsed["raw_logs"]
-    skipped_logs = parsed["skipped_logs"]
-
-    run_id = save_analysis_run([], source="text")
-    save_raw_logs(run_id, raw_logs)
-
-    results = analyze_run_from_db(run_id)
-    update_analysis_run_summary(run_id, results)
-
-    return JSONResponse(content={
-        "run_id": run_id,
-        "analysis": results,
-        "raw_logs": raw_logs
-    })
+    return JSONResponse(content=result)
 
 @app.post("/analyze-file")
 async def analyze_file(file: UploadFile = File(...)):
     content = await file.read()
     text = content.decode("utf-8")
 
-    lines = text.splitlines()
+    result = analyze_single_file(
+        text=text,
+        source=file.filename
+    )
 
-    parsed = parse_logs_for_analysis(lines)
-    raw_logs = parsed["raw_logs"]
-    skipped_logs = parsed["skipped_logs"]
+    return JSONResponse(content=result)
 
-    run_id = save_analysis_run([], source=file.filename)
-    save_raw_logs(run_id, raw_logs)
+@app.post("/analyze-files")
+async def analyze_files(files: list[UploadFile] = File(...)):
+    files_data = []
 
-    results = analyze_run_from_db(run_id)
-    update_analysis_run_summary(run_id, results)
+    for file in files:
+        content = await file.read()
+        text = content.decode("utf-8")
 
-    return JSONResponse(content={
-        "run_id": run_id,
-        "analysis": results,
-        "raw_logs": raw_logs
-    })
+        files_data.append({
+            "file_name": file.filename,
+            "text": text
+        })
+
+    result = analyze_multiple_files(files_data)
+
+    return JSONResponse(content=result)
 
 @app.get("/history")
 def history():

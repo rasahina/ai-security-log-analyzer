@@ -157,31 +157,7 @@ def simplify_recommended_action(action):
 
     return " / ".join(selected_actions[:2])
 
-###検知ロジック関数化
 
-def detect_brute_force(path_counts, failed_count, access_count):
-    return 0, []
-
-def detect_scanner(suspicious_paths_for_ip, status_counts_for_ip):
-
-    return 0, []
-
-
-def detect_admin_access(path_counts_for_ip, status_counts_for_ip):
-
-    return 0, []
-
-def detect_burst_access_rule(timestamps):
-    return 0, []
-
-def detect_night_access(timestamps):
-    return 0, []
-
-def detect_combined_patterns(reasons):
-    return 0, []
-
-def detect_access_error_correlation(ip, correlated_ips):
-    return 0, []
 
 def signals_to_reasons(signals):
     mapping = {
@@ -299,3 +275,86 @@ def analyze_run_from_db(run_id: int):
         })
 
     return results
+
+
+
+# =========================
+# Entry points / use cases
+# =========================
+def analyze_single_file(text: str, source: str):
+    from data_layer.log_parser import parse_log_lines
+    from data_layer.database import save_analysis_run, save_raw_logs, update_analysis_run_summary
+
+    lines = text.splitlines()
+
+    parsed_logs, skipped_logs = parse_log_lines(lines)
+
+    run_id = save_analysis_run([], source=source)
+    save_raw_logs(run_id, parsed_logs)
+
+    results = analyze_run_from_db(run_id)
+    update_analysis_run_summary(run_id, results)
+
+    total_count = len(parsed_logs) + len(skipped_logs)
+    parsed_count = len(parsed_logs)
+    skipped_count = len(skipped_logs)
+
+    return {
+        "run_id": run_id,
+        "analysis": results,
+        "raw_logs": parsed_logs,
+        "skipped_logs": skipped_logs,
+        "log_stats": {
+            "total": total_count,
+            "parsed": parsed_count,
+            "skipped": skipped_count,
+        },
+    }
+
+def analyze_multiple_files(files: list[dict]):
+    from data_layer.log_parser import parse_log_lines
+    from data_layer.database import (
+        save_analysis_run,
+        save_raw_logs,
+        update_analysis_run_summary,
+        create_analysis_file
+    )
+
+    run_id = save_analysis_run([], source="multi-upload")
+
+    all_raw_logs = []
+    all_skipped_logs = []
+    total_count = 0
+    parsed_count = 0
+    skipped_count = 0
+
+    for f in files:
+        file_name = f["file_name"]
+        text = f["text"]
+
+        lines = text.splitlines()
+        parsed_logs, skipped_logs = parse_log_lines(lines)
+        total_count += len(parsed_logs) + len(skipped_logs)
+        parsed_count += len(parsed_logs)
+        skipped_count += len(skipped_logs)
+        file_id = create_analysis_file(run_id, file_name)
+
+        save_raw_logs(run_id, parsed_logs, file_id=file_id)
+
+        all_raw_logs.extend(parsed_logs)
+        all_skipped_logs.extend(skipped_logs)
+
+    results = analyze_run_from_db(run_id)
+    update_analysis_run_summary(run_id, results)
+
+    return {
+        "run_id": run_id,
+        "analysis": results,
+        "raw_logs": all_raw_logs,
+        "skipped_logs": all_skipped_logs,
+        "log_stats": {
+            "total": total_count,
+            "parsed": parsed_count,
+            "skipped": skipped_count,
+        },
+    }

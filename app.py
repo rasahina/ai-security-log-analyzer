@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
-from time_series_analysis import create_time_series
+from core.time_series import create_time_series
 from i18n import t, translate_attack_type, translate_action, translate_anomaly_reason, translate_signals
 import plotly.express as px
 
 from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
-from client.api_client import analyze_text_log, analyze_uploaded_file
+from client.api_client import analyze_text_log, analyze_multiple_uploaded_files
 from client.api_client import get_history, get_history_detail
 
 from ui.components import (
@@ -50,7 +50,7 @@ html, body, [class*="css"]  {
 st.title(t("app_title"))
 st.write(t("app_description"))
 
-#初期化
+#初期化=====================================
 if "analysis_data" not in st.session_state:
     st.session_state.analysis_data = None
 if "raw_logs" not in st.session_state:
@@ -59,9 +59,32 @@ if "ai_cache" not in st.session_state:
     st.session_state.ai_cache = {}
 if "ai_guard_logs" not in st.session_state:
     st.session_state.ai_guard_logs = []
+if "log_stats" not in st.session_state:
+    st.session_state.log_stats = None
+if "skipped_logs" not in st.session_state:
+    st.session_state.skipped_logs = []
+#============================================
+
+uploaded_files = st.file_uploader(
+    t("choose_log_file"),
+    type=["log", "txt"],
+    accept_multiple_files=True
+)
 
 
-uploaded_file = st.file_uploader(t("choose_log_file"), type=["log", "txt"])
+
+if uploaded_files:
+    if st.button(t("analyze_file")):
+        st.session_state.ai_cache = {}
+        st.session_state.ai_guard_logs = []
+
+        result = analyze_multiple_uploaded_files(uploaded_files)
+
+        st.session_state.analysis_data = result["analysis"]
+        st.session_state.raw_logs = result["raw_logs"]
+        st.session_state.log_stats = result.get("log_stats")
+        st.session_state.skipped_logs = result.get("skipped_logs", [])
+st.markdown("---")
 
 if st.button(t("use_sample_log")):
     st.session_state.ai_cache = {}
@@ -71,15 +94,10 @@ if st.button(t("use_sample_log")):
     result = analyze_text_log(text)
     st.session_state.analysis_data = result["analysis"]
     st.session_state.raw_logs = result["raw_logs"]
+    st.session_state.log_stats = result.get("log_stats")
+    st.session_state.skipped_logs = result.get("skipped_logs", [])
 
 
-if uploaded_file is not None:
-    if st.button(t("analyze_file")):
-        st.session_state.ai_cache = {}
-        st.session_state.ai_guard_logs = []
-        result = analyze_uploaded_file(uploaded_file)
-        st.session_state.analysis_data = result["analysis"]
-        st.session_state.raw_logs = result["raw_logs"]
 
 st.markdown(f"## {t('history')}")
 
@@ -126,6 +144,10 @@ if st.session_state.analysis_data is not None:
 
     df = pd.DataFrame(data)
 
+    if df.empty or "risk_level" not in df.columns:
+        st.warning("解析可能なアクセスログが見つかりませんでした。ログ形式または内容を確認してください。")
+        st.stop()
+
     # ここから下にSummary、表、IP Detailを書く
     #選択用変数初期化
     selected_ip_from_top = None
@@ -167,6 +189,22 @@ if st.session_state.analysis_data is not None:
     low_count = len(df[df["risk_label"] == "LOW"])
     total_access = df["access_count"].sum()
     total_failed = df["failed_count"].sum()
+
+    if st.session_state.log_stats:
+        stats = st.session_state.log_stats
+        with st.expander("ログ読み込み結果"):
+            col1, col2, col3 = st.columns(3)
+
+            col1.metric("総ログ件数", stats.get("total", 0))
+            col2.metric("解析成功", stats.get("parsed", 0))
+            col3.metric("読み込み失敗", stats.get("skipped", 0))
+
+            rate = (stats.get("parsed", 0) / stats.get("total", 1)) * 100
+            st.caption(f"成功率: {rate:.1f}%")
+
+            if stats.get("skipped", 0) > 0:
+                st.warning(f"{stats.get('skipped', 0)} 件のログを解析できませんでした")
+
 
     st.markdown(f"## {t('overview')}")
 
