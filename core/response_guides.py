@@ -65,10 +65,35 @@ def get_guides(attack_type):
 
     return guides
 
-def get_attack_type_priority():
-    index = load_index()
-    return list(index.keys())
+
+def format_recommended_action(response_guides, level):
+    actions = []
+
+    for item in response_guides:
+        guide = item.get("guide", {})
+        immediate_actions = guide.get("immediate_actions", [])
+
+        actions.extend(immediate_actions[:1])
+
+    if actions:
+        return " / ".join(actions[:2])
+
+    if level == "HIGH":
+        return "Investigate immediately"
+
+    if level == "MEDIUM":
+        return "Monitor closely"
+
+    return "No immediate action required"
 
 
-def is_known_attack_type(attack_type: str) -> bool:
-    return attack_type in load_index()
+def format_event(response_guides):
+    if not response_guides:
+        return "Normal activity"
+
+    titles = [
+        g["guide"].get("title", "")
+        for g in response_guides
+    ]
+
+    return " / ".join(titles)

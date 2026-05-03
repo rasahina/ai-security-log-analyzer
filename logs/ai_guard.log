@@ -293,3 +293,8 @@
 {"timestamp": "2026-05-01T21:29:30.571321", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
 {"timestamp": "2026-05-01T21:32:46.782166", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
 {"timestamp": "2026-05-02T21:26:41.431039", "field": "signals", "reason": "list_truncated", "action": "truncated", "sample": "6 items"}
+{"timestamp": "2026-05-03T07:32:22.433327", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-03T07:33:19.169188", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-03T07:57:21.985128", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-03T08:04:40.346359", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-03T08:08:17.071189", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}

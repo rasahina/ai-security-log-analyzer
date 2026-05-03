@@ -112,3 +112,67 @@ risk_levels:
 
 scoring:
   max_score_per_ip: 10
+attack_rules:
+  Brute Force:
+    requires:
+      - repeated_login
+      - high_failure_rate
+    optional:
+      - burst_access
+      - night_access
+    base_score: 6
+
+  Admin Access:
+    requires:
+      - admin_access
+    optional:
+      - night_access
+    base_score: 3
+
+  Scanner:
+    requires:
+      - many_404
+    optional:
+      - burst_access
+      - multiple_suspicious_paths
+    base_score: 4
+
+  Reconnaissance:
+    requires:
+      - multiple_suspicious_paths
+    optional:
+      - many_404
+      - admin_access
+    base_score: 4
+
+  Burst Access:
+    requires:
+      - burst_access
+    optional:
+      - high_failure_rate
+    base_score: 4
+
+  Suspicious Admin Timing:
+    requires:
+      - admin_access
+      - night_access
+    optional:
+      - burst_access
+    base_score: 6
+
+  Automated Scanner:
+    requires:
+      - many_404
+      - burst_access
+    optional:
+      - multiple_suspicious_paths
+      - admin_access
+    base_score: 6
+
+  Access Error Correlation:
+    requires:
+      - access_error_correlation
+    optional:
+      - high_failure_rate
+      - burst_access
+    base_score: 6

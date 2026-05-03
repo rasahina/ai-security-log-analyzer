@@ -190,9 +190,9 @@ def render_ip_detail(selected, selected_ip):
             for path in selected["suspicious_paths"]:
                 st.markdown(f"- `{path}`")
 
-        if selected["reasons"]:
+        if selected["signals"]:
             st.markdown(f"**{t('signals')}**")
-            for r in selected["reasons"]:
+            for r in selected["signals"]:
                 st.markdown(f"- {r}")
 
         if selected["status_counts"]:
