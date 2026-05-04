@@ -48,24 +48,16 @@ def detect_timeseries_signals(events, rules):
 
     detectors = {
         "burst_access": lambda: _match_count_signal(
-            events,
-            signal_rules["burst_access"],
-            paths,
+            events, signal_rules.get("burst_access", {}), paths
         ),
         "many_404": lambda: _match_count_signal(
-            events,
-            signal_rules["many_404"],
-            paths,
+            events, signal_rules.get("many_404", {}), paths
         ),
         "failed_login_count": lambda: _match_count_signal(
-            events,
-            signal_rules["failed_login_count"],
-            paths,
+            events, signal_rules.get("failed_login_count", {}), paths
         ),
         "admin_access": lambda: _match_count_signal(
-            events,
-            signal_rules["admin_access"],
-            paths,
+            events, signal_rules.get("admin_access", {}), paths
         ),
         "high_failure_rate": lambda: _match_high_failure_rate(events, signal_rules),
     }
@@ -79,37 +71,8 @@ def detect_timeseries_signals(events, rules):
 
     return signals
 
-def _match_burst_access(events, signal_rules):
-    config = signal_rules.get("burst_access", {})
-
-    timestamps = _extract_timestamps(events)
-
-    return _detect_event_burst(
-        timestamps=timestamps,
-        window_seconds=config.get("window_seconds", config.get("seconds", 60)),
-        threshold=config.get("threshold", 5),
-    )
 
 
-def _match_many_404(events, signal_rules, paths):
-    config = signal_rules.get("many_404", {})
-
-    # 👇 filterがあれば使う
-    if "filter" in config:
-        filtered = _filter_events(events, config["filter"], paths)
-        timestamps = _extract_timestamps(filtered)
-    else:
-        # 👇 旧ロジック（互換性維持）
-        timestamps = _extract_timestamps(
-            events,
-            lambda e: e.get("status") == 404
-        )
-
-    return _detect_event_burst(
-        timestamps=timestamps,
-        window_seconds=config.get("window_seconds", 300),
-        threshold=config.get("threshold", 5),
-    )
 
 
 def _extract_timestamps(events, condition=None):
@@ -143,42 +106,6 @@ def _detect_event_burst(timestamps, window_seconds, threshold):
 
     return False
 
-def _match_failed_login(events, signal_rules, paths):
-    config = signal_rules.get("failed_login_count", {})
-
-    if "filter" in config:
-        filtered = _filter_events(events, config["filter"], paths)
-        timestamps = _extract_timestamps(filtered)
-    else:
-        timestamps = _extract_timestamps(
-            events,
-            lambda e: e.get("status") in (401, 403)
-        )
-
-    return _detect_event_burst(
-        timestamps=timestamps,
-        window_seconds=config.get("window_seconds", 300),
-        threshold=config.get("threshold", 5),
-    )
-
-def _match_admin_access(events, signal_rules, paths):
-    config = signal_rules.get("admin_access", {})
-
-    if "filter" in config:
-        filtered = _filter_events(events, config["filter"], paths)
-        timestamps = _extract_timestamps(filtered)
-    else:
-        admin_paths = set(paths.get("admin", []))
-        timestamps = _extract_timestamps(
-            events,
-            lambda e: e.get("url") in admin_paths
-        )
-
-    return _detect_event_burst(
-        timestamps=timestamps,
-        window_seconds=config.get("window_seconds", 300),
-        threshold=config.get("threshold", 1),
-    )
 
 def _match_high_failure_rate(events, signal_rules):
     config = signal_rules.get("high_failure_rate", {})
@@ -222,9 +149,14 @@ def _match_high_failure_rate(events, signal_rules):
     return False
 
 def _match_count_signal(events, config, paths):
+    filter_config = config.get("filter")
+
+    if filter_config is None:
+        return False
+
     filtered = _filter_events(
         events,
-        config.get("filter", {}),
+        filter_config,
         paths,
     )
 
