@@ -177,7 +177,9 @@ UI_TEXT["ja"].update({
     "col_count": "件数",
     "col_signals": "検知シグナル",
 })
-
+UI_TEXT["ja"].update({
+    "signal_failed_login_count": "ログイン失敗の集中",
+})
 
 def t(key: str, **kwargs) -> str:
     text = UI_TEXT[LANG].get(key, key)

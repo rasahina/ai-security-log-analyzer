@@ -10,6 +10,7 @@ def detect_attacks(signals, rules):
 
     attack_rules = rules.get("attack_rules", {})
     fallback_rules = rules.get("fallback_rules", {})
+    print("signals:", signals)
 
     detected_attacks = []
 

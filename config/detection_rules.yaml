@@ -115,11 +115,11 @@ scoring:
 attack_rules:
   Brute Force:
     requires:
+      - failed_login_count
+    optional:
       - repeated_login
       - high_failure_rate
-    optional:
       - burst_access
-      - night_access
     base_score: 6
 
   Admin Access:

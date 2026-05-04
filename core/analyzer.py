@@ -17,20 +17,24 @@ from core.scoring import calculate_score, get_risk_level
 from core.signal_detector import detect_signals
 from core.attack_detector import detect_attacks
 from data_layer.database import update_analysis_run_summary
-
+from data_layer.database import get_ip_stats, get_ip_events
+from core.timeseries_signal_detector import detect_timeseries_signals
 
 
 def analyze_run_from_db(run_id: int):
     rules = load_detection_rules()
     ip_stats = get_ip_stats(run_id)
-    timestamps_by_ip = get_ip_timestamps(run_id)
+    #timestamps_by_ip = get_ip_timestamps(run_id)
+    events_by_ip = get_ip_events(run_id)
 
     results = []
 
     for stat in ip_stats:
         ip = stat["ip"]
 
-        signals = detect_signals(stat, timestamps_by_ip.get(ip, []), rules)
+        events= events_by_ip.get(ip,[])
+        #signals = detect_time_series(stat, timestamps_by_ip.get(ip, []), rules)
+        signals = detect_timeseries_signals(events, rules)
         attacks = detect_attacks(signals, rules)
 
         score = calculate_score(signals, attacks)

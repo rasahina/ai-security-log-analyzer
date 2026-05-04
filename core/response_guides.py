@@ -1,8 +1,8 @@
 from pathlib import Path
 import yaml
+from core.config import GUIDES_DIR
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-GUIDES_DIR = PROJECT_ROOT / "guides"
+
 INDEX_PATH = GUIDES_DIR / "index.yaml"
 
 def load_yaml(path):

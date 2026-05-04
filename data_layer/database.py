@@ -1,12 +1,12 @@
 import sqlite3
 from datetime import datetime, timezone
 from core.detection_rules import load_detection_rules
-
+from core.config import DB_PATH
 
 def sql_in_values(values):
     return ",".join(["?"] * len(values))
 
-DB_FILE = "data/security_analyzer.db"
+DB_FILE = str(DB_PATH)
 
 
 def get_connection():
@@ -366,3 +366,43 @@ def get_ip_timestamps(run_id: int):
         timestamps_by_ip[ip].append(t)
 
     return timestamps_by_ip
+
+def get_ip_events(run_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT ip, timestamp, method, url, status, log_type, error_message
+    FROM raw_logs
+    WHERE run_id = ?
+      AND ip IS NOT NULL
+      AND timestamp IS NOT NULL
+    ORDER BY ip, timestamp
+    """, (run_id,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    events_by_ip = {}
+
+    for ip, ts, method, url, status, log_type, error_message in rows:
+        try:
+            t = datetime.fromisoformat(ts)
+            if t.tzinfo is not None:
+                t = t.replace(tzinfo=None)
+        except Exception:
+            continue
+
+        if ip not in events_by_ip:
+            events_by_ip[ip] = []
+
+        events_by_ip[ip].append({
+            "timestamp": t,
+            "method": method,
+            "url": url,
+            "status": status,
+            "log_type": log_type,
+            "error_message": error_message,
+        })
+
+    return events_by_ip
