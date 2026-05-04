@@ -326,3 +326,9 @@
 {"timestamp": "2026-05-04T06:06:06.762397", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
 {"timestamp": "2026-05-04T06:06:10.147204", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
 {"timestamp": "2026-05-04T06:06:11.188790", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:12:00.397247", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:12:03.688591", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:12:07.246600", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:12:08.375333", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:12:10.697766", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:12:17.299741", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}

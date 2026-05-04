@@ -4,33 +4,35 @@ from datetime import timedelta
 def _is_signal_enabled(signal_rules, signal_name):
     return signal_rules.get(signal_name, {}).get("enabled", True)
 
+
 def detect_timeseries_signals(events, rules):
-    paths = rules.get("paths", {})
+    """
+    Detect factual signals from raw time-series log events.
+
+    This layer must only detect observable facts.
+    It must not decide attack types.
+    """
     signals = set()
+
     signal_rules = rules.get("signals", {})
+    paths = rules.get("paths", {})
 
-    if _is_signal_enabled(signal_rules, "burst_access"):
-        if _match_burst_access(events, signal_rules):
-            signals.add("burst_access")
+    detectors = {
+        "burst_access": lambda: _match_burst_access(events, signal_rules),
+        "many_404": lambda: _match_many_404(events, signal_rules),
+        "failed_login_count": lambda: _match_failed_login(events, signal_rules),
+        "admin_access": lambda: _match_admin_access(events, signal_rules, paths),
+        "high_failure_rate": lambda: _match_high_failure_rate(events, signal_rules),
+    }
 
-    if _is_signal_enabled(signal_rules, "many_404"):
-        if _match_many_404(events, signal_rules):
-            signals.add("many_404")
+    for signal_name, detector in detectors.items():
+        if not _is_signal_enabled(signal_rules, signal_name):
+            continue
 
-    if _is_signal_enabled(signal_rules, "failed_login_count"):
-        if _match_failed_login(events, signal_rules):
-            signals.add("failed_login_count")
-
-    if _is_signal_enabled(signal_rules, "admin_access"):
-        if _match_admin_access(events, signal_rules, paths):
-            signals.add("admin_access")
-
-    if _is_signal_enabled(signal_rules, "high_failure_rate"):
-        if _match_high_failure_rate(events, signal_rules):
-            signals.add("high_failure_rate")
+        if detector():
+            signals.add(signal_name)
 
     return signals
-
 
 def _match_burst_access(events, signal_rules):
     config = signal_rules.get("burst_access", {})
