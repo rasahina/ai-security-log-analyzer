@@ -323,3 +323,6 @@
 {"timestamp": "2026-05-04T06:00:49.281444", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
 {"timestamp": "2026-05-04T06:01:23.878260", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
 {"timestamp": "2026-05-04T06:01:27.497090", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:06:06.762397", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:06:10.147204", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-04T06:06:11.188790", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}

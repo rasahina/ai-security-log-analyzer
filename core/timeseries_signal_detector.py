@@ -1,6 +1,9 @@
 from datetime import timedelta
 
 
+def _is_signal_enabled(signal_rules, signal_name):
+    return signal_rules.get(signal_name, {}).get("enabled", True)
+
 def detect_timeseries_signals(events, rules):
     paths = rules.get("paths", {})
     signals = set()
@@ -21,6 +24,10 @@ def detect_timeseries_signals(events, rules):
     if _is_signal_enabled(signal_rules, "admin_access"):
         if _match_admin_access(events, signal_rules, paths):
             signals.add("admin_access")
+
+    if _is_signal_enabled(signal_rules, "high_failure_rate"):
+        if _match_high_failure_rate(events, signal_rules):
+            signals.add("high_failure_rate")
 
     return signals
 
@@ -113,6 +120,44 @@ def _match_admin_access(events, signal_rules, paths):
         threshold=config.get("threshold", 1),
     )
 
+def _match_high_failure_rate(events, signal_rules):
+    config = signal_rules.get("high_failure_rate", {})
 
-def _is_signal_enabled(signal_rules, signal_name):
-    return signal_rules.get(signal_name, {}).get("enabled", True)
+    window_seconds = config.get("window_seconds", 300)
+    threshold = config.get("threshold", 0.5)
+    minimum_count = config.get("minimum_count", 5)
+
+    from datetime import timedelta
+
+    timestamps = sorted(
+        event["timestamp"]
+        for event in events
+        if event.get("timestamp") is not None
+    )
+
+    if not timestamps:
+        return False
+
+    left = 0
+    window = timedelta(seconds=window_seconds)
+
+    for right in range(len(events)):
+        while timestamps[right] - timestamps[left] > window:
+            left += 1
+
+        window_events = events[left:right+1]
+
+        total = len(window_events)
+        if total < minimum_count:
+            continue
+
+        failed = sum(
+            1 for e in window_events
+            if e.get("status") in (401, 403)
+        )
+
+        if failed / total >= threshold:
+            return True
+
+    return False
+
