@@ -20,6 +20,8 @@ signals:
     enabled: true
     score: 2
     reason: "repeated login attempts"
+    filter:
+      path_groupe: login
     window_seconds: 300
     threshold: 5
 
@@ -36,10 +38,15 @@ signals:
     enabled: true
     score: 2
     reason: "high failure rate"
+    type: ratio
+    numerator_filter:
+      status_in: [401, 403]
+    denominator_filter:
+      any: true
     window_seconds: 300
     minimum_count: 5
     threshold: 0.5
-
+  
   login_success_after_failures:
     enabled: false
     score: 4
@@ -51,6 +58,8 @@ signals:
     enabled: true
     score: 2
     reason: "multiple suspicious paths"
+    filter:
+      path_group: suspicious
     window_seconds: 300
     threshold: 2
 

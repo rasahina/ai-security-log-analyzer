@@ -6,5 +6,5 @@ CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
 GUIDES_DIR = PROJECT_ROOT / "guides"
 
-DETECTION_RULES_PATH = CONFIG_DIR / "detection_rules.yaml"
+DETECTION_RULES_PATH = CONFIG_DIR / "timeseries_detection_rules.yaml"
 DB_PATH = DATA_DIR / "security_analyzer.db"

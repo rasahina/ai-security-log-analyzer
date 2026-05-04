@@ -36,6 +36,11 @@ signals:
     enabled: true
     score: 2
     reason: "high failure rate"
+    type: ratio
+    numerator_filter:
+      status_in: [401, 403]
+    denominator_filter:
+      any: true
     window_seconds: 300
     minimum_count: 5
     threshold: 0.5
