@@ -16,49 +16,106 @@ paths:
     - "/backup"
 
 signals:
-  high_failure_rate:
-    score: 2
-    reason: "high failure rate"
-    min_access_count: 5
-    failure_rate: 0.5
-
   repeated_login:
+    enabled: true
     score: 2
     reason: "repeated login attempts"
-    min_failed_count: 5
-
-  multiple_suspicious_paths:
-    score: 2
-    reason: "multiple suspicious paths"
-    min_count: 2
-
-  many_404:
-    score: 1
-    reason: "many 404 responses"
-    min_count: 5
-
-  admin_access:
-    score: 2
-    reason: "admin access attempts"
-    min_count: 1
-
-  burst_access:
-    score: 4
-    reason: "burst access detected"
-    seconds: 60
+    window_seconds: 300
     threshold: 5
 
+  failed_login_count:
+    enabled: true
+    score: 2
+    reason: "failed login count"
+    filter:
+      status_in: [401, 403]
+    window_seconds: 300
+    threshold: 5
+
+  high_failure_rate:
+    enabled: true
+    score: 2
+    reason: "high failure rate"
+    window_seconds: 300
+    minimum_count: 5
+    threshold: 0.5
+
+  login_success_after_failures:
+    enabled: false
+    score: 4
+    reason: "login success after failures"
+    window_seconds: 300
+    threshold: 3
+
+  multiple_suspicious_paths:
+    enabled: true
+    score: 2
+    reason: "multiple suspicious paths"
+    window_seconds: 300
+    threshold: 2
+
+  many_404:
+    enabled: true
+    score: 1
+    reason: "many 404 responses"
+    filter:
+      status: 404
+    window_seconds: 300
+    threshold: 5
+
+  admin_access:
+    enabled: true
+    score: 2
+    reason: "admin access attempts"
+    filter:
+      path_group: admin
+    window_seconds: 300
+    threshold: 1
+
+  burst_access:
+    enabled: true
+    score: 4
+    reason: "burst access detected"
+    filter:
+      any: true
+    window_seconds: 60
+    threshold: 5
+  
   night_access:
+    enabled: false
     score: 1
     reason: "night time access"
     start_hour: 0
     end_hour: 5
 
   access_error_correlation:
+    enabled: false
     score: 3
     reason: "access error correlation"
-    min_count: 3
-    time_window_seconds: 60
+    window_seconds: 60
+    success_threshold: 1
+    error_threshold: 3
+
+  low_and_slow_scan:
+    enabled: false
+    score: 2
+    reason: "low and slow scan detected"
+    window_seconds: 86400
+    threshold: 50
+
+  low_and_slow_auth:
+    enabled: false
+    score: 3
+    reason: "low and slow login attempts"
+    window_seconds: 21600
+    threshold: 10
+
+  low_and_slow_admin_probe:
+    enabled: false
+    score: 3
+    reason: "low and slow admin probing"
+    window_seconds: 21600
+    threshold: 15
 
 combined_signals:
   coordinated_brute_force:

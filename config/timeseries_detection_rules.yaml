@@ -27,6 +27,8 @@ signals:
     enabled: true
     score: 2
     reason: "failed login count"
+    filter:
+      status_in: [401, 403]
     window_seconds: 300
     threshold: 5
 
@@ -56,6 +58,8 @@ signals:
     enabled: true
     score: 1
     reason: "many 404 responses"
+    filter:
+      status: 404
     window_seconds: 300
     threshold: 5
 
@@ -63,6 +67,8 @@ signals:
     enabled: true
     score: 2
     reason: "admin access attempts"
+    filter:
+      path_group: admin
     window_seconds: 300
     threshold: 1
 
@@ -70,9 +76,11 @@ signals:
     enabled: true
     score: 4
     reason: "burst access detected"
+    filter:
+      any: true
     window_seconds: 60
     threshold: 5
-
+  
   night_access:
     enabled: false
     score: 1
