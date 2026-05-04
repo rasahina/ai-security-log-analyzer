@@ -128,6 +128,7 @@ if "history" in st.session_state and st.session_state.history:
             item.setdefault("suspicious_paths", [])
             item.setdefault("status_counts", {})
             item.setdefault("signals", [])
+            item.setdefault("signal_findings", [])
             item.setdefault("attacks", [])
             item.setdefault("response_guides", [])
             item.setdefault("response_guides", [])
@@ -173,6 +174,7 @@ if st.session_state.analysis_data is not None:
         "suspicious_paths",
         "status_counts",
         "signals",
+        "signal_findings",
         "attacks",
         "response_guides",
     ]

@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import streamlit as st
 import pandas as pd
 from i18n import t, translate_action
-
+from plotly.subplots import make_subplots
 from core.time_series import create_time_series
 from ai_explainer import explain_detection
 from security.ai_guard import build_safe_ai_payload, write_guard_logs
@@ -201,11 +201,19 @@ def render_ip_detail(selected, selected_ip):
 
 def render_selected_ip_timeline(selected_ip):
     st.markdown("### Selected IP Timeline")
-    #履歴を表示の際にタイムラインがない場合出る。
+
+    selected = next(
+        (
+            item for item in st.session_state.analysis_data
+            if item.get("ip") == selected_ip
+        ),
+        None,
+    )
+
     if not st.session_state.raw_logs:
         st.info("No timeline data available for this historical run.")
         return
-    
+
     raw_df = pd.DataFrame(st.session_state.raw_logs)
     time_df = create_time_series(raw_df, interval="1min")
 
@@ -213,21 +221,129 @@ def render_selected_ip_timeline(selected_ip):
 
     if ip_time_df.empty:
         st.info("No timeline data for this IP.")
-    else:
-        fig_ip = create_timeline_chart(
-            ip_time_df,
-            f"Timeline for {selected_ip}"
-        )
+        return
 
-        st.plotly_chart(
-            fig_ip,
-            use_container_width=True,
-            key="selected_ip_timeline_chart"
-        )
+    signal_findings = selected.get("signal_findings", []) if selected else []
 
-    st.markdown("### Selected IP Anomalies")
+    fig_ip = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.12,
+        row_heights=[0.65, 0.35],
+        subplot_titles=(
+            "Access / Failure Count",
+            "Signal Count",
+        ),
+    )
+
+    fig_ip.add_trace(
+        go.Scatter(
+            x=ip_time_df["time_bucket"],
+            y=ip_time_df["access_count"],
+            mode="lines+markers",
+            name="Access Count",
+        ),
+        row=1,
+        col=1,
+    )
+
+    fig_ip.add_trace(
+        go.Scatter(
+            x=ip_time_df["time_bucket"],
+            y=ip_time_df["failed_count"],
+            mode="lines+markers",
+            name="Failed Count",
+        ),
+        row=1,
+        col=1,
+    )
 
     ip_anomaly_df = ip_time_df[ip_time_df["is_anomaly"]]
+
+    if not ip_anomaly_df.empty:
+        fig_ip.add_trace(
+            go.Scatter(
+                x=ip_anomaly_df["time_bucket"],
+                y=ip_anomaly_df["access_count"],
+                mode="markers",
+                name="Anomaly",
+                marker=dict(size=12),
+                text=ip_anomaly_df["anomaly_reason"],
+                customdata=ip_anomaly_df[["ip", "anomaly_reason"]],
+                hovertemplate=(
+                    "Time: %{x}<br>"
+                    "IP: %{customdata[0]}<br>"
+                    "Access Count: %{y}<br>"
+                    "Reason: %{text}<extra></extra>"
+                ),
+            ),
+            row=1,
+            col=1,
+        )
+
+    if signal_findings:
+        signal_df = pd.DataFrame(signal_findings)
+
+        signal_df["window_start"] = pd.to_datetime(signal_df["window_start"])
+        signal_df["window_end"] = pd.to_datetime(signal_df["window_end"])
+
+        signal_df["signal_time"] = (
+            signal_df["window_start"]
+            + (signal_df["window_end"] - signal_df["window_start"]) / 2
+        )
+
+        grouped_signal_df = (
+            signal_df
+            .groupby(["signal_time", "window_start", "window_end"], as_index=False)
+            .agg({
+                "name": lambda x: ", ".join(sorted(x)),
+            })
+        )
+
+        grouped_signal_df["signal_count"] = grouped_signal_df["name"].apply(
+            lambda x: len(x.split(", "))
+        )
+
+        fig_ip.add_trace(
+            go.Bar(
+                x=grouped_signal_df["signal_time"],
+                y=grouped_signal_df["signal_count"],
+                name="Signal Count",
+                customdata=grouped_signal_df[[
+                    "name",
+                    "window_start",
+                    "window_end",
+                    "signal_count",
+                ]],
+                hovertemplate=(
+                    "Signals: %{customdata[0]}<br>"
+                    "Window: %{customdata[1]} - %{customdata[2]}<br>"
+                    "Signal Count: %{customdata[3]}<extra></extra>"
+                ),
+            ),
+            row=2,
+            col=1,
+        )
+
+    fig_ip.update_layout(
+        title=f"Timeline for {selected_ip}",
+        hovermode="x unified",
+        height=650,
+        legend=dict(orientation="h"),
+    )
+
+    fig_ip.update_yaxes(title_text="Count", row=1, col=1)
+    fig_ip.update_yaxes(title_text="Signals", row=2, col=1)
+    fig_ip.update_xaxes(title_text="Time", row=2, col=1)
+
+    st.plotly_chart(
+        fig_ip,
+        use_container_width=True,
+        key="selected_ip_timeline_chart"
+    )
+
+    st.markdown("### Selected IP Anomalies")
 
     if ip_anomaly_df.empty:
         st.success("No anomalies detected for this IP.")
@@ -244,9 +360,7 @@ def render_selected_ip_timeline(selected_ip):
             ]],
             use_container_width=True,
             hide_index=True
-        )
-
-
+        )    
 def render_ai_explanation(selected, selected_ip):
     st.markdown("## AI Explanation")
 

@@ -35,8 +35,34 @@ def _filter_events(events, filter_config, paths):
     return [e for e in events if match(e)]
 
 
+# def detect_timeseries_signals(events, rules):
+#     signals = set()
+
+#     signal_rules = rules.get("signals", {})
+#     paths = rules.get("paths", {})
+
+#     for signal_name, config in signal_rules.items():
+#         if not config.get("enabled", True):
+#             continue
+
+#         signal_type = config.get("type", "count")
+
+#         if signal_type == "ratio":
+#             matched = _match_ratio_signal(events, config, paths)
+#         else:
+#             matched = _match_count_signal(events, config, paths)
+
+#         if matched:
+#             signals.add(signal_name)
+
+#     return signals
+
 def detect_timeseries_signals(events, rules):
-    signals = set()
+    findings = detect_timeseries_signal_findings(events, rules)
+    return {finding["name"] for finding in findings}
+
+def detect_timeseries_signal_findings(events, rules):
+    findings = []
 
     signal_rules = rules.get("signals", {})
     paths = rules.get("paths", {})
@@ -48,54 +74,81 @@ def detect_timeseries_signals(events, rules):
         signal_type = config.get("type", "count")
 
         if signal_type == "ratio":
-            matched = _match_ratio_signal(events, config, paths)
+            findings.extend(
+                _find_ratio_signal_windows(signal_name, events, config, paths)
+            )
         else:
-            matched = _match_count_signal(events, config, paths)
+            findings.extend(
+                _find_count_signal_windows(signal_name, events, config, paths)
+            )
 
-        if matched:
-            signals.add(signal_name)
-
-    return signals
-
-# def detect_timeseries_signals(events, rules):
-#     """
-#     Detect factual signals from raw time-series log events.
-
-#     This layer must only detect observable facts.
-#     It must not decide attack types.
-#     """
-#     signals = set()
-
-#     signal_rules = rules.get("signals", {})
-#     paths = rules.get("paths", {})
-
-#     detectors = {
-#         "burst_access": lambda: _match_count_signal(
-#             events, signal_rules.get("burst_access", {}), paths
-#         ),
-#         "many_404": lambda: _match_count_signal(
-#             events, signal_rules.get("many_404", {}), paths
-#         ),
-#         "failed_login_count": lambda: _match_count_signal(
-#             events, signal_rules.get("failed_login_count", {}), paths
-#         ),
-#         "admin_access": lambda: _match_count_signal(
-#             events, signal_rules.get("admin_access", {}), paths
-#         ),
-#         "high_failure_rate": lambda: _match_high_failure_rate(events, signal_rules),
-#     }
-
-#     for signal_name, detector in detectors.items():
-#         if not _is_signal_enabled(signal_rules, signal_name):
-#             continue
-
-#         if detector():
-#             signals.add(signal_name)
-
-#     return signals
+    return findings
 
 
+def _find_count_signal_windows(signal_name, events, config, paths):
+    filter_config = config.get("filter")
 
+    if filter_config is None:
+        return []
+
+    filtered = _filter_events(events, filter_config, paths)
+    filtered = sorted(
+        [e for e in filtered if e.get("timestamp") is not None],
+        key=lambda e: e["timestamp"],
+    )
+
+    window_seconds = config.get("window_seconds", 300)
+    threshold = config.get("threshold", 5)
+    window = timedelta(seconds=window_seconds)
+
+    findings = []
+    left = 0
+
+    for right in range(len(filtered)):
+        while filtered[right]["timestamp"] - filtered[left]["timestamp"] > window:
+            left += 1
+
+        window_events = filtered[left:right + 1]
+
+        if len(window_events) >= threshold:
+            findings.append(
+                _build_count_finding(
+                    signal_name=signal_name,
+                    window_events=window_events,
+                    threshold=threshold,
+                )
+            )
+            left = right + 1  # ←ここが重要
+    return findings
+
+def _build_count_finding(signal_name, window_events, threshold):
+    paths = [
+        e.get("url")
+        for e in window_events
+        if e.get("url")
+    ]
+
+    statuses = [
+        e.get("status")
+        for e in window_events
+        if e.get("status") is not None
+    ]
+
+    return {
+        "name": signal_name,
+        "window_start": window_events[0]["timestamp"],
+        "window_end": window_events[-1]["timestamp"],
+        "value": len(window_events),
+        "threshold": threshold,
+        "details": {
+            "sample_paths": list(dict.fromkeys(paths))[:5],
+            "unique_path_count": len(set(paths)),
+            "status_counts": {
+                status: statuses.count(status)
+                for status in sorted(set(statuses))
+            },
+        },
+    }
 
 
 def _extract_timestamps(events, condition=None):
@@ -213,3 +266,61 @@ def _match_ratio_signal(events, config, paths):
         threshold=config.get("threshold", 0.5),
     )
 
+def _find_ratio_signal_windows(signal_name, events, config, paths):
+    numerator_filter = config.get("numerator_filter")
+    denominator_filter = config.get("denominator_filter")
+
+    if numerator_filter is None or denominator_filter is None:
+        return []
+
+    # denominatorでフィルタ
+    filtered = _filter_events(events, denominator_filter, paths)
+
+    filtered = sorted(
+        [e for e in filtered if e.get("timestamp") is not None],
+        key=lambda e: e["timestamp"],
+    )
+
+    window_seconds = config.get("window_seconds", 300)
+    minimum_count = config.get("minimum_count", 5)
+    threshold = config.get("threshold", 0.5)
+
+    window = timedelta(seconds=window_seconds)
+
+    findings = []
+    left = 0
+
+    for right in range(len(filtered)):
+        while filtered[right]["timestamp"] - filtered[left]["timestamp"] > window:
+            left += 1
+
+        window_events = filtered[left:right + 1]
+        total = len(window_events)
+
+        if total < minimum_count:
+            continue
+
+        numerator_events = _filter_events(
+            window_events,
+            numerator_filter,
+            paths,
+        )
+
+        numerator_count = len(numerator_events)
+        ratio = numerator_count / total
+
+        if ratio >= threshold:
+            findings.append({
+                "name": signal_name,
+                "window_start": window_events[0]["timestamp"],
+                "window_end": window_events[-1]["timestamp"],
+                "value": ratio,
+                "threshold": threshold,
+                "details": {
+                    "numerator_count": numerator_count,
+                    "denominator_count": total,
+                },
+            })
+            left = right + 1
+
+    return findings

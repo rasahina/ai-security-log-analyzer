@@ -18,7 +18,7 @@ from core.signal_detector import detect_signals
 from core.attack_detector import detect_attacks
 from data_layer.database import update_analysis_run_summary
 from data_layer.database import get_ip_stats, get_ip_events
-from core.timeseries_signal_detector import detect_timeseries_signals
+from core.timeseries_signal_detector import detect_timeseries_signal_findings
 
 
 def analyze_run_from_db(run_id: int):
@@ -33,8 +33,9 @@ def analyze_run_from_db(run_id: int):
         ip = stat["ip"]
 
         events= events_by_ip.get(ip,[])
-        #signals = detect_time_series(stat, timestamps_by_ip.get(ip, []), rules)
-        signals = detect_timeseries_signals(events, rules)
+        signal_findings = detect_timeseries_signal_findings(events, rules)
+        signals = {finding["name"] for finding in signal_findings}
+        #signals = detect_timeseries_signals(events, rules)
         attacks = detect_attacks(signals, rules)
 
         score = calculate_score(signals, attacks)
@@ -55,6 +56,14 @@ def analyze_run_from_db(run_id: int):
             "suspicious_paths": [],
             "status_counts": {},
             "signals": sorted(list(signals)),
+            "signal_findings": [
+                {
+                    **finding,
+                    "window_start": finding["window_start"].isoformat(),
+                    "window_end": finding["window_end"].isoformat(),
+                }
+                for finding in signal_findings
+            ],
             "attacks": attacks,
             "response_guides": response_guides,
         })

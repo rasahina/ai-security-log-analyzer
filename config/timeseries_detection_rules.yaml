@@ -21,7 +21,7 @@ signals:
     score: 2
     reason: "repeated login attempts"
     filter:
-      path_groupe: login
+      path_group: login
     window_seconds: 300
     threshold: 5
 
@@ -55,7 +55,7 @@ signals:
     threshold: 3
 
   multiple_suspicious_paths:
-    enabled: true
+    enabled: false
     score: 2
     reason: "multiple suspicious paths"
     filter:
