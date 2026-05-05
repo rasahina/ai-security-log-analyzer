@@ -5,6 +5,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
 GUIDES_DIR = PROJECT_ROOT / "guides"
+LOGS_DIR = PROJECT_ROOT / "logs"
+DEBUG_DIR = PROJECT_ROOT / "debug"
+OUTPUT_DIR = PROJECT_ROOT / "output"
 
-DETECTION_RULES_PATH = CONFIG_DIR / "timeseries_detection_rules.yaml"
+USE_V2_RULES = False
+
+DETECTION_RULES_PATH = (
+    CONFIG_DIR / "v2_detection_rules.yaml"
+    if USE_V2_RULES
+    else CONFIG_DIR / "timeseries_detection_rules.yaml"
+)
+
 DB_PATH = DATA_DIR / "security_analyzer.db"

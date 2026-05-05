@@ -35,28 +35,6 @@ def _filter_events(events, filter_config, paths):
     return [e for e in events if match(e)]
 
 
-# def detect_timeseries_signals(events, rules):
-#     signals = set()
-
-#     signal_rules = rules.get("signals", {})
-#     paths = rules.get("paths", {})
-
-#     for signal_name, config in signal_rules.items():
-#         if not config.get("enabled", True):
-#             continue
-
-#         signal_type = config.get("type", "count")
-
-#         if signal_type == "ratio":
-#             matched = _match_ratio_signal(events, config, paths)
-#         else:
-#             matched = _match_count_signal(events, config, paths)
-
-#         if matched:
-#             signals.add(signal_name)
-
-#     return signals
-
 def detect_timeseries_signals(events, rules):
     findings = detect_timeseries_signal_findings(events, rules)
     return {finding["name"] for finding in findings}
@@ -116,12 +94,42 @@ def _find_count_signal_windows(signal_name, events, config, paths):
                     signal_name=signal_name,
                     window_events=window_events,
                     threshold=threshold,
+                    window_seconds=window_seconds,
                 )
             )
             left = right + 1  # ←ここが重要
     return findings
 
-def _build_count_finding(signal_name, window_events, threshold):
+# def _build_count_finding(signal_name, window_events, threshold):
+#     paths = [
+#         e.get("url")
+#         for e in window_events
+#         if e.get("url")
+#     ]
+
+#     statuses = [
+#         e.get("status")
+#         for e in window_events
+#         if e.get("status") is not None
+#     ]
+
+#     return {
+#         "name": signal_name,
+#         "window_start": window_events[0]["timestamp"],
+#         "window_end": window_events[-1]["timestamp"],
+#         "value": len(window_events),
+#         "threshold": threshold,
+#         "details": {
+#             "sample_paths": list(dict.fromkeys(paths))[:5],
+#             "unique_path_count": len(set(paths)),
+#             "status_counts": {
+#                 status: statuses.count(status)
+#                 for status in sorted(set(statuses))
+#             },
+#         },
+#     }
+
+def _build_count_finding(signal_name, window_events, threshold, window_seconds):
     paths = [
         e.get("url")
         for e in window_events
@@ -134,13 +142,26 @@ def _build_count_finding(signal_name, window_events, threshold):
         if e.get("status") is not None
     ]
 
+    value = len(window_events)
+    matched_start = window_events[0]["timestamp"]
+    matched_end = window_events[-1]["timestamp"]
+
     return {
         "name": signal_name,
-        "window_start": window_events[0]["timestamp"],
-        "window_end": window_events[-1]["timestamp"],
-        "value": len(window_events),
+
+        # 新ライン用
+        "matched_start": matched_start,
+        "matched_end": matched_end,
+        "frequency": value / window_seconds,
+
+        # 旧互換
+        "window_start": matched_start,
+        "window_end": matched_end,
+
+        "value": value,
         "threshold": threshold,
         "details": {
+            "metric_type": "count",
             "sample_paths": list(dict.fromkeys(paths))[:5],
             "unique_path_count": len(set(paths)),
             "status_counts": {
@@ -149,7 +170,6 @@ def _build_count_finding(signal_name, window_events, threshold):
             },
         },
     }
-
 
 def _extract_timestamps(events, condition=None):
     timestamps = []
@@ -266,6 +286,7 @@ def _match_ratio_signal(events, config, paths):
         threshold=config.get("threshold", 0.5),
     )
 
+
 def _find_ratio_signal_windows(signal_name, events, config, paths):
     numerator_filter = config.get("numerator_filter")
     denominator_filter = config.get("denominator_filter")
@@ -273,7 +294,6 @@ def _find_ratio_signal_windows(signal_name, events, config, paths):
     if numerator_filter is None or denominator_filter is None:
         return []
 
-    # denominatorでフィルタ
     filtered = _filter_events(events, denominator_filter, paths)
 
     filtered = sorted(
@@ -310,17 +330,88 @@ def _find_ratio_signal_windows(signal_name, events, config, paths):
         ratio = numerator_count / total
 
         if ratio >= threshold:
+            matched_start = window_events[0]["timestamp"]
+            matched_end = window_events[-1]["timestamp"]
+
             findings.append({
                 "name": signal_name,
-                "window_start": window_events[0]["timestamp"],
-                "window_end": window_events[-1]["timestamp"],
+
+                # 新ライン用
+                "matched_start": matched_start,
+                "matched_end": matched_end,
+                "frequency": ratio,
+
+                # 旧互換
+                "window_start": matched_start,
+                "window_end": matched_end,
+
                 "value": ratio,
                 "threshold": threshold,
                 "details": {
+                    "metric_type": "ratio",
                     "numerator_count": numerator_count,
                     "denominator_count": total,
                 },
             })
+
             left = right + 1
 
     return findings
+# def _find_ratio_signal_windows(signal_name, events, config, paths):
+#     numerator_filter = config.get("numerator_filter")
+#     denominator_filter = config.get("denominator_filter")
+
+#     if numerator_filter is None or denominator_filter is None:
+#         return []
+
+#     # denominatorでフィルタ
+#     filtered = _filter_events(events, denominator_filter, paths)
+
+#     filtered = sorted(
+#         [e for e in filtered if e.get("timestamp") is not None],
+#         key=lambda e: e["timestamp"],
+#     )
+
+#     window_seconds = config.get("window_seconds", 300)
+#     minimum_count = config.get("minimum_count", 5)
+#     threshold = config.get("threshold", 0.5)
+
+#     window = timedelta(seconds=window_seconds)
+
+#     findings = []
+#     left = 0
+
+#     for right in range(len(filtered)):
+#         while filtered[right]["timestamp"] - filtered[left]["timestamp"] > window:
+#             left += 1
+
+#         window_events = filtered[left:right + 1]
+#         total = len(window_events)
+
+#         if total < minimum_count:
+#             continue
+
+#         numerator_events = _filter_events(
+#             window_events,
+#             numerator_filter,
+#             paths,
+#         )
+
+#         numerator_count = len(numerator_events)
+#         ratio = numerator_count / total
+
+#         if ratio >= threshold:
+#             findings.append({
+#                 "name": signal_name,
+#                 "window_start": window_events[0]["timestamp"],
+#                 "window_end": window_events[-1]["timestamp"],
+#                 "value": ratio,
+#                 "threshold": threshold,
+#                 "details": {
+#                     "numerator_count": numerator_count,
+#                     "denominator_count": total,
+#                 },
+#             })
+#             left = right + 1
+
+#     return findings

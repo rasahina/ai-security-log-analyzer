@@ -14,11 +14,15 @@ from data_layer.analysis_repository import (
 )
 from core.detection_rules import load_detection_rules
 from core.scoring import calculate_score, get_risk_level
-from core.signal_detector import detect_signals
 from core.attack_detector import detect_attacks
 from data_layer.database import update_analysis_run_summary
 from data_layer.database import get_ip_stats, get_ip_events
 from core.timeseries_signal_detector import detect_timeseries_signal_findings
+from core.debug import debug_dump_json
+from core.cluster_engine import build_signal_clusters
+from core.attack_engine import build_attack_findings
+from core.score_engine import calculate_attack_scores
+from core.risk_engine import calculate_risk
 
 
 def analyze_run_from_db(run_id: int):
@@ -28,12 +32,14 @@ def analyze_run_from_db(run_id: int):
     events_by_ip = get_ip_events(run_id)
 
     results = []
+    debug_signals_by_ip = {}
 
     for stat in ip_stats:
         ip = stat["ip"]
 
         events= events_by_ip.get(ip,[])
         signal_findings = detect_timeseries_signal_findings(events, rules)
+        debug_signals_by_ip[ip] = signal_findings
         signals = {finding["name"] for finding in signal_findings}
         #signals = detect_timeseries_signals(events, rules)
         attacks = detect_attacks(signals, rules)
@@ -59,6 +65,8 @@ def analyze_run_from_db(run_id: int):
             "signal_findings": [
                 {
                     **finding,
+                    "matched_start": finding["matched_start"].isoformat(),
+                    "matched_end": finding["matched_end"].isoformat(),
                     "window_start": finding["window_start"].isoformat(),
                     "window_end": finding["window_end"].isoformat(),
                 }
@@ -67,6 +75,15 @@ def analyze_run_from_db(run_id: int):
             "attacks": attacks,
             "response_guides": response_guides,
         })
+    debug_dump_json("debug_signal.json", debug_signals_by_ip)
+    clusters_by_ip = build_signal_clusters(debug_signals_by_ip, rules)
+    debug_dump_json("debug_cluster.json", clusters_by_ip)
+    attacks_by_ip = build_attack_findings(clusters_by_ip, rules)
+    debug_dump_json("debug_attack.json", attacks_by_ip)
+    scores_by_ip = calculate_attack_scores(attacks_by_ip, rules)
+    debug_dump_json("debug_score.json", scores_by_ip)
+    risk_by_ip = calculate_risk(scores_by_ip, rules)
+    debug_dump_json("debug_risk.json", risk_by_ip)
 
     return results
 

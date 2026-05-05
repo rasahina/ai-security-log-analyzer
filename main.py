@@ -1,9 +1,11 @@
 import json
 import os
-from analyzer import analyze_log_lines, parse_log_lines
+from core.analyzer import analyze_log_file
+from core.config import DATA_DIR, OUTPUT_DIR
 
-INPUT_FILE = "data/sample.log"
-OUTPUT_FILE = "output/result.json"
+
+INPUT_FILE = DATA_DIR / "sample.log"
+OUTPUT_FILE = OUTPUT_DIR / "result.json"
 
 
 def main():

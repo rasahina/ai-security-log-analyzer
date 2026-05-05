@@ -1,11 +1,10 @@
 import re
-import os
 import json
 from datetime import datetime
 from urllib.parse import unquote
+from core.config import LOGS_DIR
 
-
-GUARD_LOG_FILE = "logs/ai_guard.log"
+GUARD_LOG_FILE = LOGS_DIR / "ai_guard.log"
 
 MAX_TEXT_LENGTH = 200
 MAX_LIST_ITEMS = 10
@@ -32,7 +31,7 @@ DANGEROUS_PATTERNS = [
     r"execute.*code",
     r"reveal.*prompt",
     r"print.*prompt",
-    r"\bexecute\b",
+    #r"\bexecute\b",
 ]
 
 def normalize_for_detection(text: str) -> str:
@@ -48,12 +47,12 @@ def write_guard_logs(guard_logs):
     if not guard_logs:
         return
 
-    os.makedirs("logs", exist_ok=True)
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
     existing = set()
 
     # ① 既存ログ読み込み（ここ追加）
-    if os.path.exists(GUARD_LOG_FILE):
+    if GUARD_LOG_FILE.exists():
         with open(GUARD_LOG_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 existing.add(line.strip())

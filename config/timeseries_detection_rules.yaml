@@ -235,3 +235,64 @@ risk_levels:
   low:
     min_score: 0
     label: "LOW"
+signal_clusters:
+  brute_force_cluster:
+    enabled: true
+    required:
+      - failed_login_count
+    optional:
+      - repeated_login
+      - high_failure_rate
+      - burst_access
+    base_confidence: 0.6
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  reconnaissance_cluster:
+    enabled: true
+    required:
+      - many_404
+    optional:
+      - burst_access
+    base_confidence: 0.5
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  admin_access_event:
+    enabled: true
+    required:
+      - admin_access
+    optional: []
+    base_confidence: 0.4
+    tolerance_seconds: 60
+    intensity_scale: 0.01
+attacks:
+  brute_force:
+    enabled: true
+    source_cluster: brute_force_cluster
+    base_score: 6
+
+  reconnaissance:
+    enabled: true
+    source_cluster: reconnaissance_cluster
+    base_score: 4
+
+  admin_access:
+    enabled: true
+    source_cluster: admin_access_event
+    base_score: 3
+
+  suspicious_activity:
+    enabled: true
+    fallback: true
+    base_score: 2
+score:
+  global_score_cap_ratio: 2.0   # base_scoreの最大倍率
+  global_intensity_cap: 1.0     # intensityの正規化上限
+
+risk:
+  risk_level_thresholds:
+    low: 0
+    medium: 3
+    high: 6
+    critical: 10
