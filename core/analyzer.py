@@ -23,6 +23,7 @@ from core.cluster_engine import build_signal_clusters
 from core.attack_engine import build_attack_findings
 from core.score_engine import calculate_attack_scores
 from core.risk_engine import calculate_risk
+from core.cluster_relation_engine import resolve_signal_clusters
 
 
 def analyze_run_from_db(run_id: int):
@@ -78,7 +79,21 @@ def analyze_run_from_db(run_id: int):
     debug_dump_json("debug_signal.json", debug_signals_by_ip)
     clusters_by_ip = build_signal_clusters(debug_signals_by_ip, rules)
     debug_dump_json("debug_cluster.json", clusters_by_ip)
-    attacks_by_ip = build_attack_findings(clusters_by_ip, rules)
+
+    resolved_clusters_by_ip = resolve_signal_clusters(
+        clusters_by_ip,
+        rules,
+    )
+
+    debug_dump_json(
+        "debug_cluster_relation.json",
+        resolved_clusters_by_ip,
+    )
+
+    attacks_by_ip = build_attack_findings(
+        resolved_clusters_by_ip,
+        rules,
+    )
     debug_dump_json("debug_attack.json", attacks_by_ip)
     scores_by_ip = calculate_attack_scores(attacks_by_ip, rules)
     debug_dump_json("debug_score.json", scores_by_ip)

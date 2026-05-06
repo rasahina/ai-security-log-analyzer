@@ -23,10 +23,18 @@
   },
   "10.0.0.7": {
     "source_ip": "10.0.0.7",
-    "overall_score": 0,
-    "risk_level": "low",
-    "attack_count": 0,
-    "attacks": []
+    "overall_score": 3.20525,
+    "risk_level": "medium",
+    "attack_count": 1,
+    "attacks": [
+      {
+        "source_ip": "10.0.0.7",
+        "attack_type": "suspicious_activity",
+        "attack_start": "2026-05-01 14:00:00",
+        "attack_end": "2026-05-01 14:00:20",
+        "attack_score": 3.20525
+      }
+    ]
   },
   "10.0.0.3": {
     "source_ip": "10.0.0.3",
@@ -45,10 +53,18 @@
   },
   "10.0.0.1": {
     "source_ip": "10.0.0.1",
-    "overall_score": 0,
-    "risk_level": "low",
-    "attack_count": 0,
-    "attacks": []
+    "overall_score": 3.20525,
+    "risk_level": "medium",
+    "attack_count": 1,
+    "attacks": [
+      {
+        "source_ip": "10.0.0.1",
+        "attack_type": "suspicious_activity",
+        "attack_start": "2026-05-01 10:00:00",
+        "attack_end": "2026-05-01 10:00:20",
+        "attack_score": 3.20525
+      }
+    ]
   },
   "10.0.0.2": {
     "source_ip": "10.0.0.2",

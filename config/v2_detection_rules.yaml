@@ -200,3 +200,9 @@ risk:
     medium: 3
     high: 6
     critical: 10
+
+cluster_relation:
+  suspicious_activity:
+    absorb_lift: 0.15
+    max_confidence: 0.85
+    overlap_strategy: strongest_confidence
