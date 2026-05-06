@@ -10,3 +10,6 @@ env/
 # Local data
 data/*.db
 logs/
+debug/
+.vscode/
+test.py

@@ -2,7 +2,6 @@ from pathlib import Path
 import yaml
 from core.config import GUIDES_DIR
 
-
 INDEX_PATH = GUIDES_DIR / "index.yaml"
 
 def load_yaml(path):
@@ -11,8 +10,6 @@ def load_yaml(path):
 
 
 def load_index():
-    print("INDEX_PATH:", INDEX_PATH)
-    print("INDEX_EXISTS:", INDEX_PATH.exists())
     return load_yaml(INDEX_PATH)
 
 def get_attack_type_priority():
@@ -29,7 +26,6 @@ def get_guide(attack_type):
 
 
     guide_path = index.get(attack_type)
-    print("DEBUG attack_type:", attack_type)
 
 
     if not guide_path:

@@ -44,7 +44,7 @@ Admin_Access:
     - "不明なアクセスが続く場合は、セキュリティ担当者に調査を依頼してください。"
 
 
-Scanning:
+Scanner:
   title: "Automated scanning activity"
 
   plain_explanation: |
