@@ -1,14 +1,19 @@
 {
   "schema_version": "v2_minimal_0.1",
-  "generated_at": "2026-05-06T14:42:22.238663",
+  "generated_at": "2026-05-06T15:11:07.561177+00:00",
   "ip_reports": [
     {
       "source_ip": "10.0.0.1",
       "overall_score": 3.20525,
       "risk_level": "medium",
       "attack_count": 1,
+      "time_range": {
+        "start": "2026-05-01 10:00:00",
+        "end": "2026-05-01 10:00:20"
+      },
       "findings": [
         {
+          "finding_id": "v2-10.0.0.1-suspicious_activity-20260501T100000",
           "finding_type": "suspicious_activity",
           "attack_type": "suspicious_activity",
           "source_ip": "10.0.0.1",
@@ -25,6 +30,7 @@
       "overall_score": 0,
       "risk_level": "low",
       "attack_count": 0,
+      "time_range": null,
       "findings": []
     },
     {
@@ -32,8 +38,13 @@
       "overall_score": 10.2,
       "risk_level": "critical",
       "attack_count": 2,
+      "time_range": {
+        "start": "2026-05-01 10:20:00",
+        "end": "2026-05-01 10:20:20"
+      },
       "findings": [
         {
+          "finding_id": "v2-10.0.0.3-reconnaissance-20260501T102000",
           "finding_type": "confirmed_attack",
           "attack_type": "reconnaissance",
           "source_ip": "10.0.0.3",
@@ -44,6 +55,7 @@
           }
         },
         {
+          "finding_id": "v2-10.0.0.3-automated_scanner-20260501T102000",
           "finding_type": "confirmed_attack",
           "attack_type": "automated_scanner",
           "source_ip": "10.0.0.3",
@@ -60,8 +72,13 @@
       "overall_score": 10.48275,
       "risk_level": "critical",
       "attack_count": 2,
+      "time_range": {
+        "start": "2026-05-01 11:00:00",
+        "end": "2026-05-01 13:00:20"
+      },
       "findings": [
         {
+          "finding_id": "v2-10.0.0.4-brute_force-20260501T110000",
           "finding_type": "confirmed_attack",
           "attack_type": "brute_force",
           "source_ip": "10.0.0.4",
@@ -72,6 +89,7 @@
           }
         },
         {
+          "finding_id": "v2-10.0.0.4-brute_force-20260501T130000",
           "finding_type": "confirmed_attack",
           "attack_type": "brute_force",
           "source_ip": "10.0.0.4",
@@ -88,8 +106,13 @@
       "overall_score": 3.275,
       "risk_level": "medium",
       "attack_count": 2,
+      "time_range": {
+        "start": "2026-05-01 12:00:00",
+        "end": "2026-05-01 12:00:05"
+      },
       "findings": [
         {
+          "finding_id": "v2-10.0.0.5-admin_access-20260501T120000",
           "finding_type": "confirmed_attack",
           "attack_type": "admin_access",
           "source_ip": "10.0.0.5",
@@ -100,6 +123,7 @@
           }
         },
         {
+          "finding_id": "v2-10.0.0.5-admin_access-20260501T120005",
           "finding_type": "confirmed_attack",
           "attack_type": "admin_access",
           "source_ip": "10.0.0.5",
@@ -116,8 +140,13 @@
       "overall_score": 3.20525,
       "risk_level": "medium",
       "attack_count": 1,
+      "time_range": {
+        "start": "2026-05-01 14:00:00",
+        "end": "2026-05-01 14:00:20"
+      },
       "findings": [
         {
+          "finding_id": "v2-10.0.0.7-suspicious_activity-20260501T140000",
           "finding_type": "suspicious_activity",
           "attack_type": "suspicious_activity",
           "source_ip": "10.0.0.7",
@@ -134,6 +163,7 @@
       "overall_score": 0,
       "risk_level": "low",
       "attack_count": 0,
+      "time_range": null,
       "findings": []
     }
   ]
