@@ -9,12 +9,12 @@ LOGS_DIR = PROJECT_ROOT / "logs"
 DEBUG_DIR = PROJECT_ROOT / "debug"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
-USE_V2_RULES = False
-
 DETECTION_RULES_PATH = (
+    CONFIG_DIR / "timeseries_detection_rules.yaml"
+)
+
+DETECTION_RULES_PATH_V2 = (
     CONFIG_DIR / "v2_detection_rules.yaml"
-    if USE_V2_RULES
-    else CONFIG_DIR / "timeseries_detection_rules.yaml"
 )
 
 DB_PATH = DATA_DIR / "security_analyzer.db"

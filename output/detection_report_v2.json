@@ -1,0 +1,140 @@
+{
+  "schema_version": "v2_minimal_0.1",
+  "generated_at": "2026-05-06T14:42:22.238663",
+  "ip_reports": [
+    {
+      "source_ip": "10.0.0.1",
+      "overall_score": 3.20525,
+      "risk_level": "medium",
+      "attack_count": 1,
+      "findings": [
+        {
+          "finding_type": "suspicious_activity",
+          "attack_type": "suspicious_activity",
+          "source_ip": "10.0.0.1",
+          "score": 3.20525,
+          "time_range": {
+            "start": "2026-05-01 10:00:00",
+            "end": "2026-05-01 10:00:20"
+          }
+        }
+      ]
+    },
+    {
+      "source_ip": "10.0.0.2",
+      "overall_score": 0,
+      "risk_level": "low",
+      "attack_count": 0,
+      "findings": []
+    },
+    {
+      "source_ip": "10.0.0.3",
+      "overall_score": 10.2,
+      "risk_level": "critical",
+      "attack_count": 2,
+      "findings": [
+        {
+          "finding_type": "confirmed_attack",
+          "attack_type": "reconnaissance",
+          "source_ip": "10.0.0.3",
+          "score": 6.64,
+          "time_range": {
+            "start": "2026-05-01 10:20:00",
+            "end": "2026-05-01 10:20:20"
+          }
+        },
+        {
+          "finding_type": "confirmed_attack",
+          "attack_type": "automated_scanner",
+          "source_ip": "10.0.0.3",
+          "score": 10.2,
+          "time_range": {
+            "start": "2026-05-01 10:20:00",
+            "end": "2026-05-01 10:20:20"
+          }
+        }
+      ]
+    },
+    {
+      "source_ip": "10.0.0.4",
+      "overall_score": 10.48275,
+      "risk_level": "critical",
+      "attack_count": 2,
+      "findings": [
+        {
+          "finding_type": "confirmed_attack",
+          "attack_type": "brute_force",
+          "source_ip": "10.0.0.4",
+          "score": 10.48275,
+          "time_range": {
+            "start": "2026-05-01 11:00:00",
+            "end": "2026-05-01 11:00:20"
+          }
+        },
+        {
+          "finding_type": "confirmed_attack",
+          "attack_type": "brute_force",
+          "source_ip": "10.0.0.4",
+          "score": 10.48275,
+          "time_range": {
+            "start": "2026-05-01 13:00:00",
+            "end": "2026-05-01 13:00:20"
+          }
+        }
+      ]
+    },
+    {
+      "source_ip": "10.0.0.5",
+      "overall_score": 3.275,
+      "risk_level": "medium",
+      "attack_count": 2,
+      "findings": [
+        {
+          "finding_type": "confirmed_attack",
+          "attack_type": "admin_access",
+          "source_ip": "10.0.0.5",
+          "score": 3.275,
+          "time_range": {
+            "start": "2026-05-01 12:00:00",
+            "end": "2026-05-01 12:00:00"
+          }
+        },
+        {
+          "finding_type": "confirmed_attack",
+          "attack_type": "admin_access",
+          "source_ip": "10.0.0.5",
+          "score": 3.275,
+          "time_range": {
+            "start": "2026-05-01 12:00:05",
+            "end": "2026-05-01 12:00:05"
+          }
+        }
+      ]
+    },
+    {
+      "source_ip": "10.0.0.7",
+      "overall_score": 3.20525,
+      "risk_level": "medium",
+      "attack_count": 1,
+      "findings": [
+        {
+          "finding_type": "suspicious_activity",
+          "attack_type": "suspicious_activity",
+          "source_ip": "10.0.0.7",
+          "score": 3.20525,
+          "time_range": {
+            "start": "2026-05-01 14:00:00",
+            "end": "2026-05-01 14:00:20"
+          }
+        }
+      ]
+    },
+    {
+      "source_ip": "192.168.1.1",
+      "overall_score": 0,
+      "risk_level": "low",
+      "attack_count": 0,
+      "findings": []
+    }
+  ]
+}
