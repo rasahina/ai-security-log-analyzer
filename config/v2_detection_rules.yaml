@@ -139,6 +139,31 @@ signal_clusters:
     tolerance_seconds: 300
     intensity_scale: 0.02
 
+  repeated_login_cluster:
+    enabled: true
+    required:
+      - repeated_login
+
+    optional:
+      burst_access:
+        lift: 0.15
+
+    base_confidence: 0.45
+    default_optional_lift: 0.15
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  burst_access_cluster:
+    enabled: true
+    required:
+      - burst_access
+
+    optional: {}
+
+    base_confidence: 0.4
+    default_optional_lift: 0.1
+    tolerance_seconds: 60
+    intensity_scale: 0.08
 attacks:
   brute_force:
     enabled: true

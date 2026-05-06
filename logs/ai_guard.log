@@ -378,3 +378,4 @@
 {"timestamp": "2026-05-05T18:30:52.993927", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
 {"timestamp": "2026-05-05T18:33:23.336401", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
 {"timestamp": "2026-05-05T18:38:26.497341", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
+{"timestamp": "2026-05-06T12:18:37.778040", "field": "signals", "reason": "invalid_list_type", "action": "replaced_with_empty_list", "sample": "None"}
