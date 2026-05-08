@@ -74,6 +74,59 @@ output/detection_report_v2.json
 ```
 
 
+## Knowledge Management Direction
+
+The project architecture has moved from an Obsidian-based document model to a Notion-based database model.
+
+Knowledge entities are managed as structured databases:
+
+- signals
+- signal clusters
+- attacks
+- response actions
+
+The analyzer should treat these as reference knowledge, not procedural execution logic.
+
+Core detection logic remains deterministic Python code.
+
+
+## Response Guide Redesign
+
+The response guide model has been redesigned.
+
+The system should not store large per-attack response manuals directly inside attack definitions.
+
+Instead, attacks reference response action values such as:
+
+- IP_Block
+- Password_Modification
+- Account_Lock
+- Rate_Limit
+- Investigation_Required
+
+Detailed operational procedures are maintained separately in a Notion response database.
+
+This separates:
+
+```text
+Detection knowledge
+≠
+Operational response knowledge
+```
+
+The current direction is:
+
+```text
+Attack
+↓
+response_action values
+↓
+Response Action DB (Notion)
+```
+
+This keeps DetectionReport compact and prevents operational manuals from leaking into detection logic.
+
+
 ## V2 Architecture
 
 V2 is organized into three layers:
@@ -204,7 +257,6 @@ v2-10.0.0.4-brute_force-20260501T110000
 - Interactive Streamlit dashboard
 - IP-level detailed analysis
 - CSV export
-- Response guide system (YAML-based actionable guidance)
 
 ### AI (Optional)
 
@@ -221,7 +273,8 @@ v2-10.0.0.4-brute_force-20260501T110000
 - Analysis Engine: Python / pandas
 - Visualization: Plotly
 - Database: SQLite (planned PostgreSQL migration)
-- AI (optional): Ollama (local LLM)
+- Knowledge DB: Notion
+- AI (optional): external / BYO AI
 
 ### Environment
 
@@ -231,16 +284,17 @@ v2-10.0.0.4-brute_force-20260501T110000
 
 ## AI Policy (Critical Design Rules)
 
-### AI is strictly limited to explanation only.
+### AI is strictly limited to explanation and assistance.
 
 ### AI is NOT used for:
 - Attack detection
 - Risk scoring
 - Decision making
-- Recommended actions
+- Recommended action decisions
 
 ### AI is ONLY used for:
 - Explaining already-detected results
+- Assisting investigations
 
 ### V2 AI direction
 
@@ -251,7 +305,9 @@ Rules:
 - AI is not part of Core Engine
 - AI does not participate in deterministic detection
 - AI reads DetectionReport
+- AI performs assistance, not detection
 - AI is an assistant, not a decision maker
+- Users should run AI in their own environment
 - The system must work without AI
 - Explainability evidence must originate from deterministic engine output
 - AI provider independence must be preserved
@@ -281,21 +337,6 @@ AI is disabled by default to ensure:
 - Safe execution
 
 
-## Example Detection
-
-Event:
-Automated scanning activity and admin access attempts
-
-Risk level:
-HIGH
-
-Reason:
-IP address 172.16.0.9 shows a high failure rate with repeated access to sensitive endpoints such as /admin and /login. The activity includes multiple 404 responses and burst access patterns.
-
-Recommended action:
-Apply rate limiting and block scanning source if confirmed / Investigate immediately
-
-
 ## Usage
 
 ### 1. Start Ollama (optional)
@@ -323,35 +364,6 @@ http://localhost:8501
 ```
 
 
-## AI Mode
-
-### AI can be toggled inside the UI.
-
-- OFF: no AI calls, lightweight mode
-- ON: generates explanations using local LLM
-
-
-### Ollama Configuration (Optional)
-
-When using AI, Ollama runs on Windows and is accessed from WSL:
-
-```text
-OLLAMA_URL = "http://172.30.176.1:11434/api/generate"
-```
-
-### Check Ollama:
-
-#### Windows:
-```bash
-curl http://localhost:11434
-```
-
-#### WSL:
-```bash
-curl http://172.30.176.1:11434
-```
-
-
 ## Current Status
 
 Classic line:
@@ -368,8 +380,6 @@ Classic line:
 - AI caching implemented
 - CSV export implemented
 - History storage implemented (SQLite)
-- Response guide system implemented
-- Attack type priority system implemented (index.yaml)
 - UI data/display separation implemented
 
 V2 line:
@@ -378,6 +388,8 @@ V2 line:
 - Core Engine and Interpretation Layer separated
 - DetectionReport generation implemented
 - Minimal schema version: `v2_minimal_0.1`
+- Notion-based knowledge management direction established
+- Response action reference model established
 - Formal output target: `output/detection_report_v2.json`
 - Next focus: `api_v2.py` and `POST /analyze-v2`
 
@@ -394,7 +406,7 @@ V2 line:
 ### Mid-term:
 - Improve detection accuracy
 - Reduce false positives
-- Expand response guides
+- Expand signal / attack DBs
 - Support multiple log formats (nginx, apache, auth.log)
 - Cross-run analysis (recurring IP detection)
 - Better anomaly detection
