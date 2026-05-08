@@ -1,239 +1,59 @@
 {
-  "10.0.0.4": [
-    {
-      "name": "repeated_login",
-      "matched_start": "2026-05-01 11:00:00",
-      "matched_end": "2026-05-01 11:00:20",
-      "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 11:00:00",
-      "window_end": "2026-05-01 11:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "401": 3,
-          "403": 2
-        }
-      }
-    },
-    {
-      "name": "repeated_login",
-      "matched_start": "2026-05-01 13:00:00",
-      "matched_end": "2026-05-01 13:00:20",
-      "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 13:00:00",
-      "window_end": "2026-05-01 13:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "401": 3,
-          "403": 2
-        }
-      }
-    },
+  "172.16.0.9": [
     {
       "name": "failed_login_count",
-      "matched_start": "2026-05-01 11:00:00",
-      "matched_end": "2026-05-01 11:00:20",
+      "matched_start": "2026-05-01 10:20:01",
+      "matched_end": "2026-05-01 10:20:08",
       "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 11:00:00",
-      "window_end": "2026-05-01 11:00:20",
+      "window_start": "2026-05-01 10:20:01",
+      "window_end": "2026-05-01 10:20:08",
       "value": 5,
       "threshold": 5,
       "details": {
         "metric_type": "count",
         "sample_paths": [
+          "/admin",
           "/login"
         ],
-        "unique_path_count": 1,
+        "unique_path_count": 2,
         "status_counts": {
-          "401": 3,
-          "403": 2
-        }
-      }
-    },
-    {
-      "name": "failed_login_count",
-      "matched_start": "2026-05-01 13:00:00",
-      "matched_end": "2026-05-01 13:00:20",
-      "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 13:00:00",
-      "window_end": "2026-05-01 13:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "401": 3,
-          "403": 2
+          "401": 2,
+          "403": 3
         }
       }
     },
     {
       "name": "high_failure_rate",
-      "matched_start": "2026-05-01 11:00:00",
-      "matched_end": "2026-05-01 11:00:20",
-      "frequency": 1.0,
-      "window_start": "2026-05-01 11:00:00",
-      "window_end": "2026-05-01 11:00:20",
-      "value": 1.0,
+      "matched_start": "2026-05-01 10:20:01",
+      "matched_end": "2026-05-01 10:20:06",
+      "frequency": 0.5,
+      "window_start": "2026-05-01 10:20:01",
+      "window_end": "2026-05-01 10:20:06",
+      "value": 0.5,
       "threshold": 0.5,
       "details": {
         "metric_type": "ratio",
-        "numerator_count": 5,
-        "denominator_count": 5
+        "numerator_count": 3,
+        "denominator_count": 6
       }
     },
-    {
-      "name": "high_failure_rate",
-      "matched_start": "2026-05-01 13:00:00",
-      "matched_end": "2026-05-01 13:00:20",
-      "frequency": 1.0,
-      "window_start": "2026-05-01 13:00:00",
-      "window_end": "2026-05-01 13:00:20",
-      "value": 1.0,
-      "threshold": 0.5,
-      "details": {
-        "metric_type": "ratio",
-        "numerator_count": 5,
-        "denominator_count": 5
-      }
-    },
-    {
-      "name": "burst_access",
-      "matched_start": "2026-05-01 11:00:00",
-      "matched_end": "2026-05-01 11:00:20",
-      "frequency": 0.08333333333333333,
-      "window_start": "2026-05-01 11:00:00",
-      "window_end": "2026-05-01 11:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "401": 3,
-          "403": 2
-        }
-      }
-    },
-    {
-      "name": "burst_access",
-      "matched_start": "2026-05-01 13:00:00",
-      "matched_end": "2026-05-01 13:00:20",
-      "frequency": 0.08333333333333333,
-      "window_start": "2026-05-01 13:00:00",
-      "window_end": "2026-05-01 13:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "401": 3,
-          "403": 2
-        }
-      }
-    }
-  ],
-  "10.0.0.7": [
-    {
-      "name": "repeated_login",
-      "matched_start": "2026-05-01 14:00:00",
-      "matched_end": "2026-05-01 14:00:20",
-      "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 14:00:00",
-      "window_end": "2026-05-01 14:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "200": 1,
-          "401": 4
-        }
-      }
-    },
-    {
-      "name": "high_failure_rate",
-      "matched_start": "2026-05-01 14:00:00",
-      "matched_end": "2026-05-01 14:00:20",
-      "frequency": 0.8,
-      "window_start": "2026-05-01 14:00:00",
-      "window_end": "2026-05-01 14:00:20",
-      "value": 0.8,
-      "threshold": 0.5,
-      "details": {
-        "metric_type": "ratio",
-        "numerator_count": 4,
-        "denominator_count": 5
-      }
-    },
-    {
-      "name": "burst_access",
-      "matched_start": "2026-05-01 14:00:00",
-      "matched_end": "2026-05-01 14:00:20",
-      "frequency": 0.08333333333333333,
-      "window_start": "2026-05-01 14:00:00",
-      "window_end": "2026-05-01 14:00:20",
-      "value": 5,
-      "threshold": 5,
-      "details": {
-        "metric_type": "count",
-        "sample_paths": [
-          "/login"
-        ],
-        "unique_path_count": 1,
-        "status_counts": {
-          "200": 1,
-          "401": 4
-        }
-      }
-    }
-  ],
-  "10.0.0.3": [
     {
       "name": "many_404",
-      "matched_start": "2026-05-01 10:20:00",
-      "matched_end": "2026-05-01 10:20:20",
+      "matched_start": "2026-05-01 10:20:03",
+      "matched_end": "2026-05-01 10:20:10",
       "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 10:20:00",
-      "window_end": "2026-05-01 10:20:20",
+      "window_start": "2026-05-01 10:20:03",
+      "window_end": "2026-05-01 10:20:10",
       "value": 5,
       "threshold": 5,
       "details": {
         "metric_type": "count",
         "sample_paths": [
-          "/aaa",
-          "/bbb",
-          "/ccc",
-          "/ddd",
-          "/eee"
+          "/phpmyadmin",
+          "/.env",
+          "/backup",
+          "/config",
+          "/wp-admin"
         ],
         "unique_path_count": 5,
         "status_counts": {
@@ -242,38 +62,145 @@
       }
     },
     {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 10:20:01",
+      "matched_end": "2026-05-01 10:20:01",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 10:20:01",
+      "window_end": "2026-05-01 10:20:01",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/admin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "403": 1
+        }
+      }
+    },
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 10:20:03",
+      "matched_end": "2026-05-01 10:20:03",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 10:20:03",
+      "window_end": "2026-05-01 10:20:03",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/phpmyadmin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "404": 1
+        }
+      }
+    },
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 10:20:07",
+      "matched_end": "2026-05-01 10:20:07",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 10:20:07",
+      "window_end": "2026-05-01 10:20:07",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/admin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "403": 1
+        }
+      }
+    },
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 10:20:10",
+      "matched_end": "2026-05-01 10:20:10",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 10:20:10",
+      "window_end": "2026-05-01 10:20:10",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/wp-admin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "404": 1
+        }
+      }
+    },
+    {
       "name": "burst_access",
-      "matched_start": "2026-05-01 10:20:00",
-      "matched_end": "2026-05-01 10:20:20",
+      "matched_start": "2026-05-01 10:20:01",
+      "matched_end": "2026-05-01 10:20:05",
       "frequency": 0.08333333333333333,
-      "window_start": "2026-05-01 10:20:00",
-      "window_end": "2026-05-01 10:20:20",
+      "window_start": "2026-05-01 10:20:01",
+      "window_end": "2026-05-01 10:20:05",
       "value": 5,
       "threshold": 5,
       "details": {
         "metric_type": "count",
         "sample_paths": [
-          "/aaa",
-          "/bbb",
-          "/ccc",
-          "/ddd",
-          "/eee"
+          "/admin",
+          "/login",
+          "/phpmyadmin",
+          "/.env",
+          "/backup"
         ],
         "unique_path_count": 5,
         "status_counts": {
-          "404": 5
+          "401": 1,
+          "403": 1,
+          "404": 3
+        }
+      }
+    },
+    {
+      "name": "burst_access",
+      "matched_start": "2026-05-01 10:20:06",
+      "matched_end": "2026-05-01 10:20:10",
+      "frequency": 0.08333333333333333,
+      "window_start": "2026-05-01 10:20:06",
+      "window_end": "2026-05-01 10:20:10",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/login",
+          "/admin",
+          "/config",
+          "/wp-admin"
+        ],
+        "unique_path_count": 4,
+        "status_counts": {
+          "401": 1,
+          "403": 2,
+          "404": 2
         }
       }
     }
   ],
-  "10.0.0.1": [
+  "198.51.100.10": [
     {
       "name": "repeated_login",
-      "matched_start": "2026-05-01 10:00:00",
-      "matched_end": "2026-05-01 10:00:20",
+      "matched_start": "2026-05-01 10:10:01",
+      "matched_end": "2026-05-01 10:10:05",
       "frequency": 0.016666666666666666,
-      "window_start": "2026-05-01 10:00:00",
-      "window_end": "2026-05-01 10:00:20",
+      "window_start": "2026-05-01 10:10:01",
+      "window_end": "2026-05-01 10:10:05",
       "value": 5,
       "threshold": 5,
       "details": {
@@ -283,23 +210,163 @@
         ],
         "unique_path_count": 1,
         "status_counts": {
-          "200": 5
+          "401": 4,
+          "403": 1
         }
       }
     },
     {
-      "name": "burst_access",
-      "matched_start": "2026-05-01 10:00:00",
-      "matched_end": "2026-05-01 10:00:20",
-      "frequency": 0.08333333333333333,
-      "window_start": "2026-05-01 10:00:00",
-      "window_end": "2026-05-01 10:00:20",
+      "name": "failed_login_count",
+      "matched_start": "2026-05-01 10:10:01",
+      "matched_end": "2026-05-01 10:10:05",
+      "frequency": 0.016666666666666666,
+      "window_start": "2026-05-01 10:10:01",
+      "window_end": "2026-05-01 10:10:05",
       "value": 5,
       "threshold": 5,
       "details": {
         "metric_type": "count",
         "sample_paths": [
           "/login"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "401": 4,
+          "403": 1
+        }
+      }
+    },
+    {
+      "name": "high_failure_rate",
+      "matched_start": "2026-05-01 10:10:01",
+      "matched_end": "2026-05-01 10:10:05",
+      "frequency": 1.0,
+      "window_start": "2026-05-01 10:10:01",
+      "window_end": "2026-05-01 10:10:05",
+      "value": 1.0,
+      "threshold": 0.5,
+      "details": {
+        "metric_type": "ratio",
+        "numerator_count": 5,
+        "denominator_count": 5
+      }
+    },
+    {
+      "name": "burst_access",
+      "matched_start": "2026-05-01 10:10:01",
+      "matched_end": "2026-05-01 10:10:05",
+      "frequency": 0.08333333333333333,
+      "window_start": "2026-05-01 10:10:01",
+      "window_end": "2026-05-01 10:10:05",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/login"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "401": 4,
+          "403": 1
+        }
+      }
+    }
+  ],
+  "198.51.100.20": [
+    {
+      "name": "repeated_login",
+      "matched_start": "2026-05-01 02:15:01",
+      "matched_end": "2026-05-01 02:15:05",
+      "frequency": 0.016666666666666666,
+      "window_start": "2026-05-01 02:15:01",
+      "window_end": "2026-05-01 02:15:05",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/login"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "401": 3,
+          "403": 2
+        }
+      }
+    },
+    {
+      "name": "failed_login_count",
+      "matched_start": "2026-05-01 02:15:01",
+      "matched_end": "2026-05-01 02:15:05",
+      "frequency": 0.016666666666666666,
+      "window_start": "2026-05-01 02:15:01",
+      "window_end": "2026-05-01 02:15:05",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/login"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "401": 3,
+          "403": 2
+        }
+      }
+    },
+    {
+      "name": "high_failure_rate",
+      "matched_start": "2026-05-01 02:15:01",
+      "matched_end": "2026-05-01 02:15:05",
+      "frequency": 1.0,
+      "window_start": "2026-05-01 02:15:01",
+      "window_end": "2026-05-01 02:15:05",
+      "value": 1.0,
+      "threshold": 0.5,
+      "details": {
+        "metric_type": "ratio",
+        "numerator_count": 5,
+        "denominator_count": 5
+      }
+    },
+    {
+      "name": "burst_access",
+      "matched_start": "2026-05-01 02:15:01",
+      "matched_end": "2026-05-01 02:15:05",
+      "frequency": 0.08333333333333333,
+      "window_start": "2026-05-01 02:15:01",
+      "window_end": "2026-05-01 02:15:05",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/login"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "401": 3,
+          "403": 2
+        }
+      }
+    }
+  ],
+  "172.16.0.8": [
+    {
+      "name": "burst_access",
+      "matched_start": "2026-05-01 10:30:00",
+      "matched_end": "2026-05-01 10:30:04",
+      "frequency": 0.08333333333333333,
+      "window_start": "2026-05-01 10:30:00",
+      "window_end": "2026-05-01 10:30:04",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/home"
         ],
         "unique_path_count": 1,
         "status_counts": {
@@ -308,36 +375,107 @@
       }
     }
   ],
-  "10.0.0.2": [],
-  "192.168.1.1": [],
-  "10.0.0.5": [
+  "10.0.0.6": [
     {
-      "name": "admin_access",
-      "matched_start": "2026-05-01 12:00:00",
-      "matched_end": "2026-05-01 12:00:00",
-      "frequency": 0.0033333333333333335,
-      "window_start": "2026-05-01 12:00:00",
-      "window_end": "2026-05-01 12:00:00",
-      "value": 1,
-      "threshold": 1,
+      "name": "many_404",
+      "matched_start": "2026-05-01 10:15:01",
+      "matched_end": "2026-05-01 10:15:20",
+      "frequency": 0.016666666666666666,
+      "window_start": "2026-05-01 10:15:01",
+      "window_end": "2026-05-01 10:15:20",
+      "value": 5,
+      "threshold": 5,
       "details": {
         "metric_type": "count",
         "sample_paths": [
-          "/admin"
+          "/phpmyadmin",
+          "/.env",
+          "/backup",
+          "/config",
+          "/wp-admin"
         ],
-        "unique_path_count": 1,
+        "unique_path_count": 5,
         "status_counts": {
-          "200": 1
+          "404": 5
         }
       }
     },
     {
       "name": "admin_access",
-      "matched_start": "2026-05-01 12:00:05",
-      "matched_end": "2026-05-01 12:00:05",
+      "matched_start": "2026-05-01 10:15:01",
+      "matched_end": "2026-05-01 10:15:01",
       "frequency": 0.0033333333333333335,
-      "window_start": "2026-05-01 12:00:05",
-      "window_end": "2026-05-01 12:00:05",
+      "window_start": "2026-05-01 10:15:01",
+      "window_end": "2026-05-01 10:15:01",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/phpmyadmin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "404": 1
+        }
+      }
+    },
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 10:15:20",
+      "matched_end": "2026-05-01 10:15:20",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 10:15:20",
+      "window_end": "2026-05-01 10:15:20",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/wp-admin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "404": 1
+        }
+      }
+    },
+    {
+      "name": "burst_access",
+      "matched_start": "2026-05-01 10:15:01",
+      "matched_end": "2026-05-01 10:15:20",
+      "frequency": 0.08333333333333333,
+      "window_start": "2026-05-01 10:15:01",
+      "window_end": "2026-05-01 10:15:20",
+      "value": 5,
+      "threshold": 5,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/phpmyadmin",
+          "/.env",
+          "/backup",
+          "/config",
+          "/wp-admin"
+        ],
+        "unique_path_count": 5,
+        "status_counts": {
+          "404": 5
+        }
+      }
+    }
+  ],
+  "198.51.100.90": [],
+  "192.168.1.20": [],
+  "192.168.1.10": [],
+  "203.0.113.50": [
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 02:10:01",
+      "matched_end": "2026-05-01 02:10:01",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 02:10:01",
+      "window_end": "2026-05-01 02:10:01",
       "value": 1,
       "threshold": 1,
       "details": {
@@ -347,9 +485,53 @@
         ],
         "unique_path_count": 1,
         "status_counts": {
-          "401": 1
+          "403": 1
+        }
+      }
+    },
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 02:10:02",
+      "matched_end": "2026-05-01 02:10:02",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 02:10:02",
+      "window_end": "2026-05-01 02:10:02",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/admin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "403": 1
         }
       }
     }
-  ]
+  ],
+  "203.0.113.30": [
+    {
+      "name": "admin_access",
+      "matched_start": "2026-05-01 10:18:01",
+      "matched_end": "2026-05-01 10:18:01",
+      "frequency": 0.0033333333333333335,
+      "window_start": "2026-05-01 10:18:01",
+      "window_end": "2026-05-01 10:18:01",
+      "value": 1,
+      "threshold": 1,
+      "details": {
+        "metric_type": "count",
+        "sample_paths": [
+          "/admin"
+        ],
+        "unique_path_count": 1,
+        "status_counts": {
+          "403": 1
+        }
+      }
+    }
+  ],
+  "192.168.1.11": [],
+  "1.2.3.4": []
 }

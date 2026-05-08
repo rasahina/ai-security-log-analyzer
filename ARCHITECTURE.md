@@ -567,3 +567,10 @@ Current top priority:
 ```text
 DetectionReport contract stabilization
 ```
+
+## V2 Roadmap
+- V2 stabilization
+- legacy removal
+- YAML split
+- response action redesign
+- UI expansion

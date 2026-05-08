@@ -1,217 +1,391 @@
 {
-  "10.0.0.4": [
+  "172.16.0.9": [
     {
-      "source_ip": "10.0.0.4",
+      "source_ip": "172.16.0.9",
       "attack_type": "brute_force",
       "intensity": 4.166666666666666,
-      "confidence": 0.7952,
-      "attack_start": "2026-05-01 11:00:00",
-      "attack_end": "2026-05-01 11:00:20",
+      "confidence": 0.744,
+      "attack_start": "2026-05-01 10:20:01",
+      "attack_end": "2026-05-01 10:20:08",
       "base_score": 6,
       "score_cap_ratio_override": null,
       "intensity_cap_override": null,
       "evidence_signals": [
         {
           "signal_name": "failed_login_count",
-          "matched_start": "2026-05-01 11:00:00",
-          "matched_end": "2026-05-01 11:00:20",
-          "value": 5,
-          "frequency": 0.016666666666666666
-        },
-        {
-          "signal_name": "repeated_login",
-          "matched_start": "2026-05-01 11:00:00",
-          "matched_end": "2026-05-01 11:00:20",
+          "matched_start": "2026-05-01 10:20:01",
+          "matched_end": "2026-05-01 10:20:08",
           "value": 5,
           "frequency": 0.016666666666666666
         },
         {
           "signal_name": "high_failure_rate",
-          "matched_start": "2026-05-01 11:00:00",
-          "matched_end": "2026-05-01 11:00:20",
-          "value": 1.0,
-          "frequency": 1.0
+          "matched_start": "2026-05-01 10:20:01",
+          "matched_end": "2026-05-01 10:20:06",
+          "value": 0.5,
+          "frequency": 0.5
         },
         {
           "signal_name": "burst_access",
-          "matched_start": "2026-05-01 11:00:00",
-          "matched_end": "2026-05-01 11:00:20",
+          "matched_start": "2026-05-01 10:20:01",
+          "matched_end": "2026-05-01 10:20:05",
           "value": 5,
           "frequency": 0.08333333333333333
         }
       ]
     },
     {
-      "source_ip": "10.0.0.4",
-      "attack_type": "brute_force",
-      "intensity": 4.166666666666666,
-      "confidence": 0.7952,
-      "attack_start": "2026-05-01 13:00:00",
-      "attack_end": "2026-05-01 13:00:20",
-      "base_score": 6,
-      "score_cap_ratio_override": null,
-      "intensity_cap_override": null,
-      "evidence_signals": [
-        {
-          "signal_name": "failed_login_count",
-          "matched_start": "2026-05-01 13:00:00",
-          "matched_end": "2026-05-01 13:00:20",
-          "value": 5,
-          "frequency": 0.016666666666666666
-        },
-        {
-          "signal_name": "repeated_login",
-          "matched_start": "2026-05-01 13:00:00",
-          "matched_end": "2026-05-01 13:00:20",
-          "value": 5,
-          "frequency": 0.016666666666666666
-        },
-        {
-          "signal_name": "high_failure_rate",
-          "matched_start": "2026-05-01 13:00:00",
-          "matched_end": "2026-05-01 13:00:20",
-          "value": 1.0,
-          "frequency": 1.0
-        },
-        {
-          "signal_name": "burst_access",
-          "matched_start": "2026-05-01 13:00:00",
-          "matched_end": "2026-05-01 13:00:20",
-          "value": 5,
-          "frequency": 0.08333333333333333
-        }
-      ]
-    }
-  ],
-  "10.0.0.7": [
-    {
-      "source_ip": "10.0.0.7",
-      "attack_type": "suspicious_activity",
-      "intensity": 4.166666666666666,
-      "confidence": 0.602625,
-      "attack_start": "2026-05-01 14:00:00",
-      "attack_end": "2026-05-01 14:00:20",
-      "base_score": 2,
-      "score_cap_ratio_override": null,
-      "intensity_cap_override": null,
-      "evidence_signals": [
-        {
-          "signal_name": "repeated_login",
-          "matched_start": "2026-05-01 14:00:00",
-          "matched_end": "2026-05-01 14:00:20",
-          "value": 5,
-          "frequency": 0.016666666666666666
-        },
-        {
-          "signal_name": "burst_access",
-          "matched_start": "2026-05-01 14:00:00",
-          "matched_end": "2026-05-01 14:00:20",
-          "value": 5,
-          "frequency": 0.08333333333333333
-        }
-      ]
-    }
-  ],
-  "10.0.0.3": [
-    {
-      "source_ip": "10.0.0.3",
+      "source_ip": "172.16.0.9",
       "attack_type": "reconnaissance",
       "intensity": 4.166666666666666,
       "confidence": 0.6,
-      "attack_start": "2026-05-01 10:20:00",
-      "attack_end": "2026-05-01 10:20:20",
+      "attack_start": "2026-05-01 10:20:01",
+      "attack_end": "2026-05-01 10:20:10",
       "base_score": 4,
       "score_cap_ratio_override": null,
       "intensity_cap_override": null,
       "evidence_signals": [
         {
           "signal_name": "many_404",
-          "matched_start": "2026-05-01 10:20:00",
-          "matched_end": "2026-05-01 10:20:20",
+          "matched_start": "2026-05-01 10:20:03",
+          "matched_end": "2026-05-01 10:20:10",
           "value": 5,
           "frequency": 0.016666666666666666
         },
         {
           "signal_name": "burst_access",
-          "matched_start": "2026-05-01 10:20:00",
-          "matched_end": "2026-05-01 10:20:20",
+          "matched_start": "2026-05-01 10:20:01",
+          "matched_end": "2026-05-01 10:20:05",
           "value": 5,
           "frequency": 0.08333333333333333
         }
       ]
-    }
-  ],
-  "10.0.0.1": [
+    },
     {
-      "source_ip": "10.0.0.1",
-      "attack_type": "suspicious_activity",
-      "intensity": 4.166666666666666,
-      "confidence": 0.602625,
-      "attack_start": "2026-05-01 10:00:00",
-      "attack_end": "2026-05-01 10:00:20",
-      "base_score": 2,
-      "score_cap_ratio_override": null,
-      "intensity_cap_override": null,
-      "evidence_signals": [
-        {
-          "signal_name": "repeated_login",
-          "matched_start": "2026-05-01 10:00:00",
-          "matched_end": "2026-05-01 10:00:20",
-          "value": 5,
-          "frequency": 0.016666666666666666
-        },
-        {
-          "signal_name": "burst_access",
-          "matched_start": "2026-05-01 10:00:00",
-          "matched_end": "2026-05-01 10:00:20",
-          "value": 5,
-          "frequency": 0.08333333333333333
-        }
-      ]
-    }
-  ],
-  "10.0.0.2": [],
-  "192.168.1.1": [],
-  "10.0.0.5": [
-    {
-      "source_ip": "10.0.0.5",
+      "source_ip": "172.16.0.9",
       "attack_type": "admin_access",
       "intensity": 0.33333333333333337,
       "confidence": 0.4,
-      "attack_start": "2026-05-01 12:00:00",
-      "attack_end": "2026-05-01 12:00:00",
+      "attack_start": "2026-05-01 10:20:01",
+      "attack_end": "2026-05-01 10:20:01",
       "base_score": 3,
       "score_cap_ratio_override": null,
       "intensity_cap_override": null,
       "evidence_signals": [
         {
           "signal_name": "admin_access",
-          "matched_start": "2026-05-01 12:00:00",
-          "matched_end": "2026-05-01 12:00:00",
+          "matched_start": "2026-05-01 10:20:01",
+          "matched_end": "2026-05-01 10:20:01",
           "value": 1,
           "frequency": 0.0033333333333333335
         }
       ]
     },
     {
-      "source_ip": "10.0.0.5",
+      "source_ip": "172.16.0.9",
       "attack_type": "admin_access",
       "intensity": 0.33333333333333337,
       "confidence": 0.4,
-      "attack_start": "2026-05-01 12:00:05",
-      "attack_end": "2026-05-01 12:00:05",
+      "attack_start": "2026-05-01 10:20:03",
+      "attack_end": "2026-05-01 10:20:03",
       "base_score": 3,
       "score_cap_ratio_override": null,
       "intensity_cap_override": null,
       "evidence_signals": [
         {
           "signal_name": "admin_access",
-          "matched_start": "2026-05-01 12:00:05",
-          "matched_end": "2026-05-01 12:00:05",
+          "matched_start": "2026-05-01 10:20:03",
+          "matched_end": "2026-05-01 10:20:03",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    },
+    {
+      "source_ip": "172.16.0.9",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 10:20:07",
+      "attack_end": "2026-05-01 10:20:07",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 10:20:07",
+          "matched_end": "2026-05-01 10:20:07",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    },
+    {
+      "source_ip": "172.16.0.9",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 10:20:10",
+      "attack_end": "2026-05-01 10:20:10",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 10:20:10",
+          "matched_end": "2026-05-01 10:20:10",
           "value": 1,
           "frequency": 0.0033333333333333335
         }
       ]
     }
-  ]
+  ],
+  "198.51.100.10": [
+    {
+      "source_ip": "198.51.100.10",
+      "attack_type": "brute_force",
+      "intensity": 4.166666666666666,
+      "confidence": 0.7952,
+      "attack_start": "2026-05-01 10:10:01",
+      "attack_end": "2026-05-01 10:10:05",
+      "base_score": 6,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "failed_login_count",
+          "matched_start": "2026-05-01 10:10:01",
+          "matched_end": "2026-05-01 10:10:05",
+          "value": 5,
+          "frequency": 0.016666666666666666
+        },
+        {
+          "signal_name": "repeated_login",
+          "matched_start": "2026-05-01 10:10:01",
+          "matched_end": "2026-05-01 10:10:05",
+          "value": 5,
+          "frequency": 0.016666666666666666
+        },
+        {
+          "signal_name": "high_failure_rate",
+          "matched_start": "2026-05-01 10:10:01",
+          "matched_end": "2026-05-01 10:10:05",
+          "value": 1.0,
+          "frequency": 1.0
+        },
+        {
+          "signal_name": "burst_access",
+          "matched_start": "2026-05-01 10:10:01",
+          "matched_end": "2026-05-01 10:10:05",
+          "value": 5,
+          "frequency": 0.08333333333333333
+        }
+      ]
+    }
+  ],
+  "198.51.100.20": [
+    {
+      "source_ip": "198.51.100.20",
+      "attack_type": "brute_force",
+      "intensity": 4.166666666666666,
+      "confidence": 0.7952,
+      "attack_start": "2026-05-01 02:15:01",
+      "attack_end": "2026-05-01 02:15:05",
+      "base_score": 6,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "failed_login_count",
+          "matched_start": "2026-05-01 02:15:01",
+          "matched_end": "2026-05-01 02:15:05",
+          "value": 5,
+          "frequency": 0.016666666666666666
+        },
+        {
+          "signal_name": "repeated_login",
+          "matched_start": "2026-05-01 02:15:01",
+          "matched_end": "2026-05-01 02:15:05",
+          "value": 5,
+          "frequency": 0.016666666666666666
+        },
+        {
+          "signal_name": "high_failure_rate",
+          "matched_start": "2026-05-01 02:15:01",
+          "matched_end": "2026-05-01 02:15:05",
+          "value": 1.0,
+          "frequency": 1.0
+        },
+        {
+          "signal_name": "burst_access",
+          "matched_start": "2026-05-01 02:15:01",
+          "matched_end": "2026-05-01 02:15:05",
+          "value": 5,
+          "frequency": 0.08333333333333333
+        }
+      ]
+    }
+  ],
+  "172.16.0.8": [
+    {
+      "source_ip": "172.16.0.8",
+      "attack_type": "suspicious_activity",
+      "intensity": 1.0416666666666665,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 10:30:00",
+      "attack_end": "2026-05-01 10:30:04",
+      "base_score": 2,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "burst_access",
+          "matched_start": "2026-05-01 10:30:00",
+          "matched_end": "2026-05-01 10:30:04",
+          "value": 5,
+          "frequency": 0.08333333333333333
+        }
+      ]
+    }
+  ],
+  "10.0.0.6": [
+    {
+      "source_ip": "10.0.0.6",
+      "attack_type": "reconnaissance",
+      "intensity": 4.166666666666666,
+      "confidence": 0.6,
+      "attack_start": "2026-05-01 10:15:01",
+      "attack_end": "2026-05-01 10:15:20",
+      "base_score": 4,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "many_404",
+          "matched_start": "2026-05-01 10:15:01",
+          "matched_end": "2026-05-01 10:15:20",
+          "value": 5,
+          "frequency": 0.016666666666666666
+        },
+        {
+          "signal_name": "burst_access",
+          "matched_start": "2026-05-01 10:15:01",
+          "matched_end": "2026-05-01 10:15:20",
+          "value": 5,
+          "frequency": 0.08333333333333333
+        }
+      ]
+    },
+    {
+      "source_ip": "10.0.0.6",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 10:15:01",
+      "attack_end": "2026-05-01 10:15:01",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 10:15:01",
+          "matched_end": "2026-05-01 10:15:01",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    },
+    {
+      "source_ip": "10.0.0.6",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 10:15:20",
+      "attack_end": "2026-05-01 10:15:20",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 10:15:20",
+          "matched_end": "2026-05-01 10:15:20",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    }
+  ],
+  "198.51.100.90": [],
+  "192.168.1.20": [],
+  "192.168.1.10": [],
+  "203.0.113.50": [
+    {
+      "source_ip": "203.0.113.50",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 02:10:01",
+      "attack_end": "2026-05-01 02:10:01",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 02:10:01",
+          "matched_end": "2026-05-01 02:10:01",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    },
+    {
+      "source_ip": "203.0.113.50",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 02:10:02",
+      "attack_end": "2026-05-01 02:10:02",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 02:10:02",
+          "matched_end": "2026-05-01 02:10:02",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    }
+  ],
+  "203.0.113.30": [
+    {
+      "source_ip": "203.0.113.30",
+      "attack_type": "admin_access",
+      "intensity": 0.33333333333333337,
+      "confidence": 0.4,
+      "attack_start": "2026-05-01 10:18:01",
+      "attack_end": "2026-05-01 10:18:01",
+      "base_score": 3,
+      "score_cap_ratio_override": null,
+      "intensity_cap_override": null,
+      "evidence_signals": [
+        {
+          "signal_name": "admin_access",
+          "matched_start": "2026-05-01 10:18:01",
+          "matched_end": "2026-05-01 10:18:01",
+          "value": 1,
+          "frequency": 0.0033333333333333335
+        }
+      ]
+    }
+  ],
+  "192.168.1.11": [],
+  "1.2.3.4": []
 }
