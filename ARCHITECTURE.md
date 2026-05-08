@@ -44,6 +44,25 @@ Presentation Layer / UI
 
 ---
 
+## Knowledge Management Model
+
+The design source has moved from Obsidian-based documents to Notion-based databases.
+
+The following knowledge entities are managed in databases:
+
+- signals
+- signal clusters
+- attacks
+- response actions
+
+The analyzer should treat these as structured knowledge sources, not free-form document notes.
+
+Core detection logic must still remain in Python.
+
+Notion databases are used for knowledge management and reference data, not procedural execution logic.
+
+---
+
 ## Core Engine
 
 Responsible for deterministic detection and scoring.
@@ -63,7 +82,8 @@ Core Engine must not know about:
 - AI explanation
 - graph rendering
 - timeline rendering
-- response guides
+- response guide rendering
+- Notion page rendering
 
 Core Engine must remain deterministic.
 
@@ -83,6 +103,7 @@ Responsibilities:
 - explainability structure
 - timeline meaning structure
 - knowledge attachment
+- response action reference attachment
 
 Current minimal artifact:
 
@@ -112,6 +133,7 @@ UI must not:
 - calculate score
 - determine risk
 - reinterpret relations
+- decide response actions
 
 The UI is display-only at this stage.
 
@@ -189,6 +211,8 @@ What      attack_type / finding_type
 Severity  score / risk_level
 ```
 
+Response action references may be added later, but the current priority remains schema stabilization.
+
 ---
 
 ## Finding ID
@@ -258,6 +282,39 @@ suspicious_activity
 
 ---
 
+## Response Guide Model
+
+The response guide design has changed.
+
+The system should not store a large response manual directly for each attack.
+
+Instead, each attack should reference response action values such as:
+
+- IP_Block
+- Password_Modification
+- Account_Lock
+- Rate_Limit
+- WAF_Rule_Update
+- Investigation_Required
+
+The detailed response manuals are maintained separately in a Notion response database.
+
+Attack knowledge and response knowledge are therefore separated:
+
+```text
+Attack
+↓
+response_action values
+↓
+Response Action DB in Notion
+```
+
+This keeps DetectionReport compact and prevents response-guide text from becoming detection logic.
+
+Response action values are references, not execution instructions.
+
+---
+
 ## AI Philosophy
 
 AI is intentionally separated from the detection system.
@@ -291,12 +348,14 @@ The analyzer itself should remain AI-provider neutral.
 ## Project Rules
 
 - Do not put logic in YAML
+- Do not put procedural logic in Notion
 - Do not put large logic in `analyzer.py`
 - Keep Core / Interpretation / UI separated
 - Keep V2 as a parallel line
 - Implement small changes
 - Confirm with debug JSON
 - Treat output JSON as the formal artifact
+- Treat Notion as knowledge/reference DB, not execution runtime
 
 ---
 
@@ -373,6 +432,8 @@ Do not implement these in the current phase:
 - MITRE Mapping
 - Evidence Graph
 - Investigation Workspace
+- Notion synchronization engine
+- automated response execution
 
 ---
 
