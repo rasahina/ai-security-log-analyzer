@@ -58,6 +58,29 @@ Do not expand scope into Timeline, Attack Graph, AI Explanation, Response Guide 
 
 ---
 
+# Knowledge Management Direction
+
+The architecture direction has moved from Obsidian-based notes to Notion-based databases.
+
+Knowledge entities should be managed as structured DB records:
+
+* signals
+* signal clusters
+* attacks
+* response actions
+
+Notion is treated as a knowledge/reference DB.
+
+Notion must NOT contain:
+
+* detection logic
+* procedural execution logic
+* hidden runtime behavior
+
+Core deterministic logic remains in Python.
+
+---
+
 # Layer Responsibilities
 
 ## Core Engine
@@ -75,9 +98,10 @@ Core Engine must NOT contain:
 * UI logic
 * presentation logic
 * AI explanation logic
-* response guides
+* response guide rendering
 * graph rendering
 * timeline rendering
+* Notion rendering logic
 
 Core Engine must remain deterministic.
 
@@ -95,6 +119,7 @@ Responsible for:
 * explainability structure
 * timeline meaning structure
 * knowledge attachment
+* response action references
 
 Interpretation Layer converts:
 
@@ -162,6 +187,38 @@ output/detection_report_v2.json
 
 ---
 
+# Response Guide Philosophy
+
+The response guide design has changed.
+
+Do NOT attach large response manuals directly to attacks.
+
+Instead:
+
+```text
+Attack
+↓
+response_action values
+↓
+Response Action DB
+```
+
+Examples of response_action values:
+
+* IP_Block
+* Password_Modification
+* Account_Lock
+* Rate_Limit
+* Investigation_Required
+
+Detailed operational procedures are managed separately in Notion.
+
+Detection knowledge and operational response knowledge are intentionally separated.
+
+Response action values are references, not execution instructions.
+
+---
+
 # AI Philosophy
 
 ## AI Separation Design
@@ -173,11 +230,13 @@ Rules:
 * AI must NOT be part of Core Engine
 * AI must NOT participate in deterministic detection
 * AI reads DetectionReport only
+* AI performs assistance, not detection
 * AI acts as assistant, not decision maker
 * System must function without AI
 * Explainability evidence must originate from Core Engine
 * AI provider independence must be preserved
 * Bring Your Own AI is the preferred model
+* Users should execute AI within their own environment
 
 Users should be able to use:
 
@@ -364,6 +423,7 @@ Do NOT:
 
 * put detection logic inside UI
 * put processing logic inside YAML
+* put procedural logic inside Notion
 * put large logic inside analyzer.py
 * mix detection and presentation
 * let AI determine detection results
