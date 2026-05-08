@@ -34,6 +34,30 @@ Presentation Layer / UI
 
 ---
 
+# Current Phase
+
+The current phase is Detection Pipeline V2 → Interpretation Layer → DetectionReport → Minimal UI.
+
+The priority is DetectionReport contract stabilization.
+
+This is not a rich UI phase.
+
+Current UI target:
+
+DetectionReport Viewer
+
+Implementation order:
+
+1. api_v2.py
+2. POST /analyze-v2
+3. DetectionReport JSON confirmation
+4. app_v2.py
+5. ui_v2/components.py
+
+Do not expand scope into Timeline, Attack Graph, AI Explanation, Response Guide UI, SOC Queue, realtime, multi-user, RBAC, MITRE Mapping, Evidence Graph, or Investigation Workspace during this phase.
+
+---
+
 # Layer Responsibilities
 
 ## Core Engine
@@ -120,6 +144,21 @@ Examples:
 * SIEM adapters
 
 Core internal structures must not directly leak outside.
+
+Current schema version:
+
+v2_minimal_0.1
+
+Minimum contract:
+
+* Who: source_ip
+* When: time_range
+* What: attack_type / finding_type
+* Severity: score / risk_level
+
+Formal output path:
+
+output/detection_report_v2.json
 
 ---
 
@@ -289,6 +328,8 @@ Minimal flow:
 Upload
 ↓
 Analyze
+↓
+Overview
 ↓
 IP Reports
 ↓
