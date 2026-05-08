@@ -123,7 +123,7 @@ signal_clusters:
     tolerance_seconds: 300
     intensity_scale: 0.02
 
-  admin_access_event:
+  admin_access_cluster:
     enabled: true
     required:
       - admin_access
@@ -182,7 +182,7 @@ attacks:
 
   admin_access:
     enabled: true
-    source_cluster: admin_access_event
+    source_cluster: admin_access_cluster
     base_score: 3
 
   suspicious_activity:
