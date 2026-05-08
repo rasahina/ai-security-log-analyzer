@@ -15,10 +15,173 @@ This project is both:
 
 This is NOT an AI-driven detection system.
 
-Detection = deterministic Python logic
+Detection = deterministic Python logic  
 AI = explanation only
 
 The system is designed to remain reliable, explainable, and secure, even without AI.
+
+
+## Current Phase: DetectionReport Contract Stabilization
+
+The current development focus is the V2 detection pipeline contract.
+
+```text
+Detection Pipeline V2
+↓
+Interpretation Layer
+↓
+DetectionReport
+↓
+Minimal UI
+```
+
+The goal is to stabilize the `DetectionReport` schema, not to build a rich UI.
+
+The current UI direction is:
+
+```text
+DetectionReport Viewer
+```
+
+The minimal viewer should support:
+
+```text
+Upload
+↓
+Analyze
+↓
+Overview
+↓
+IP Reports
+↓
+Findings
+```
+
+Current priority:
+
+```text
+1. api_v2.py
+2. POST /analyze-v2
+3. DetectionReport JSON confirmation
+4. app_v2.py
+5. ui_v2/components.py
+```
+
+The formal V2 output artifact is:
+
+```text
+output/detection_report_v2.json
+```
+
+
+## V2 Architecture
+
+V2 is organized into three layers:
+
+```text
+Core Engine
+↓
+Interpretation Layer
+↓
+Presentation Layer / UI
+```
+
+### Core Engine
+
+Responsible for deterministic security analysis:
+
+- SignalFinding
+- SignalCluster
+- ClusterRelation
+- AttackFinding
+- Score
+- Risk
+
+Core Engine must not know about:
+
+- UI
+- AI explanation
+- graph rendering
+- timeline rendering
+- response guides
+
+### Interpretation Layer
+
+Responsible for converting deterministic engine output into a stable external report:
+
+- DetectionReport generation
+- evidence organization
+- suspicious activity interpretation
+- explainability structure
+- timeline meaning structure
+- knowledge attachment
+
+### Presentation Layer / UI
+
+Responsible for rendering `DetectionReport` only.
+
+UI must not:
+
+- perform detection
+- calculate score
+- determine risk
+- reinterpret relations
+
+
+## DetectionReport Schema
+
+Current schema version:
+
+```text
+v2_minimal_0.1
+```
+
+Minimal structure:
+
+```text
+DetectionReport
+- schema_version
+- generated_at
+- ip_reports[]
+
+IPReport
+- source_ip
+- overall_score
+- risk_level
+- attack_count
+- time_range
+- findings[]
+
+FindingReport
+- finding_id
+- finding_type
+- attack_type
+- score
+- risk_level
+- source_ip
+- time_range
+```
+
+Minimum contract:
+
+```text
+Who       source_ip
+When      time_range
+What      attack_type / finding_type
+Severity  score / risk_level
+```
+
+`finding_id` format:
+
+```text
+v2-{source_ip}-{attack_type}-{timestamp}
+```
+
+Example:
+
+```text
+v2-10.0.0.4-brute_force-20260501T110000
+```
 
 
 ## Features
@@ -79,6 +242,21 @@ The system is designed to remain reliable, explainable, and secure, even without
 ### AI is ONLY used for:
 - Explaining already-detected results
 
+### V2 AI direction
+
+AI is separated from the analyzer.
+
+Rules:
+
+- AI is not part of Core Engine
+- AI does not participate in deterministic detection
+- AI reads DetectionReport
+- AI is an assistant, not a decision maker
+- The system must work without AI
+- Explainability evidence must originate from deterministic engine output
+- AI provider independence must be preserved
+- Bring Your Own AI is preferred
+
 
 ### Security Principles
 
@@ -94,7 +272,7 @@ The system is designed to remain reliable, explainable, and secure, even without
 
 The system is designed to work fully without AI.
 
-AI OFF -> Fast, lightweight, safe
+AI OFF -> Fast, lightweight, safe  
 AI ON  -> Better explanations
 
 AI is disabled by default to ensure:
@@ -122,19 +300,27 @@ Apply rate limiting and block scanning source if confirmed / Investigate immedia
 
 ### 1. Start Ollama (optional)
 
+```bash
 ollama serve
+```
 
 ### 2. Start backend (WSL)
 
+```bash
 uvicorn api:app --reload
+```
 
 ### 3. Start UI (WSL)
 
+```bash
 streamlit run app.py
+```
 
 ### 4. Open browser
 
+```text
 http://localhost:8501
+```
 
 
 ## AI Mode
@@ -149,18 +335,26 @@ http://localhost:8501
 
 When using AI, Ollama runs on Windows and is accessed from WSL:
 
+```text
 OLLAMA_URL = "http://172.30.176.1:11434/api/generate"
+```
 
 ### Check Ollama:
 
 #### Windows:
+```bash
 curl http://localhost:11434
+```
 
 #### WSL:
+```bash
 curl http://172.30.176.1:11434
+```
 
 
 ## Current Status
+
+Classic line:
 
 - Detection logic implemented
 - Risk scoring implemented
@@ -178,21 +372,41 @@ curl http://172.30.176.1:11434
 - Attack type priority system implemented (index.yaml)
 - UI data/display separation implemented
 
+V2 line:
+
+- Detection Pipeline V2 implemented
+- Core Engine and Interpretation Layer separated
+- DetectionReport generation implemented
+- Minimal schema version: `v2_minimal_0.1`
+- Formal output target: `output/detection_report_v2.json`
+- Next focus: `api_v2.py` and `POST /analyze-v2`
+
 
 ## Roadmap
 
 ### Short-term:
+- Stabilize DetectionReport contract
+- Add `POST /analyze-v2`
+- Confirm API response matches `output/detection_report_v2.json`
+- Build minimal DetectionReport Viewer
+- Keep UI display-only
+
+### Mid-term:
 - Improve detection accuracy
 - Reduce false positives
 - Expand response guides
-- Improve usability
-
-### Mid-term:
 - Support multiple log formats (nginx, apache, auth.log)
 - Cross-run analysis (recurring IP detection)
 - Better anomaly detection
 
 ### Long-term:
+- Investigation Workspace
+- Timeline
+- Evidence panel
+- Attack Graph
+- Raw log view
+- AI Copilot
+- Knowledge layer
 - SaaS version
 - Multi-tenant support
 - Automated log collection agent
@@ -208,5 +422,13 @@ curl http://172.30.176.1:11434
 
 ## Philosophy
 
-Do not rely on AI for security decisions.
+Do not rely on AI for security decisions.  
 Use AI only where it adds clarity, not risk.
+
+For V2, the central principle is:
+
+```text
+DetectionReport = public contract
+```
+
+Everything outside the deterministic engine should consume the report contract, not internal engine objects.
