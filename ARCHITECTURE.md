@@ -260,18 +260,20 @@ suspicious_activity
 
 ## AI Philosophy
 
-AI is separated from the detection system.
+AI is intentionally separated from the detection system.
 
-Rules:
+Core principles:
 
 - AI is not part of Core Engine
 - AI does not participate in deterministic detection
 - AI reads DetectionReport
+- AI performs assistance, not detection
 - AI is an assistant, not a decision maker
-- The system must work without AI
-- Explainability evidence must originate from Core Engine output
 - AI provider independence must be preserved
-- Bring Your Own AI is preferred
+- Bring Your Own AI is the default strategy
+- Users should run AI within their own environment
+- The system must function without AI
+- Explainability evidence must originate from Core Engine
 
 Possible AI providers:
 
@@ -281,6 +283,8 @@ Possible AI providers:
 - Ollama
 - Local LLM
 - Azure OpenAI
+
+The analyzer itself should remain AI-provider neutral.
 
 ---
 
