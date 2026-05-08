@@ -58,6 +58,36 @@ Do not expand scope into Timeline, Attack Graph, AI Explanation, Response Guide 
 
 ---
 
+# Development Workflow
+
+The project uses an AI-assisted deterministic development workflow.
+
+Workflow:
+
+1. `main` is treated as the stable baseline
+2. Codex creates a feature branch from latest `main`
+3. Codex implements a small scoped change
+4. Codex commits and pushes the feature branch
+5. Local environment pulls the branch
+6. Local verification is performed
+7. DetectionReport JSON is verified
+8. UI/API behavior is verified if applicable
+9. Local environment merges into `main`
+10. `main` is pushed to origin
+11. The next task starts again from latest `main`
+
+Important Rules:
+
+- 1 branch = 1 responsibility
+- Keep diffs small
+- Do not mix Core and UI changes
+- Schema changes must be isolated
+- DetectionReport contract must be verified before merge
+- debug JSON should be checked before merge
+- `main` must remain stable
+
+---
+
 # Knowledge Management Direction
 
 The architecture direction has moved from Obsidian-based notes to Notion-based databases.
