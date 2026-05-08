@@ -63,6 +63,88 @@ Notion databases are used for knowledge management and reference data, not proce
 
 ---
 
+## YAML Layer Split Model
+
+V2 YAML should be split by detection layer and knowledge responsibility.
+
+Recommended structure:
+
+```text
+config/v2/
+├── signals.yaml
+├── signal_clusters.yaml
+├── attacks.yaml
+└── response_actions.yaml
+```
+
+Layer responsibilities:
+
+```text
+signals.yaml
+= signal definitions used by deterministic signal detection
+
+signal_clusters.yaml
+= SignalFinding → SignalCluster mapping and cluster parameters
+
+attacks.yaml
+= SignalCluster → AttackFinding mapping and attack metadata
+
+response_actions.yaml
+= response action references and lightweight response metadata
+```
+
+YAML files are database snapshots / configuration inputs.
+
+YAML must not contain procedural logic.
+
+Notion remains the knowledge management source.
+
+Python remains the execution and detection logic source.
+
+---
+
+## Naming Conventions
+
+Use stable IDs that reveal the layer clearly.
+
+Recommended naming:
+
+```text
+signal:
+failed_login
+admin_access
+many_404
+
+cluster:
+brute_force_cluster
+admin_access_cluster
+automated_scanner_cluster
+
+attack:
+brute_force
+admin_access
+automated_scanner
+
+response_action:
+block_ip
+review_auth_logs
+enable_waf
+```
+
+Avoid mixing layer names.
+
+For example, cluster IDs should not use `_event`.
+
+Preferred pattern:
+
+```text
+*_cluster
+```
+
+for cluster-layer records.
+
+---
+
 ## Core Engine
 
 Responsible for deterministic detection and scoring.
@@ -290,12 +372,12 @@ The system should not store a large response manual directly for each attack.
 
 Instead, each attack should reference response action values such as:
 
-- IP_Block
-- Password_Modification
-- Account_Lock
-- Rate_Limit
-- WAF_Rule_Update
-- Investigation_Required
+- block_ip
+- reset_password
+- review_auth_logs
+- add_rate_limit
+- enable_waf
+- investigation_required
 
 The detailed response manuals are maintained separately in a Notion response database.
 
@@ -356,6 +438,7 @@ The analyzer itself should remain AI-provider neutral.
 - Confirm with debug JSON
 - Treat output JSON as the formal artifact
 - Treat Notion as knowledge/reference DB, not execution runtime
+- Keep YAML split by layer when moving V2 configuration forward
 
 ---
 
