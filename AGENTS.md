@@ -1,0 +1,348 @@
+# AGENTS.md
+
+## Project Overview
+
+This project is an AI Security Log Analyzer focused on:
+
+* deterministic security detection
+* explainable detection pipelines
+* layered architecture
+* investigation-oriented security analysis
+
+The system is designed as a long-term extensible security analytics platform, not a simple demo analyzer.
+
+---
+
+# Core Architecture
+
+The project is built around a layered detection pipeline.
+
+SignalFinding
+→ SignalCluster
+→ ClusterRelation
+→ AttackFinding
+→ Score
+→ Risk
+
+The system is additionally separated into:
+
+Core Engine
+↓
+Interpretation Layer
+↓
+Presentation Layer / UI
+
+---
+
+# Layer Responsibilities
+
+## Core Engine
+
+Responsible for:
+
+* detection
+* clustering
+* relation resolution
+* scoring
+* risk evaluation
+
+Core Engine must NOT contain:
+
+* UI logic
+* presentation logic
+* AI explanation logic
+* response guides
+* graph rendering
+* timeline rendering
+
+Core Engine must remain deterministic.
+
+Same input must produce same output.
+
+---
+
+## Interpretation Layer
+
+Responsible for:
+
+* DetectionReport generation
+* evidence organization
+* suspicious activity interpretation
+* explainability structure
+* timeline meaning structure
+* knowledge attachment
+
+Interpretation Layer converts:
+
+Core internal concepts
+↓
+Human-readable structures
+
+Interpretation Layer does NOT render UI.
+
+---
+
+## Presentation Layer / UI
+
+Responsible for:
+
+* rendering DetectionReport
+* table rendering
+* graph rendering
+* timeline rendering
+* investigation workflow
+
+UI must NOT:
+
+* calculate score
+* determine risk
+* perform detection
+* reinterpret relations
+
+UI reads DetectionReport only.
+
+---
+
+# DetectionReport Philosophy
+
+DetectionReport is the canonical external output.
+
+Everything outside Core Engine should consume:
+
+DetectionReport
+
+Examples:
+
+* UI
+* API
+* AI assistant
+* export adapters
+* SIEM adapters
+
+Core internal structures must not directly leak outside.
+
+---
+
+# AI Philosophy
+
+## AI Separation Design
+
+AI is intentionally separated from the detection system.
+
+Rules:
+
+* AI must NOT be part of Core Engine
+* AI must NOT participate in deterministic detection
+* AI reads DetectionReport only
+* AI acts as assistant, not decision maker
+* System must function without AI
+* Explainability evidence must originate from Core Engine
+* AI provider independence must be preserved
+* Bring Your Own AI is the preferred model
+
+Users should be able to use:
+
+* OpenAI
+* Claude
+* Gemini
+* Local LLM
+* Ollama
+* Azure OpenAI
+
+without changing the detection system.
+
+---
+
+# Detection Principles
+
+## Deterministic Detection
+
+Detection logic must remain deterministic.
+
+Avoid:
+
+* LLM-based detection decisions
+* probabilistic AI-only classification
+* hidden scoring logic
+
+Detection decisions must be explainable from evidence.
+
+---
+
+## Explainability
+
+Evidence must be preserved.
+
+Important concepts:
+
+* absorbed is NOT deletion
+* supporting evidence must remain accessible
+* evidence tracing must be possible
+* timeline reconstruction must remain possible
+
+---
+
+# Project Structure Philosophy
+
+Keep the codebase:
+
+* small
+* understandable
+* maintainable
+
+Avoid unnecessary abstraction.
+
+---
+
+# Structural Rules
+
+* avoid deep directory trees
+* avoid excessive files
+* prefer simple interfaces
+* separate config from logic
+* separate display text from logic
+
+---
+
+# YAML Rules
+
+YAML stores:
+
+* configuration
+* thresholds
+* parameters
+
+YAML must NOT contain:
+
+* processing logic
+* procedural behavior
+* hidden execution flow
+
+Python contains reusable logic.
+
+---
+
+# Parallel Migration Strategy
+
+Large redesigns must use parallel implementation.
+
+Rules:
+
+* do not break existing pipeline
+* implement new line separately
+* validate through debug outputs
+* remove old line only after stabilization
+
+Current structure:
+
+Classic / Timeseries line
++
+V2 line
+
+---
+
+# Debug / Output Rules
+
+Separate:
+
+* logs
+* debug
+* output
+
+Definitions:
+
+logs:
+
+* execution logs
+* audit logs
+
+debug:
+
+* intermediate verification JSON
+
+output:
+
+* final artifacts
+
+DetectionReport belongs to:
+
+output/
+
+---
+
+# UI Philosophy
+
+The first UI is NOT a SOC platform.
+
+The first UI is:
+
+DetectionReport Viewer
+
+Purpose:
+
+* validate schema
+* validate structure
+* validate investigation flow
+
+Minimal flow:
+
+Upload
+↓
+Analyze
+↓
+IP Reports
+↓
+Findings
+
+---
+
+# Future Direction
+
+The long-term goal is an investigation-oriented security workspace.
+
+Possible future features:
+
+* Timeline
+* Attack Graph
+* Evidence Panel
+* Investigation Workspace
+* AI Copilot
+* Knowledge Layer
+* MITRE Mapping
+* Threat Intelligence
+
+These are future extensions.
+
+Do not prematurely implement them.
+
+---
+
+# Forbidden Patterns
+
+Do NOT:
+
+* put detection logic inside UI
+* put processing logic inside YAML
+* put large logic inside analyzer.py
+* mix detection and presentation
+* let AI determine detection results
+* tightly couple UI and Core Engine
+
+---
+
+# Development Philosophy
+
+Implement incrementally.
+
+Priorities:
+
+1. architecture stability
+2. responsibility separation
+3. deterministic behavior
+4. explainability
+5. extensibility
+6. UI sophistication
+
+The current phase is:
+
+Building a stable foundation for future investigation systems.
