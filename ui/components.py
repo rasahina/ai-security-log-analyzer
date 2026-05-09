@@ -4,8 +4,6 @@ import pandas as pd
 from i18n import t, translate_action
 from plotly.subplots import make_subplots
 from core.time_series import create_time_series
-from ai_explainer import explain_detection
-from security.ai_guard import build_safe_ai_payload, write_guard_logs
 
 
 #グラフ描画関数
@@ -361,47 +359,3 @@ def render_selected_ip_timeline(selected_ip):
             use_container_width=True,
             hide_index=True
         )    
-def render_ai_explanation(selected, selected_ip):
-    st.markdown("## AI Explanation")
-
-
-    st.session_state.ai_mode = st.toggle("AI Mode", value=False)
-    ai_enabled= st.session_state.ai_mode
-
-    st.caption("AI Mode: local" if ai_enabled else "AI Mode: off")
-    
-    col1, col2 = st.columns([0.8, 0.2])
-
-    with col2:
-        if st.button("Clear Cache"):
-            st.session_state.ai_cache = {}
-            st.rerun()
-
-    ai_payload, guard_logs = build_safe_ai_payload(selected.to_dict())
-    write_guard_logs(guard_logs)
-    st.session_state.ai_guard_logs = guard_logs
-
-    if ai_enabled:
-        if selected_ip not in st.session_state.ai_cache:
-            with st.spinner(f"Analyzing {selected_ip}..."):
-                st.session_state.ai_cache[selected_ip] = explain_detection(ai_payload, True)
-
-        explanation = st.session_state.ai_cache[selected_ip]
-    else:
-        explanation = explain_detection(ai_payload, False)
-
-    # explanation = explain_detection(ai_payload, True)
-
-    st.info(explanation)
-    st.caption(f"Cache size: {len(st.session_state.ai_cache)}")
-
-    guard_logs = st.session_state.get("ai_guard_logs", [])
-
-    with st.expander("🛡 AI Guard Log"):
-        if not guard_logs:
-            st.success("No AI Guard issues detected.")
-        else:
-            st.warning(f"AI Guard sanitized {len(guard_logs)} item(s).")
-            st.dataframe(guard_logs, use_container_width=True, hide_index=True)
-
-

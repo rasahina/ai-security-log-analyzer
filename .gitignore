@@ -13,3 +13,4 @@ logs/
 debug/
 .vscode/
 test.py
+archive/

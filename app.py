@@ -4,8 +4,6 @@ from core.time_series import create_time_series
 from i18n import t, translate_attack_type, translate_action, translate_anomaly_reason, translate_signals
 import plotly.express as px
 
-from ai_explainer import explain_detection
-from security.ai_guard import build_safe_ai_payload, write_guard_logs
 from client.api_client import analyze_text_log, analyze_multiple_uploaded_files
 from client.api_client import get_history, get_history_detail
 
@@ -14,7 +12,6 @@ from ui.components import (
     generate_summary,
     render_ip_detail,
     render_selected_ip_timeline,
-    render_ai_explanation,
 )
 
 
@@ -55,10 +52,6 @@ if "analysis_data" not in st.session_state:
     st.session_state.analysis_data = None
 if "raw_logs" not in st.session_state:
     st.session_state.raw_logs = None
-if "ai_cache" not in st.session_state:
-    st.session_state.ai_cache = {}
-if "ai_guard_logs" not in st.session_state:
-    st.session_state.ai_guard_logs = []
 if "log_stats" not in st.session_state:
     st.session_state.log_stats = None
 if "skipped_logs" not in st.session_state:
@@ -75,9 +68,6 @@ uploaded_files = st.file_uploader(
 
 if uploaded_files:
     if st.button(t("analyze_file")):
-        st.session_state.ai_cache = {}
-        st.session_state.ai_guard_logs = []
-
         result = analyze_multiple_uploaded_files(uploaded_files)
 
         st.session_state.analysis_data = result["analysis"]
@@ -87,8 +77,6 @@ if uploaded_files:
 st.markdown("---")
 
 if st.button(t("use_sample_log")):
-    st.session_state.ai_cache = {}
-    st.session_state.ai_guard_logs = []
     with open("data/sample.log", "r", encoding="utf-8") as f:
         text = f.read()
     result = analyze_text_log(text)
@@ -135,8 +123,6 @@ if "history" in st.session_state and st.session_state.history:
 
         st.session_state.analysis_data = data
         st.session_state.raw_logs = []
-        st.session_state.ai_cache = {}
-        st.session_state.ai_guard_logs = []
 
         st.success(f"{t('loaded_run_id')}: {run_id}")
 
@@ -496,5 +482,3 @@ if st.session_state.analysis_data is not None:
     render_ip_detail(selected, selected_ip)
     with st.expander(f"📈 {t('timeline_analysis')}"):
         render_selected_ip_timeline(selected_ip)
-    with st.expander(f"🤖 {t('ai_explanation')}"):
-        render_ai_explanation(selected, selected_ip)
