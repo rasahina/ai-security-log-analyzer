@@ -4,7 +4,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
-GUIDES_DIR = PROJECT_ROOT / "guides"
 LOGS_DIR = PROJECT_ROOT / "logs"
 DEBUG_DIR = PROJECT_ROOT / "debug"
 OUTPUT_DIR = PROJECT_ROOT / "output"
