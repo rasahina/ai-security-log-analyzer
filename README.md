@@ -2,9 +2,14 @@
 
 ## Overview
 
-AI Security Log Analyzer is a lightweight cybersecurity log analysis tool designed to detect suspicious activity from web access logs and provide clear, actionable insights.
+AI Security Log Analyzer is a lightweight cybersecurity log analysis tool designed to detect suspicious activity from web access logs and emit a stable, explainable DetectionReport.
 
-It automatically identifies attack patterns such as brute-force attempts, admin access probing, and automated scanning, then explains the findings in a human-readable way.
+The active runtime is the V2 API and DetectionReport Viewer:
+
+- API: `api_v2.py`
+- Viewer: `app_v2.py`
+- Pipeline: `core/v2_pipeline.py`
+- Report contract: `v2_minimal_0.1`
 
 This project is both:
 - a learning project for security and AI system design
@@ -16,14 +21,14 @@ This project is both:
 This is NOT an AI-driven detection system.
 
 Detection = deterministic Python logic  
-AI = explanation only
+AI = outside the active detection runtime
 
 The system is designed to remain reliable, explainable, and secure, even without AI.
 
 
-## Current Phase: DetectionReport Contract Stabilization
+## Current Phase: V2 MVP Stabilized
 
-The current development focus is the V2 detection pipeline contract.
+The V2 MVP is now the active runtime path.
 
 ```text
 Detection Pipeline V2
@@ -32,18 +37,10 @@ Interpretation Layer
 ↓
 DetectionReport
 ↓
-Minimal UI
-```
-
-The goal is to stabilize the `DetectionReport` schema, not to build a rich UI.
-
-The current UI direction is:
-
-```text
 DetectionReport Viewer
 ```
 
-The minimal viewer should support:
+The current viewer supports:
 
 ```text
 Upload
@@ -57,21 +54,13 @@ IP Reports
 Findings
 ```
 
-Current priority:
-
-```text
-1. api_v2.py
-2. POST /analyze-v2
-3. DetectionReport JSON confirmation
-4. app_v2.py
-5. ui_v2/components.py
-```
-
 The formal V2 output artifact is:
 
 ```text
 output/detection_report_v2.json
 ```
+
+A minimal pytest safety net verifies `/health`, `POST /analyze-v2`, and the minimal DetectionReport contract.
 
 
 ## Knowledge Management Direction
@@ -210,7 +199,6 @@ FindingReport
 - finding_type
 - attack_type
 - score
-- risk_level
 - source_ip
 - time_range
 ```
@@ -240,46 +228,33 @@ v2-10.0.0.4-brute_force-20260501T110000
 ## Features
 
 - Log parsing and normalization
-- Suspicious activity detection
+- V2 suspicious activity detection
   - Brute-force login attempts
   - Admin access attempts
   - Automated scanning behavior
   - Burst traffic patterns
-  - Night-time access anomalies
 - Risk scoring per IP
-- Risk classification: HIGH / MEDIUM / LOW
-- Time-series traffic visualization
-- Anomaly detection based on:
-  - Failure rate
-  - Access volume
-  - Signal patterns
-- Priority ranking of risky IPs
-- Interactive Streamlit dashboard
-- IP-level detailed analysis
-- CSV export
+- Risk classification
+- DetectionReport generation
+- Minimal Streamlit DetectionReport Viewer
+- Pytest safety net for the V2 API contract
 
-### AI (Optional)
-
-- Human-readable explanation generation
-- Local LLM (Ollama) integration
-- Explanation caching
-- Sanitized output (prompt injection protection)
+Legacy UI/API/Core/AI implementations have been removed from the active runtime or moved under `archive/` for historical reference.
 
 
 ## Architecture
 
 - Frontend: Streamlit
-- Backend API: FastAPI
-- Analysis Engine: Python / pandas
-- Visualization: Plotly
-- Database: SQLite (planned PostgreSQL migration)
+- Active UI: `app_v2.py`
+- Backend API: `api_v2.py`
+- Analysis Engine: deterministic Python V2 pipeline
+- Database: SQLite
 - Knowledge DB: Notion
-- AI (optional): external / BYO AI
+- AI: external / BYO AI, not part of Core detection
 
 ### Environment
 
 - WSL: FastAPI + Streamlit
-- Windows: Ollama (optional)
 
 
 ## AI Policy (Critical Design Rules)
@@ -292,7 +267,7 @@ v2-10.0.0.4-brute_force-20260501T110000
 - Decision making
 - Recommended action decisions
 
-### AI is ONLY used for:
+### AI may be used in future assistant workflows for:
 - Explaining already-detected results
 - Assisting investigations
 
@@ -320,44 +295,43 @@ Rules:
 - AI must not follow instructions embedded in logs
 - AI must not infer attacker intent
 - AI must not modify detection results
-- AI output is sanitized before display
 - Explanations must be evidence-based
 
 
-## Why AI is Optional
+## AI Runtime Status
 
-The system is designed to work fully without AI.
+The active V2 runtime does not include AI.
 
-AI OFF -> Fast, lightweight, safe  
-AI ON  -> Better explanations
+Legacy AI/Ollama code has been moved outside active runtime under:
 
-AI is disabled by default to ensure:
-- Low resource usage
-- Stable performance
-- Safe execution
+```text
+archive/legacy_ai_path/
+```
+
+Future AI assistants should read DetectionReport only.
 
 
 ## Usage
 
-### 1. Start Ollama (optional)
-
-```bash
-ollama serve
-```
-
-### 2. Start backend (WSL)
+### 1. Start backend
 
 ```bash
 uvicorn api_v2:app --reload
 ```
 
-### 3. Start UI (WSL)
+### 2. Start viewer
 
 ```bash
 streamlit run app_v2.py
 ```
 
-### 4. Open browser
+### 3. Run tests
+
+```bash
+venv/bin/python -m pytest
+```
+
+### 4. Open viewer
 
 ```text
 http://localhost:8501
@@ -366,44 +340,30 @@ http://localhost:8501
 
 ## Current Status
 
-Classic line:
-
-- Detection logic implemented
-- Risk scoring implemented
-- FastAPI backend implemented
-- Streamlit UI implemented
-- Time-series analysis implemented
-- Anomaly detection implemented
-- AI explanation integrated (optional)
-- Prompt injection defenses implemented
-- AI output sanitization implemented
-- AI caching implemented
-- CSV export implemented
-- History storage implemented (SQLite)
-- UI data/display separation implemented
-
-V2 line:
-
 - Detection Pipeline V2 implemented
 - Core Engine and Interpretation Layer separated
 - DetectionReport generation implemented
+- V2 API active: `api_v2.py`
+- V2 Viewer active: `app_v2.py`
 - Minimal schema version: `v2_minimal_0.1`
+- Minimal pytest safety net implemented
+- Legacy UI/API/Core/AI lines removed from active runtime
+- Historical implementations archived under `archive/`
 - Notion-based knowledge management direction established
 - Response action reference model established
 - Formal output target: `output/detection_report_v2.json`
-- Next focus: `api_v2.py` and `POST /analyze-v2`
 
 
 ## Roadmap
 
 ### Short-term:
-- Stabilize DetectionReport contract
-- Add `POST /analyze-v2`
-- Confirm API response matches `output/detection_report_v2.json`
-- Build minimal DetectionReport Viewer
+- Keep DetectionReport contract stable
+- Use pytest before cleanup merges
+- Prepare YAML layer split under `config/v2/`
 - Keep UI display-only
 
 ### Mid-term:
+- Split V2 YAML by layer
 - Improve detection accuracy
 - Reduce false positives
 - Expand signal / attack DBs

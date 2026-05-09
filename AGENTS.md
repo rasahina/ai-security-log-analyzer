@@ -36,23 +36,24 @@ Presentation Layer / UI
 
 # Current Phase
 
-The current phase is Detection Pipeline V2 → Interpretation Layer → DetectionReport → Minimal UI.
+The active runtime path is Detection Pipeline V2 → Interpretation Layer → DetectionReport → DetectionReport Viewer.
 
-The priority is DetectionReport contract stabilization.
+The priority is preserving the stabilized DetectionReport contract while preparing the next cleanup/configuration phases.
 
 This is not a rich UI phase.
+
+Current active runtime:
+
+* `app_v2.py`
+* `api_v2.py`
+* `POST /analyze-v2`
+* `core/v2_pipeline.py`
+* `core/v2_report_engine.py`
+* DetectionReport `v2_minimal_0.1`
 
 Current UI target:
 
 DetectionReport Viewer
-
-Implementation order:
-
-1. api_v2.py
-2. POST /analyze-v2
-3. DetectionReport JSON confirmation
-4. app_v2.py
-5. ui_v2/components.py
 
 Do not expand scope into Timeline, Attack Graph, AI Explanation, Response Guide UI, SOC Queue, realtime, multi-user, RBAC, MITRE Mapping, Evidence Graph, or Investigation Workspace during this phase.
 
@@ -70,11 +71,12 @@ Workflow:
 4. Codex commits and pushes the feature branch
 5. Local environment pulls the branch
 6. Local verification is performed
-7. DetectionReport JSON is verified
-8. UI/API behavior is verified if applicable
-9. Local environment merges into `main`
-10. `main` is pushed to origin
-11. The next task starts again from latest `main`
+7. `venv/bin/python -m pytest` is run when tests are present
+8. DetectionReport JSON is verified
+9. UI/API behavior is verified if applicable
+10. Local environment merges into `main`
+11. `main` is pushed to origin
+12. The next task starts again from latest `main`
 
 Important Rules:
 
@@ -83,8 +85,10 @@ Important Rules:
 - Do not mix Core and UI changes
 - Schema changes must be isolated
 - DetectionReport contract must be verified before merge
+- pytest must pass before merge when available
 - debug JSON should be checked before merge
 - `main` must remain stable
+- cleanup branches should be small, deterministic, and easy to revert
 
 ---
 
@@ -363,9 +367,17 @@ Rules:
 
 Current structure:
 
-Classic / Timeseries line
+Active V2 runtime
 +
-V2 line
+Archived historical implementations
+
+Legacy implementations are preserved outside active runtime under:
+
+```text
+archive/
+```
+
+Archive contents are reference material, not runtime dependencies.
 
 ---
 
@@ -395,6 +407,29 @@ output:
 DetectionReport belongs to:
 
 output/
+
+---
+
+# Test Rules
+
+Use the V2 pytest safety net before merging runtime cleanup or config changes:
+
+```bash
+venv/bin/python -m pytest
+```
+
+At minimum, also run:
+
+```bash
+venv/bin/python -m py_compile api_v2.py app_v2.py core/v2_pipeline.py core/v2_report_engine.py
+```
+
+Tests must preserve:
+
+* `POST /analyze-v2`
+* DetectionReport `v2_minimal_0.1`
+* `ip_reports`
+* minimal report structure
 
 ---
 

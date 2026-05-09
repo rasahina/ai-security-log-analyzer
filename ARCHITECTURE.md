@@ -2,31 +2,36 @@
 
 ## Current Phase
 
-The current phase is:
+The V2 MVP is the active runtime path:
 
 ```text
+app_v2.py
+↓
+api_v2.py
+↓
 Detection Pipeline V2
 ↓
 Interpretation Layer
 ↓
 DetectionReport
-↓
-Minimal UI
 ```
 
-The immediate goal is:
+The active implementation is:
 
 ```text
-DetectionReport schema stabilization
+app_v2.py
+api_v2.py
+core/v2_pipeline.py
+core/v2_report_engine.py
 ```
 
-This is not a rich UI phase.
-
-The current UI should be treated as:
+Current schema:
 
 ```text
-DetectionReport Viewer
+v2_minimal_0.1
 ```
+
+The legacy UI/API/Core/AI lines have been removed from active runtime. Historical implementations are kept under `archive/`.
 
 ---
 
@@ -171,6 +176,8 @@ Core Engine must remain deterministic.
 
 Same input should produce the same output.
 
+AI is not part of Core detection. AI may read DetectionReport in future assistant workflows, but it must not participate in detection, scoring, risk, or relation decisions.
+
 ---
 
 ## Interpretation Layer
@@ -219,6 +226,12 @@ UI must not:
 
 The UI is display-only at this stage.
 
+Current implementation:
+
+```text
+app_v2.py
+```
+
 ---
 
 ## Detection Pipeline V2
@@ -246,6 +259,13 @@ core/score_engine.py
 core/risk_engine.py
 core/v2_pipeline.py
 core/v2_report_engine.py
+```
+
+Active API boundary:
+
+```text
+api_v2.py
+POST /analyze-v2
 ```
 
 ---
@@ -279,7 +299,6 @@ FindingReport
 - finding_type
 - attack_type
 - score
-- risk_level
 - source_ip
 - time_range
 ```
@@ -464,7 +483,7 @@ The UI should be able to consume DetectionReport JSON as input.
 
 ## Minimal UI V2
 
-Current UI goal:
+Current active UI:
 
 ```text
 DetectionReport Viewer
@@ -484,17 +503,20 @@ IP Reports
 Findings
 ```
 
-Planned files:
+Current files:
 
 ```text
 api_v2.py
-
 app_v2.py
+```
 
-ui_v2/
-├── components.py
-├── i18n.py
-└── styles.py
+The previous dashboard UI, legacy API, legacy core line, and old AI/Ollama explanation path are outside active runtime.
+
+Archive locations:
+
+```text
+archive/legacy_ai_path/
+archive/legacy_core_line/
 ```
 
 ---
@@ -552,25 +574,24 @@ schema validator phase
 
 ## Current Priority
 
-Next implementation order:
+Current priority:
 
 ```text
-1. api_v2.py
-2. POST /analyze-v2
-3. DetectionReport JSON confirmation
-4. app_v2.py
-5. ui_v2/components.py
+Preserve DetectionReport v2_minimal_0.1
+Keep V2 runtime deterministic
+Use pytest before cleanup merges
 ```
 
-Current top priority:
+Next phase:
 
 ```text
-DetectionReport contract stabilization
+YAML layer split under config/v2/
 ```
 
 ## V2 Roadmap
-- V2 stabilization
-- legacy removal
+- V2 runtime stabilization
+- pytest safety net
 - YAML split
+- config/v2/
 - response action redesign
 - UI expansion
