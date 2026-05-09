@@ -348,13 +348,13 @@ ollama serve
 ### 2. Start backend (WSL)
 
 ```bash
-uvicorn api:app --reload
+uvicorn api_v2:app --reload
 ```
 
 ### 3. Start UI (WSL)
 
 ```bash
-streamlit run app.py
+streamlit run app_v2.py
 ```
 
 ### 4. Open browser
