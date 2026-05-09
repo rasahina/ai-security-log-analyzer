@@ -8,7 +8,7 @@ from core.risk_engine import calculate_risk
 from core.debug import debug_dump_json
 from core.v2_report_engine import build_detection_report
 from core.config import OUTPUT_DIR
-from core.outout import save_output_json
+from core.output import save_output_json
 
 
 def run_v2_pipeline(events_by_ip: dict) -> dict:
