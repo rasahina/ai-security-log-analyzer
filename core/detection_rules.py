@@ -1,16 +1,16 @@
 import yaml
 
 from core.config import (
-    DETECTION_RULES_PATH,
     DETECTION_RULES_PATH_V2,
+    DETECTION_RULES_PATH_V2_SIGNALS,
 )
 
 RULE_PATHS = {
-    "classic": DETECTION_RULES_PATH,
     "v2": DETECTION_RULES_PATH_V2,
+    "signals": DETECTION_RULES_PATH_V2_SIGNALS,
 }
 
-def load_detection_rules(rule_type="classic"):
+def load_detection_rules(rule_type="v2"):
 
     path = RULE_PATHS.get(rule_type)
 

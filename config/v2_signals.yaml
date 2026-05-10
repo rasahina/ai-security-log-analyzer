@@ -1,0 +1,76 @@
+paths:
+  admin:
+    - "/admin"
+    - "/phpmyadmin"
+    - "/wp-admin"
+
+  login:
+    - "/login"
+
+  suspicious:
+    - "/admin"
+    - "/phpmyadmin"
+    - "/wp-admin"
+    - "/.env"
+    - "/config"
+    - "/backup"
+
+signals:
+  repeated_login:
+    enabled: true
+    metric_type: count
+    filter:
+      path_group: login
+    window_seconds: 300
+    threshold: 5
+
+  failed_login_count:
+    enabled: true
+    metric_type: count
+    filter:
+      status_in: [401, 403]
+    window_seconds: 300
+    threshold: 5
+
+  high_failure_rate:
+    enabled: true
+    metric_type: ratio
+    numerator_filter:
+      status_in: [401, 403]
+    denominator_filter:
+      any: true
+    window_seconds: 300
+    minimum_count: 5
+    threshold: 0.5
+
+  many_404:
+    enabled: true
+    metric_type: count
+    filter:
+      status: 404
+    window_seconds: 300
+    threshold: 5
+
+  admin_access:
+    enabled: true
+    metric_type: count
+    filter:
+      path_group: admin
+    window_seconds: 300
+    threshold: 1
+
+  burst_access:
+    enabled: true
+    metric_type: count
+    filter:
+      any: true
+    window_seconds: 60
+    threshold: 5
+
+  multiple_suspicious_paths:
+    enabled: false
+    metric_type: count
+    filter:
+      path_group: suspicious
+    window_seconds: 300
+    threshold: 2

@@ -15,5 +15,7 @@ DETECTION_RULES_PATH = (
 DETECTION_RULES_PATH_V2 = (
     CONFIG_DIR / "v2_detection_rules.yaml"
 )
-
+DETECTION_RULES_PATH_V2_SIGNALS = (
+    CONFIG_DIR / "v2_signals.yaml"
+)
 DB_PATH = DATA_DIR / "security_analyzer.db"
