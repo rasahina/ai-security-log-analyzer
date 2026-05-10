@@ -37,10 +37,12 @@ The legacy UI/API/Core/AI lines have been removed from active runtime. Historica
 
 ## V2 Layer Model
 
-V2 uses three layers:
+V2 uses four major layers:
 
 ```text
-Core Engine
+Detection Layer
+↓
+Evaluation Layer
 ↓
 Interpretation Layer
 ↓
@@ -57,7 +59,6 @@ The following knowledge entities are managed in databases:
 
 * signals
 * signal clusters
-* cluster relations
 * attacks
 * response actions
 
@@ -69,57 +70,52 @@ Notion databases are used for knowledge management and reference data, not proce
 
 ---
 
-## YAML Layer Split Model
+## YAML Runtime Configuration Model
 
-V2 YAML is currently transitioning from a single combined file toward layer-separated YAML files.
+The active V2 runtime no longer uses a single combined YAML file.
 
-Current active runtime:
+Runtime configuration is now separated by responsibility.
+
+Current runtime files:
+
+```text
+config/v2_signals.yaml
+config/v2_clusters.yaml
+config/v2_attacks.yaml
+config/v2_evaluation_rules.yaml
+```
+
+The previous combined runtime file:
 
 ```text
 config/v2_detection_rules.yaml
 ```
 
-Current extracted layer files:
+has been archived and is no longer used by the active runtime.
+
+Current runtime loading is centralized through:
 
 ```text
-config/v2_signals.yaml
-config/v2_clusters.yaml
+core/yaml_loader.py
 ```
 
-The active runtime still keeps the combined V2 YAML as the primary source of truth during migration.
-
-Long-term direction:
-
-```text
-config/
-├── v2_signals.yaml
-├── v2_clusters.yaml
-├── v2_cluster_relations.yaml
-├── v2_attacks.yaml
-└── v2_response_actions.yaml
-```
-
-Layer responsibilities:
+Current runtime config separation:
 
 ```text
 v2_signals.yaml
-= signal definitions and signal support data used by deterministic signal detection
+= signal detection configuration
 
 v2_clusters.yaml
-= SignalFinding → SignalCluster mapping and cluster parameters
-
-v2_cluster_relations.yaml
-= SignalCluster relation resolution rules
-  (fallback handling, absorption, overlap handling, confidence adjustment)
+= SignalFinding → SignalCluster mapping
 
 v2_attacks.yaml
-= SignalCluster → AttackFinding mapping and attack metadata
+= Cluster relation semantics and AttackFinding mapping
 
-v2_response_actions.yaml
-= response action references and lightweight response metadata
+v2_evaluation_rules.yaml
+= score and risk evaluation policy
 ```
 
-YAML files are database snapshots / configuration inputs.
+YAML files are deterministic runtime configuration snapshots.
 
 YAML must not contain procedural logic.
 
@@ -171,33 +167,179 @@ for cluster-layer records.
 
 ---
 
-## Core Engine
+## Detection Layer
 
-Responsible for deterministic detection and scoring.
+Responsible for deterministic detection semantics.
 
-Core concepts:
+Current flow:
 
-* SignalFinding
-* SignalCluster
-* ClusterRelation
-* AttackFinding
-* Score
-* Risk
+```text
+SignalFinding
+↓
+SignalCluster
+↓
+ClusterRelation
+↓
+AttackFinding
+```
 
-Core Engine must not know about:
+Current runtime files:
 
-* UI
-* AI explanation
-* graph rendering
-* timeline rendering
-* response guide rendering
-* Notion page rendering
+```text
+core/timeseries_signal_detector.py
+core/cluster_engine.py
+core/cluster_relation_engine.py
+core/attack_engine.py
+```
 
-Core Engine must remain deterministic.
+---
 
-Same input should produce the same output.
+## Signal Layer
 
-AI is not part of Core detection. AI may read DetectionReport in future assistant workflows, but it must not participate in detection, scoring, risk, or relation decisions.
+Responsible for deterministic event pattern detection.
+
+Produces:
+
+```text
+SignalFinding
+```
+
+Current runtime config:
+
+```text
+config/v2_signals.yaml
+```
+
+Current runtime content:
+
+* paths
+* signals
+
+`paths` belongs to the signal layer because signal filters depend on shared path groups.
+
+---
+
+## Cluster Layer
+
+Responsible for grouping SignalFindings into SignalClusters.
+
+Produces:
+
+```text
+SignalCluster
+```
+
+Current runtime config:
+
+```text
+config/v2_clusters.yaml
+```
+
+Current runtime content:
+
+* signal_clusters
+
+---
+
+## Attack Layer
+
+Responsible for attack preparation semantics and AttackFinding generation.
+
+Produces:
+
+```text
+AttackFinding
+```
+
+Current runtime config:
+
+```text
+config/v2_attacks.yaml
+```
+
+Current runtime content:
+
+```text
+cluster_relation
+attacks
+```
+
+Responsibilities:
+
+* cluster overlap resolution
+* absorbed semantics
+* fallback candidate handling
+* suspicious activity semantics
+* confidence adjustment
+* AttackFinding mapping
+* attack metadata
+* source_cluster mapping
+* base attack scoring metadata
+
+Important:
+
+`cluster_relation_engine` intentionally references:
+
+```text
+attacks.*.source_cluster
+```
+
+This is intentional runtime behavior.
+
+The attack layer therefore acts as the transition layer between:
+
+```text
+SignalCluster
+↓
+AttackFinding
+```
+
+The attack layer currently contains most higher-level detection semantics.
+
+The actual AttackFinding mapping layer is intentionally thin.
+
+---
+
+## Evaluation Layer
+
+Responsible for severity and importance evaluation.
+
+Produces:
+
+```text
+Score
+Risk
+```
+
+Current runtime config:
+
+```text
+config/v2_evaluation_rules.yaml
+```
+
+Current runtime content:
+
+```text
+score
+risk
+```
+
+Responsibilities:
+
+* attack score calculation
+* risk level thresholds
+* severity evaluation
+* environment tuning
+* evaluation policy
+
+Evaluation is intentionally separated from deterministic detection semantics.
+
+Current runtime files:
+
+```text
+core/score_engine.py
+core/risk_engine.py
+```
 
 ---
 
@@ -282,152 +424,27 @@ core/v2_pipeline.py
 core/v2_report_engine.py
 ```
 
+Current runtime config loading:
+
+```text
+load_yaml_config("signals")
+load_yaml_config("clusters")
+load_yaml_config("attacks")
+load_yaml_config("evaluation")
+```
+
+Current runtime loader:
+
+```text
+core/yaml_loader.py
+```
+
 Active API boundary:
 
 ```text
 api_v2.py
 POST /analyze-v2
 ```
-
----
-
-## Detection Layer Responsibilities
-
-### Signal Layer
-
-Responsible for deterministic event pattern detection.
-
-Produces:
-
-```text
-SignalFinding
-```
-
-Current extracted runtime file:
-
-```text
-config/v2_signals.yaml
-```
-
-Current runtime content:
-
-* paths
-* signals
-
-`paths` belongs to the signal layer because signal filters depend on shared path groups.
-
----
-
-### Cluster Layer
-
-Responsible for grouping SignalFindings into SignalClusters.
-
-Produces:
-
-```text
-SignalCluster
-```
-
-Current extracted runtime file:
-
-```text
-config/v2_clusters.yaml
-```
-
-Current runtime content:
-
-* signal_clusters
-
----
-
-### Cluster Relation Layer
-
-Responsible for resolving relationships between SignalClusters before AttackFinding generation.
-
-Produces:
-
-```text
-Resolved SignalCluster
-```
-
-Responsibilities:
-
-* overlap resolution
-* absorbed semantics
-* fallback candidate handling
-* suspicious activity confidence adjustment
-* relation metadata
-
-Important:
-
-`cluster_relation_engine` references attack metadata through:
-
-```text
-attacks.*.source_cluster
-```
-
-This is intentional.
-
-The engine uses attack-defined source clusters to determine which SignalClusters become primary attack candidates versus fallback suspicious activity candidates.
-
-This layer is therefore a transition layer between:
-
-```text
-SignalCluster
-↓
-ClusterRelation
-↓
-AttackFinding
-```
-
-Current implementation:
-
-```text
-core/cluster_relation_engine.py
-```
-
-Current runtime content:
-
-```text
-cluster_relation
-```
-
-Current relation behavior mainly supports:
-
-```text
-suspicious_activity
-```
-
-fallback semantics.
-
----
-
-### Attack Layer
-
-Responsible for converting resolved SignalClusters into AttackFindings.
-
-Produces:
-
-```text
-AttackFinding
-```
-
-Current runtime content:
-
-```text
-attacks
-```
-
-Responsibilities:
-
-* attack naming
-* attack metadata
-* source_cluster mapping
-* attack scoring metadata
-
-Attack layer does not resolve overlap timing or absorption behavior.
-
-Those belong to ClusterRelation.
 
 ---
 
@@ -583,8 +600,9 @@ AI is intentionally separated from the detection system.
 
 Core principles:
 
-* AI is not part of Core Engine
-* AI does not participate in deterministic detection
+* AI is not part of deterministic detection
+* AI does not participate in detection semantics
+* AI does not participate in scoring or risk evaluation
 * AI reads DetectionReport
 * AI performs assistance, not detection
 * AI is an assistant, not a decision maker
@@ -592,7 +610,7 @@ Core principles:
 * Bring Your Own AI is the default strategy
 * Users should run AI within their own environment
 * The system must function without AI
-* Explainability evidence must originate from Core Engine
+* Explainability evidence must originate from deterministic runtime logic
 
 Possible AI providers:
 
@@ -612,13 +630,13 @@ The analyzer itself should remain AI-provider neutral.
 * Do not put logic in YAML
 * Do not put procedural logic in Notion
 * Do not put large logic in `analyzer.py`
-* Keep Core / Interpretation / UI separated
-* Keep V2 as a parallel line
+* Keep Detection / Evaluation / Interpretation / UI separated
 * Implement small changes
 * Confirm with debug JSON
 * Treat output JSON as the formal artifact
 * Treat Notion as knowledge/reference DB, not execution runtime
-* Keep YAML split by layer when moving V2 configuration forward
+* Preserve deterministic behavior
+* Preserve DetectionReport stability
 
 ---
 
@@ -743,21 +761,18 @@ Keep V2 runtime deterministic
 Use pytest before cleanup merges
 ```
 
-Current migration direction:
+Current active runtime separation:
 
 ```text
-single V2 YAML
+signals
 ↓
-runtime layer separation
+clusters
 ↓
-physical YAML split
-```
-
-Next active split candidates:
-
-```text
-v2_attacks.yaml
-v2_cluster_relations.yaml
+attacks
+↓
+evaluation
+↓
+DetectionReport
 ```
 
 ---
@@ -766,8 +781,8 @@ v2_cluster_relations.yaml
 
 * V2 runtime stabilization
 * pytest safety net
-* runtime rule separation
-* YAML split
+* YAML runtime separation
+* Detection / Evaluation separation
 * response action redesign
 * UI expansion
 

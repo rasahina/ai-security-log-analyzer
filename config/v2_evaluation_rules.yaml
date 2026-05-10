@@ -1,0 +1,10 @@
+score:
+  global_score_cap_ratio: 2.0
+  global_intensity_cap: 1.0
+
+risk:
+  risk_level_thresholds:
+    low: 0
+    medium: 3
+    high: 6
+    critical: 10

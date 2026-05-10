@@ -1,4 +1,4 @@
-from core.detection_rules import load_detection_rules
+from core.yaml_loader import load_yaml_config
 from core.timeseries_signal_detector import detect_timeseries_signal_findings
 from core.cluster_engine import build_signal_clusters
 from core.cluster_relation_engine import resolve_signal_clusters
@@ -12,10 +12,11 @@ from core.output import save_output_json
 
 
 def run_v2_pipeline(events_by_ip: dict) -> dict:
-    rules = load_detection_rules("v2")
-    signal_rules = load_detection_rules("signals")
-    cluster_rules = load_detection_rules("clusters")
-    attack_rules = load_detection_rules("attacks")
+    signal_rules = load_yaml_config("signals")
+    cluster_rules = load_yaml_config("clusters")
+    attack_rules = load_yaml_config("attacks")
+    evaluation_rules = load_yaml_config("evaluation")
+
 
     debug_print(
         "signal_rules keys:",
@@ -60,13 +61,13 @@ def run_v2_pipeline(events_by_ip: dict) -> dict:
 
     scores_by_ip = calculate_attack_scores(
         attacks_by_ip,
-        rules,
+        evaluation_rules,
     )
     debug_dump_json("scores_v2.json", scores_by_ip)
 
     risk_by_ip = calculate_risk(
         scores_by_ip,
-        rules,
+        evaluation_rules,
     )
     debug_dump_json("risk_v2.json", risk_by_ip)
 

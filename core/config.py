@@ -8,9 +8,6 @@ LOGS_DIR = PROJECT_ROOT / "logs"
 DEBUG_DIR = PROJECT_ROOT / "debug"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
-DETECTION_RULES_PATH = (
-    CONFIG_DIR / "timeseries_detection_rules.yaml"
-)
 
 DETECTION_RULES_PATH_V2 = (
     CONFIG_DIR / "v2_detection_rules.yaml"
@@ -23,5 +20,8 @@ DETECTION_RULES_PATH_V2_CLUSTERS = (
 )
 DETECTION_RULES_PATH_V2_ATTACKS = (
     CONFIG_DIR / "v2_attacks.yaml"
+)
+DETECTION_RULES_PATH_V2_EVALUATION = (
+    CONFIG_DIR / "v2_evaluation_rules.yaml"
 )
 DB_PATH = DATA_DIR / "security_analyzer.db"
