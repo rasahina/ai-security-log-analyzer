@@ -55,10 +55,11 @@ The design source has moved from Obsidian-based documents to Notion-based databa
 
 The following knowledge entities are managed in databases:
 
-- signals
-- signal clusters
-- attacks
-- response actions
+* signals
+* signal clusters
+* cluster relations
+* attacks
+* response actions
 
 The analyzer should treat these as structured knowledge sources, not free-form document notes.
 
@@ -70,31 +71,51 @@ Notion databases are used for knowledge management and reference data, not proce
 
 ## YAML Layer Split Model
 
-V2 YAML should be split by detection layer and knowledge responsibility.
+V2 YAML is currently transitioning from a single combined file toward layer-separated YAML files.
 
-Recommended structure:
+Current active runtime:
 
 ```text
-config/v2/
-├── signals.yaml
-├── signal_clusters.yaml
-├── attacks.yaml
-└── response_actions.yaml
+config/v2_detection_rules.yaml
+```
+
+Current extracted layer files:
+
+```text
+config/v2_signals.yaml
+config/v2_clusters.yaml
+```
+
+The active runtime still keeps the combined V2 YAML as the primary source of truth during migration.
+
+Long-term direction:
+
+```text
+config/
+├── v2_signals.yaml
+├── v2_clusters.yaml
+├── v2_cluster_relations.yaml
+├── v2_attacks.yaml
+└── v2_response_actions.yaml
 ```
 
 Layer responsibilities:
 
 ```text
-signals.yaml
-= signal definitions used by deterministic signal detection
+v2_signals.yaml
+= signal definitions and signal support data used by deterministic signal detection
 
-signal_clusters.yaml
+v2_clusters.yaml
 = SignalFinding → SignalCluster mapping and cluster parameters
 
-attacks.yaml
+v2_cluster_relations.yaml
+= SignalCluster relation resolution rules
+  (fallback handling, absorption, overlap handling, confidence adjustment)
+
+v2_attacks.yaml
 = SignalCluster → AttackFinding mapping and attack metadata
 
-response_actions.yaml
+v2_response_actions.yaml
 = response action references and lightweight response metadata
 ```
 
@@ -156,21 +177,21 @@ Responsible for deterministic detection and scoring.
 
 Core concepts:
 
-- SignalFinding
-- SignalCluster
-- ClusterRelation
-- AttackFinding
-- Score
-- Risk
+* SignalFinding
+* SignalCluster
+* ClusterRelation
+* AttackFinding
+* Score
+* Risk
 
 Core Engine must not know about:
 
-- UI
-- AI explanation
-- graph rendering
-- timeline rendering
-- response guide rendering
-- Notion page rendering
+* UI
+* AI explanation
+* graph rendering
+* timeline rendering
+* response guide rendering
+* Notion page rendering
 
 Core Engine must remain deterministic.
 
@@ -186,13 +207,13 @@ Responsible for converting Core Engine output into stable, human-readable struct
 
 Responsibilities:
 
-- DetectionReport generation
-- evidence organization
-- suspicious activity interpretation
-- explainability structure
-- timeline meaning structure
-- knowledge attachment
-- response action reference attachment
+* DetectionReport generation
+* evidence organization
+* suspicious activity interpretation
+* explainability structure
+* timeline meaning structure
+* knowledge attachment
+* response action reference attachment
 
 Current minimal artifact:
 
@@ -218,11 +239,11 @@ DetectionReport only
 
 UI must not:
 
-- perform detection
-- calculate score
-- determine risk
-- reinterpret relations
-- decide response actions
+* perform detection
+* calculate score
+* determine risk
+* reinterpret relations
+* decide response actions
 
 The UI is display-only at this stage.
 
@@ -267,6 +288,146 @@ Active API boundary:
 api_v2.py
 POST /analyze-v2
 ```
+
+---
+
+## Detection Layer Responsibilities
+
+### Signal Layer
+
+Responsible for deterministic event pattern detection.
+
+Produces:
+
+```text
+SignalFinding
+```
+
+Current extracted runtime file:
+
+```text
+config/v2_signals.yaml
+```
+
+Current runtime content:
+
+* paths
+* signals
+
+`paths` belongs to the signal layer because signal filters depend on shared path groups.
+
+---
+
+### Cluster Layer
+
+Responsible for grouping SignalFindings into SignalClusters.
+
+Produces:
+
+```text
+SignalCluster
+```
+
+Current extracted runtime file:
+
+```text
+config/v2_clusters.yaml
+```
+
+Current runtime content:
+
+* signal_clusters
+
+---
+
+### Cluster Relation Layer
+
+Responsible for resolving relationships between SignalClusters before AttackFinding generation.
+
+Produces:
+
+```text
+Resolved SignalCluster
+```
+
+Responsibilities:
+
+* overlap resolution
+* absorbed semantics
+* fallback candidate handling
+* suspicious activity confidence adjustment
+* relation metadata
+
+Important:
+
+`cluster_relation_engine` references attack metadata through:
+
+```text
+attacks.*.source_cluster
+```
+
+This is intentional.
+
+The engine uses attack-defined source clusters to determine which SignalClusters become primary attack candidates versus fallback suspicious activity candidates.
+
+This layer is therefore a transition layer between:
+
+```text
+SignalCluster
+↓
+ClusterRelation
+↓
+AttackFinding
+```
+
+Current implementation:
+
+```text
+core/cluster_relation_engine.py
+```
+
+Current runtime content:
+
+```text
+cluster_relation
+```
+
+Current relation behavior mainly supports:
+
+```text
+suspicious_activity
+```
+
+fallback semantics.
+
+---
+
+### Attack Layer
+
+Responsible for converting resolved SignalClusters into AttackFindings.
+
+Produces:
+
+```text
+AttackFinding
+```
+
+Current runtime content:
+
+```text
+attacks
+```
+
+Responsibilities:
+
+* attack naming
+* attack metadata
+* source_cluster mapping
+* attack scoring metadata
+
+Attack layer does not resolve overlap timing or absorption behavior.
+
+Those belong to ClusterRelation.
 
 ---
 
@@ -332,11 +493,11 @@ v2-10.0.0.4-brute_force-20260501T110000
 
 Intended future uses:
 
-- timeline
-- evidence
-- graph
-- investigation
-- explainability
+* timeline
+* evidence
+* graph
+* investigation
+* explainability
 
 ---
 
@@ -354,10 +515,10 @@ Absorbed clusters should remain available as evidence.
 
 Future uses:
 
-- Timeline
-- Evidence
-- Attack Graph
-- Explainability
+* Timeline
+* Evidence
+* Attack Graph
+* Explainability
 
 ---
 
@@ -391,12 +552,12 @@ The system should not store a large response manual directly for each attack.
 
 Instead, each attack should reference response action values such as:
 
-- block_ip
-- reset_password
-- review_auth_logs
-- add_rate_limit
-- enable_waf
-- investigation_required
+* block_ip
+* reset_password
+* review_auth_logs
+* add_rate_limit
+* enable_waf
+* investigation_required
 
 The detailed response manuals are maintained separately in a Notion response database.
 
@@ -422,25 +583,25 @@ AI is intentionally separated from the detection system.
 
 Core principles:
 
-- AI is not part of Core Engine
-- AI does not participate in deterministic detection
-- AI reads DetectionReport
-- AI performs assistance, not detection
-- AI is an assistant, not a decision maker
-- AI provider independence must be preserved
-- Bring Your Own AI is the default strategy
-- Users should run AI within their own environment
-- The system must function without AI
-- Explainability evidence must originate from Core Engine
+* AI is not part of Core Engine
+* AI does not participate in deterministic detection
+* AI reads DetectionReport
+* AI performs assistance, not detection
+* AI is an assistant, not a decision maker
+* AI provider independence must be preserved
+* Bring Your Own AI is the default strategy
+* Users should run AI within their own environment
+* The system must function without AI
+* Explainability evidence must originate from Core Engine
 
 Possible AI providers:
 
-- OpenAI
-- Claude
-- Gemini
-- Ollama
-- Local LLM
-- Azure OpenAI
+* OpenAI
+* Claude
+* Gemini
+* Ollama
+* Local LLM
+* Azure OpenAI
 
 The analyzer itself should remain AI-provider neutral.
 
@@ -448,16 +609,16 @@ The analyzer itself should remain AI-provider neutral.
 
 ## Project Rules
 
-- Do not put logic in YAML
-- Do not put procedural logic in Notion
-- Do not put large logic in `analyzer.py`
-- Keep Core / Interpretation / UI separated
-- Keep V2 as a parallel line
-- Implement small changes
-- Confirm with debug JSON
-- Treat output JSON as the formal artifact
-- Treat Notion as knowledge/reference DB, not execution runtime
-- Keep YAML split by layer when moving V2 configuration forward
+* Do not put logic in YAML
+* Do not put procedural logic in Notion
+* Do not put large logic in `analyzer.py`
+* Keep Core / Interpretation / UI separated
+* Keep V2 as a parallel line
+* Implement small changes
+* Confirm with debug JSON
+* Treat output JSON as the formal artifact
+* Treat Notion as knowledge/reference DB, not execution runtime
+* Keep YAML split by layer when moving V2 configuration forward
 
 ---
 
@@ -525,20 +686,20 @@ archive/legacy_core_line/
 
 Do not implement these in the current phase:
 
-- Timeline
-- Attack Graph
-- AI Explanation
-- Response Guide UI
-- SOC Queue
-- Realtime
-- WebSocket
-- Multi-user
-- RBAC
-- MITRE Mapping
-- Evidence Graph
-- Investigation Workspace
-- Notion synchronization engine
-- automated response execution
+* Timeline
+* Attack Graph
+* AI Explanation
+* Response Guide UI
+* SOC Queue
+* Realtime
+* WebSocket
+* Multi-user
+* RBAC
+* MITRE Mapping
+* Evidence Graph
+* Investigation Workspace
+* Notion synchronization engine
+* automated response execution
 
 ---
 
@@ -582,16 +743,33 @@ Keep V2 runtime deterministic
 Use pytest before cleanup merges
 ```
 
-Next phase:
+Current migration direction:
 
 ```text
-YAML layer split under config/v2/
+single V2 YAML
+↓
+runtime layer separation
+↓
+physical YAML split
 ```
 
+Next active split candidates:
+
+```text
+v2_attacks.yaml
+v2_cluster_relations.yaml
+```
+
+---
+
 ## V2 Roadmap
-- V2 runtime stabilization
-- pytest safety net
-- YAML split
-- config/v2/
-- response action redesign
-- UI expansion
+
+* V2 runtime stabilization
+* pytest safety net
+* runtime rule separation
+* YAML split
+* response action redesign
+* UI expansion
+
+```
+```
