@@ -278,39 +278,7 @@ def update_analysis_run_summary(run_id: int, results: list):
     conn.commit()
     conn.close()
 
-def get_ip_timestamps(run_id: int):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    SELECT ip, timestamp
-    FROM raw_logs
-    WHERE run_id = ?
-      AND ip IS NOT NULL
-    ORDER BY ip, timestamp
-    """, (run_id,))
-
-    rows = cur.fetchall()
-    conn.close()
-
-    timestamps_by_ip = {}
-
-    for ip, ts in rows:
-        try:
-            t = datetime.fromisoformat(ts)
-            if t.tzinfo is not None:
-                t = t.replace(tzinfo=None)       
-        except:
-            continue
-
-        if ip not in timestamps_by_ip:
-            timestamps_by_ip[ip] = []
-
-        timestamps_by_ip[ip].append(t)
-
-    return timestamps_by_ip
-
-def get_ip_events(run_id: int):
+def get_raw_logs_by_run(run_id: int):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -326,26 +294,15 @@ def get_ip_events(run_id: int):
     rows = cur.fetchall()
     conn.close()
 
-    events_by_ip = {}
-
-    for ip, ts, method, url, status, log_type, error_message in rows:
-        try:
-            t = datetime.fromisoformat(ts)
-            if t.tzinfo is not None:
-                t = t.replace(tzinfo=None)
-        except Exception:
-            continue
-
-        if ip not in events_by_ip:
-            events_by_ip[ip] = []
-
-        events_by_ip[ip].append({
-            "timestamp": t,
+    return [
+        {
+            "ip": ip,
+            "timestamp": timestamp,
             "method": method,
             "url": url,
             "status": status,
             "log_type": log_type,
             "error_message": error_message,
-        })
-
-    return events_by_ip
+        }
+        for ip, timestamp, method, url, status, log_type, error_message in rows
+    ]
