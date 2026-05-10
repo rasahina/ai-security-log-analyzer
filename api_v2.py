@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from core.v2_pipeline import run_v2_pipeline
-from data_layer.analysis_repository import create_run_from_text
+from data_layer.event_format_adapter import create_run_from_text
 from data_layer.database import get_ip_events, init_db
 
 

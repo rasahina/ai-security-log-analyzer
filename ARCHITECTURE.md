@@ -9,7 +9,15 @@ app_v2.py
 ↓
 api_v2.py
 ↓
+Ingestion / Normalization
+↓
+Persistence
+↓
+Event Format Adapter
+↓
 Detection Pipeline V2
+↓
+Evaluation Layer
 ↓
 Interpretation Layer
 ↓
@@ -21,6 +29,9 @@ The active implementation is:
 ```text
 app_v2.py
 api_v2.py
+data_layer/log_parser.py
+data_layer/database.py
+data_layer/event_format_adapter.py
 core/v2_pipeline.py
 core/v2_report_engine.py
 ```
@@ -37,9 +48,15 @@ The legacy UI/API/Core/AI lines have been removed from active runtime. Historica
 
 ## V2 Layer Model
 
-V2 uses four major layers:
+V2 uses the following major layers:
 
 ```text
+Ingestion / Normalization Layer
+↓
+Persistence Layer
+↓
+Event Format Adapter
+↓
 Detection Layer
 ↓
 Evaluation Layer
@@ -67,6 +84,45 @@ The analyzer should treat these as structured knowledge sources, not free-form d
 Core detection logic must still remain in Python.
 
 Notion databases are used for knowledge management and reference data, not procedural execution logic.
+
+---
+
+## Data Layer Model
+
+The `data_layer` package is responsible for preparing external log input before it reaches the deterministic V2 core.
+
+Current files:
+
+```text
+data_layer/log_parser.py
+data_layer/database.py
+data_layer/event_format_adapter.py
+```
+
+Responsibilities:
+
+```text
+log_parser.py
+= raw log parsing and normalization
+
+database.py
+= SQLite persistence, schema initialization, raw log/run storage
+
+event_format_adapter.py
+= conversion from persisted log records to Core Engine input shape
+```
+
+The Core Engine expects:
+
+```text
+events_by_ip
+```
+
+The Event Format Adapter owns the boundary between persisted log rows and this runtime input shape.
+
+Detection logic must not be placed in `data_layer`.
+
+Masking, sanitization, and AI Guard behavior may be introduced later as a separate boundary before persistence or before AI exposure, but they must not be mixed into detection logic.
 
 ---
 
@@ -164,6 +220,72 @@ Preferred pattern:
 ```
 
 for cluster-layer records.
+
+---
+
+## Ingestion / Normalization Layer
+
+Responsible for converting raw log text into normalized log records.
+
+Current runtime file:
+
+```text
+data_layer/log_parser.py
+```
+
+Responsibilities:
+
+* log format detection
+* access log parsing
+* error log parsing
+* timestamp normalization
+* raw text line to normalized dictionary conversion
+
+This layer does not perform detection, scoring, risk evaluation, or DetectionReport generation.
+
+---
+
+## Persistence Layer
+
+Responsible for SQLite storage and retrieval.
+
+Current runtime file:
+
+```text
+data_layer/database.py
+```
+
+Responsibilities:
+
+* DB initialization
+* schema creation
+* analysis run storage
+* raw log storage
+* analysis file storage
+* persisted log retrieval support
+
+Persistence does not perform detection.
+
+---
+
+## Event Format Adapter
+
+Responsible for converting persisted log records into the input shape required by V2 Core.
+
+Current runtime file:
+
+```text
+data_layer/event_format_adapter.py
+```
+
+Responsibilities:
+
+* read persisted normalized log records
+* group events by source IP
+* convert timestamp strings back into runtime datetime values
+* produce `events_by_ip` for `core/v2_pipeline.py`
+
+This adapter exists so that Core Engine does not need to know about SQLite rows or upload formats.
 
 ---
 
@@ -402,7 +524,11 @@ app_v2.py
 Current flow:
 
 ```text
-SignalFinding
+raw log text
+→ normalized log records
+→ persisted raw logs
+→ events_by_ip
+→ SignalFinding
 → SignalCluster
 → ClusterRelation
 → AttackFinding
@@ -414,6 +540,9 @@ SignalFinding
 Current implementation files:
 
 ```text
+data_layer/log_parser.py
+data_layer/database.py
+data_layer/event_format_adapter.py
 core/timeseries_signal_detector.py
 core/cluster_engine.py
 core/cluster_relation_engine.py
@@ -629,8 +758,10 @@ The analyzer itself should remain AI-provider neutral.
 
 * Do not put logic in YAML
 * Do not put procedural logic in Notion
+* Do not put detection logic in `data_layer`
+* Do not put persistence logic in Core Engine
 * Do not put large logic in `analyzer.py`
-* Keep Detection / Evaluation / Interpretation / UI separated
+* Keep Ingestion / Persistence / Adapter / Detection / Evaluation / Interpretation / UI separated
 * Implement small changes
 * Confirm with debug JSON
 * Treat output JSON as the formal artifact
@@ -764,13 +895,17 @@ Use pytest before cleanup merges
 Current active runtime separation:
 
 ```text
-signals
+ingestion / normalization
 ↓
-clusters
+persistence
 ↓
-attacks
+event format adapter
+↓
+detection
 ↓
 evaluation
+↓
+interpretation
 ↓
 DetectionReport
 ```
@@ -783,6 +918,7 @@ DetectionReport
 * pytest safety net
 * YAML runtime separation
 * Detection / Evaluation separation
+* Data layer responsibility separation
 * response action redesign
 * UI expansion
 
