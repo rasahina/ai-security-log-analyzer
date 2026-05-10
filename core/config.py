@@ -21,5 +21,7 @@ DETECTION_RULES_PATH_V2_SIGNALS = (
 DETECTION_RULES_PATH_V2_CLUSTERS = (
     CONFIG_DIR / "v2_clusters.yaml"
 )
-
+DETECTION_RULES_PATH_V2_ATTACKS = (
+    CONFIG_DIR / "v2_attacks.yaml"
+)
 DB_PATH = DATA_DIR / "security_analyzer.db"

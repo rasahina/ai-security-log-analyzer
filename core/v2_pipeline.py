@@ -15,6 +15,7 @@ def run_v2_pipeline(events_by_ip: dict) -> dict:
     rules = load_detection_rules("v2")
     signal_rules = load_detection_rules("signals")
     cluster_rules = load_detection_rules("clusters")
+    attack_rules = load_detection_rules("attacks")
 
     debug_print(
         "signal_rules keys:",
@@ -27,7 +28,8 @@ def run_v2_pipeline(events_by_ip: dict) -> dict:
     )
     debug_print("cluster_rules keys:", cluster_rules.keys())
     debug_print("cluster count:", len(cluster_rules.get("signal_clusters", {})))
-
+    debug_print("attack_rules keys:", attack_rules.keys())
+    debug_print("attack count:", len(attack_rules.get("attacks", {})))
     signal_findings_by_ip = {}
 
     for ip, events in events_by_ip.items():
@@ -46,13 +48,13 @@ def run_v2_pipeline(events_by_ip: dict) -> dict:
 
     resolved_clusters_by_ip = resolve_signal_clusters(
         clusters_by_ip,
-        rules,
+        attack_rules,
     )
     debug_dump_json("cluster_relations_v2.json", resolved_clusters_by_ip)
 
     attacks_by_ip = build_attack_findings(
         resolved_clusters_by_ip,
-        rules,
+        attack_rules,
     )
     debug_dump_json("attacks_v2.json", attacks_by_ip)
 

@@ -1,0 +1,31 @@
+cluster_relation:
+  suspicious_activity:
+    absorb_lift: 0.15
+    max_confidence: 0.85
+    overlap_strategy: strongest_confidence
+
+attacks:
+  brute_force:
+    enabled: true
+    source_cluster: brute_force_cluster
+    base_score: 6
+
+  reconnaissance:
+    enabled: true
+    source_cluster: reconnaissance_cluster
+    base_score: 4
+
+  automated_scanner:
+    enabled: true
+    source_cluster: automated_scanner_cluster
+    base_score: 6
+
+  admin_access:
+    enabled: true
+    source_cluster: admin_access_cluster
+    base_score: 3
+
+  suspicious_activity:
+    enabled: true
+    fallback: true
+    base_score: 2
