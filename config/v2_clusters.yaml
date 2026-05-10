@@ -1,0 +1,90 @@
+
+signal_clusters:
+  brute_force_cluster:
+    enabled: true
+    required:
+      - failed_login_count
+    optional:
+      repeated_login:
+        lift: 0.25
+      high_failure_rate:
+        lift: 0.25
+      burst_access:
+        lift: 0.15
+    base_confidence: 0.65
+    default_optional_lift: 0.15
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  reconnaissance_cluster:
+    enabled: true
+    required:
+      - many_404
+    optional:
+      multiple_suspicious_paths:
+        lift: 0.25
+      admin_access:
+        lift: 0.15
+      burst_access:
+        lift: 0.15
+    base_confidence: 0.6
+    default_optional_lift: 0.15
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  automated_scanner_cluster:
+    enabled: true
+    required:
+      - many_404
+      - burst_access
+    optional:
+      multiple_suspicious_paths:
+        lift: 0.25
+      admin_access:
+        lift: 0.1
+    base_confidence: 0.7
+    default_optional_lift: 0.15
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  admin_access_cluster:
+    enabled: true
+    required:
+      - admin_access
+    optional:
+      failed_login_count:
+        lift: 0.2
+      many_404:
+        lift: 0.15
+      burst_access:
+        lift: 0.1
+    base_confidence: 0.55
+    default_optional_lift: 0.15
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  repeated_login_cluster:
+    enabled: true
+    required:
+      - repeated_login
+
+    optional:
+      burst_access:
+        lift: 0.15
+
+    base_confidence: 0.45
+    default_optional_lift: 0.15
+    tolerance_seconds: 300
+    intensity_scale: 0.02
+
+  burst_access_cluster:
+    enabled: true
+    required:
+      - burst_access
+
+    optional: {}
+
+    base_confidence: 0.4
+    default_optional_lift: 0.1
+    tolerance_seconds: 60
+    intensity_scale: 0.08

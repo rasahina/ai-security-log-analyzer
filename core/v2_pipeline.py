@@ -14,6 +14,8 @@ from core.output import save_output_json
 def run_v2_pipeline(events_by_ip: dict) -> dict:
     rules = load_detection_rules("v2")
     signal_rules = load_detection_rules("signals")
+    cluster_rules = load_detection_rules("clusters")
+
     debug_print(
         "signal_rules keys:",
         signal_rules.keys(),
@@ -23,6 +25,8 @@ def run_v2_pipeline(events_by_ip: dict) -> dict:
         "signal count:",
         len(signal_rules.get("signals", {})),
     )
+    debug_print("cluster_rules keys:", cluster_rules.keys())
+    debug_print("cluster count:", len(cluster_rules.get("signal_clusters", {})))
 
     signal_findings_by_ip = {}
 
@@ -36,7 +40,7 @@ def run_v2_pipeline(events_by_ip: dict) -> dict:
 
     clusters_by_ip = build_signal_clusters(
         signal_findings_by_ip,
-        rules,
+        cluster_rules,
     )
     debug_dump_json("signal_clusters_v2.json", clusters_by_ip)
 
