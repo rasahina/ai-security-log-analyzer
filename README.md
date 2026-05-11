@@ -360,9 +360,10 @@ Rules:
 
 The active V2 runtime does not include AI or legacy AI/Ollama code.
 
-Future AI assistants should read DetectionReport only.
+Users may optionally provide DetectionReport outputs to external AI systems under their own control.
 
 ## Usage
+
 Tested on WSL/Linux environments.
 ### 1. Clone repository
 
@@ -440,7 +441,7 @@ venv/bin/python -m pytest
 - Minimal pytest safety net implemented
 - Legacy UI/API/Core/AI lines removed from public alpha runtime
 - Response action reference model established
-- Generated output target: `output/detection_report_v2.json`
+- Generated runtime output: `output/detection_report_v2.json`
 
 
 ## Roadmap
