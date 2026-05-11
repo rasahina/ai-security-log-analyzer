@@ -781,7 +781,7 @@ debug/
 
 Used for intermediate JSON inspection.
 
-Formal output:
+Generated output:
 
 ```text
 output/detection_report_v2.json

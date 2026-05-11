@@ -215,7 +215,7 @@ Minimum contract:
 * What: attack_type / finding_type
 * Severity: score / risk_level
 
-Formal output path:
+Generated output path:
 
 output/detection_report_v2.json
 

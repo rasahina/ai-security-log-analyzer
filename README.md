@@ -124,7 +124,7 @@ IP Reports
 Findings
 ```
 
-The formal V2 output artifact is:
+The generated V2 output artifact is:
 
 ```text
 output/detection_report_v2.json
@@ -416,7 +416,7 @@ http://localhost:8501
 - Legacy UI/API/Core/AI lines removed from public alpha runtime
 - Notion-based knowledge management direction established
 - Response action reference model established
-- Formal output target: `output/detection_report_v2.json`
+- Generated output target: `output/detection_report_v2.json`
 
 
 ## Roadmap
