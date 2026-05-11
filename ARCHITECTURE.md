@@ -231,6 +231,53 @@ exist in the parser, persistence layer, or event adapter.
 
 ---
 
+## Data Layer Minimal Retention Policy
+
+The Data Layer should keep only information required for:
+
+* deterministic detection
+* explainable evidence
+* minimal investigation traceability
+
+This analyzer is not a full log warehouse or SIEM storage platform.
+
+Raw attacker-controlled text should be minimized. `raw_line` should not be
+persisted by default. Traceability should primarily rely on:
+
+* `file_id`
+* `line_number`
+
+The Data Layer should avoid unnecessary retention of:
+
+* full raw logs
+* cookies
+* authorization headers
+* request bodies
+* unnecessary free text
+* excessive user identifiers
+
+Attacker-controlled fields are untrusted input at every stage:
+
+```text
+Raw Log Line
+-> Parsed Log Record
+-> Persisted Raw Log Row
+-> Canonical Runtime Event
+```
+
+Minimal normalized observations are preferred over broad raw-data retention.
+
+Smaller trusted runtime data reduces:
+
+* AI exposure risk
+* accidental sensitive data retention
+* prompt injection surface
+* storage complexity
+
+Retention choices must not introduce detection semantics before Core Detection.
+
+---
+
 ## YAML Runtime Configuration Model
 
 The active V2 runtime no longer uses a single combined YAML file.

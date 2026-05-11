@@ -157,6 +157,9 @@ Canonical Runtime Event
 
 Detection semantics must remain outside the Data Layer.
 
+When adding new Data Layer fields, justify why the field is required for
+deterministic detection, explainability, or minimal traceability.
+
 ---
 
 ## Interpretation Layer
