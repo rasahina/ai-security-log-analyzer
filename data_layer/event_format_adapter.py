@@ -36,6 +36,7 @@ def get_ip_events(run_id: int):
             "url": row["url"],
             "status": row["status"],
             "log_type": row["log_type"],
+            "line_number": row["line_number"],
             "error_message": row["error_message"],
         })
 

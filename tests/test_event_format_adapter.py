@@ -15,6 +15,7 @@ def test_get_ip_events_normalizes_aware_timestamps_to_utc(monkeypatch):
                 "url": "/login",
                 "status": 401,
                 "log_type": "access",
+                "line_number": 7,
                 "error_message": None,
             }
         ],
@@ -25,6 +26,7 @@ def test_get_ip_events_normalizes_aware_timestamps_to_utc(monkeypatch):
     timestamp = events_by_ip["10.0.0.1"][0]["timestamp"]
     assert timestamp.tzinfo is timezone.utc
     assert timestamp.isoformat() == "2026-05-01T10:30:00+00:00"
+    assert events_by_ip["10.0.0.1"][0]["line_number"] == 7
 
 
 def test_get_ip_events_skips_naive_timestamps(monkeypatch):
@@ -39,6 +41,7 @@ def test_get_ip_events_skips_naive_timestamps(monkeypatch):
                 "url": "/login",
                 "status": 401,
                 "log_type": "access",
+                "line_number": 4,
                 "error_message": None,
             }
         ],

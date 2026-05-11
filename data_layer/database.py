@@ -50,6 +50,7 @@ def init_db():
         method TEXT,
         url TEXT,
         status INTEGER,
+        line_number INTEGER,
         error_message TEXT,
         FOREIGN KEY (run_id) REFERENCES analysis_runs(id),
         FOREIGN KEY (file_id) REFERENCES analysis_files(id)
@@ -58,6 +59,11 @@ def init_db():
 
     try:
         cur.execute("ALTER TABLE raw_logs ADD COLUMN file_id INTEGER")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        cur.execute("ALTER TABLE raw_logs ADD COLUMN line_number INTEGER")
     except sqlite3.OperationalError:
         pass
 
@@ -234,9 +240,10 @@ def save_raw_logs(run_id: int, raw_logs: list, file_id: int | None = None):
             method,
             url,
             status,
+            line_number,
             error_message
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id,
             file_id,
@@ -246,6 +253,7 @@ def save_raw_logs(run_id: int, raw_logs: list, file_id: int | None = None):
             log.get("method"),
             log.get("url"),
             log.get("status"),
+            log.get("line_number"),
             log.get("error_message"),
         ))
 
@@ -283,12 +291,12 @@ def get_raw_logs_by_run(run_id: int):
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT ip, timestamp, method, url, status, log_type, error_message
+    SELECT ip, timestamp, method, url, status, log_type, line_number, error_message
     FROM raw_logs
     WHERE run_id = ?
       AND ip IS NOT NULL
       AND timestamp IS NOT NULL
-    ORDER BY ip, timestamp
+    ORDER BY ip, timestamp, line_number
     """, (run_id,))
 
     rows = cur.fetchall()
@@ -302,7 +310,8 @@ def get_raw_logs_by_run(run_id: int):
             "url": url,
             "status": status,
             "log_type": log_type,
+            "line_number": line_number,
             "error_message": error_message,
         }
-        for ip, timestamp, method, url, status, log_type, error_message in rows
+        for ip, timestamp, method, url, status, log_type, line_number, error_message in rows
     ]

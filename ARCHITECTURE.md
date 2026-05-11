@@ -297,6 +297,7 @@ Expected fields may include:
 * `method`
 * `url`
 * `status`
+* `line_number`
 * `user_agent`
 * `error_message`
 * `log_type`
@@ -336,6 +337,7 @@ Event object passed to Core Detection through `events_by_ip`.
 Responsible for:
 
 * grouping events by source IP
+* carrying `line_number` for minimal evidence traceability when available
 * containing only fields needed by deterministic Core Detection
 * using timezone-aware UTC `datetime` values for `timestamp`
 * excluding naive, malformed, or incomplete timestamp records at the Event Format Adapter boundary

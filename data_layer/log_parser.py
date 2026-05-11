@@ -167,7 +167,7 @@ def parse_log_lines(lines):
     parsed = []
     skipped = []
 
-    for line in lines:
+    for line_number, line in enumerate(lines, start=1):
         fmt = detect_log_format(line)
 
         if fmt == "simple_access":
@@ -182,10 +182,10 @@ def parse_log_lines(lines):
             result = None
 
         if result:
+            result["line_number"] = line_number
             parsed.append(result)
         else:
             skipped.append(line)
 
     return parsed, skipped
-
 
