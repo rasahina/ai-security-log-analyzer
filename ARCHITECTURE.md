@@ -130,6 +130,107 @@ Masking, sanitization, and AI Guard behavior may be introduced later as a separa
 
 ---
 
+## Data Layer Event Contract
+
+Canonical flow:
+
+```text
+Raw Log Line
+-> Parsed Log Record
+-> Persisted Raw Log Row
+-> Canonical Runtime Event
+-> Detection Pipeline V2
+```
+
+### Raw Log Line
+
+Original untrusted text input.
+
+Responsible for:
+
+* providing parser input
+* preserving future evidence traceability
+
+Must not:
+
+* carry detection meaning
+* affect scoring, risk, or attack interpretation directly
+* be trusted as structured runtime data
+
+### Parsed Log Record
+
+Dictionary produced by `data_layer/log_parser.py`.
+
+Expected fields may include:
+
+* `timestamp`
+* `ip`
+* `method`
+* `url`
+* `status`
+* `user_agent`
+* `error_message`
+* `log_type`
+* `level`
+
+Responsible for:
+
+* representing extracted parser output
+* carrying parser limitations explicitly through missing or partial fields
+
+Must not:
+
+* be treated as a trusted Core runtime event
+* contain detection semantics
+* perform scoring, risk, or attack interpretation
+
+### Persisted Raw Log Row
+
+SQLite storage representation of parsed records.
+
+Responsible for:
+
+* preserving parsed fields for an analysis run
+* supporting retrieval by run
+* remaining persistence-only
+
+Must not:
+
+* introduce detection semantics
+* reinterpret parser output
+* infer missing timezone information
+
+### Canonical Runtime Event
+
+Event object passed to Core Detection through `events_by_ip`.
+
+Responsible for:
+
+* grouping events by source IP
+* containing only fields needed by deterministic Core Detection
+* using timezone-aware UTC `datetime` values for `timestamp`
+* excluding naive, malformed, or incomplete timestamp records at the Event Format Adapter boundary
+
+Must not:
+
+* guess missing timezone information
+* contain scoring, risk, or attack interpretation
+* expose SQLite row details to Core Detection
+
+Core Detection consumes Canonical Runtime Events only. Detection logic must not
+exist in the parser, persistence layer, or event adapter.
+
+### Data Layer Contract Invariants
+
+* Same input should produce the same parsed, persisted, and runtime event shape.
+* Runtime timestamps are timezone-aware UTC datetimes only.
+* Missing timezone information is not silently guessed.
+* Malformed or incomplete records must not silently become trusted runtime events.
+* Detection semantics begin in Core Detection, not in the Data Layer.
+* Parser, persistence, and adapter responsibilities must remain separate.
+
+---
+
 ## YAML Runtime Configuration Model
 
 The active V2 runtime no longer uses a single combined YAML file.

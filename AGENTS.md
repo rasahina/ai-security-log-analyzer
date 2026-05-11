@@ -143,6 +143,22 @@ Same input must produce same output.
 
 ---
 
+## Data Layer
+
+When modifying Data Layer behavior, preserve the boundary:
+
+Raw Log Line
+↓
+Parsed Log Record
+↓
+Persisted Raw Log Row
+↓
+Canonical Runtime Event
+
+Detection semantics must remain outside the Data Layer.
+
+---
+
 ## Interpretation Layer
 
 Responsible for:
