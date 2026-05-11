@@ -1,6 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from data_layer.database import get_raw_logs_by_run
+
+
+def _parse_runtime_timestamp(value: str):
+    timestamp = datetime.fromisoformat(value)
+
+    if timestamp.tzinfo is None:
+        return None
+
+    return timestamp.astimezone(timezone.utc)
 
 
 def get_ip_events(run_id: int):
@@ -9,10 +18,11 @@ def get_ip_events(run_id: int):
 
     for row in rows:
         try:
-            timestamp = datetime.fromisoformat(row["timestamp"])
-            if timestamp.tzinfo is not None:
-                timestamp = timestamp.replace(tzinfo=None)
+            timestamp = _parse_runtime_timestamp(row["timestamp"])
         except Exception:
+            continue
+
+        if timestamp is None:
             continue
 
         ip = row["ip"]

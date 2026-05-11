@@ -1,16 +1,21 @@
 import json
-from pathlib import Path
 
 import pytest
 
 from api_v2 import AnalyzeV2Request, analyze_v2, health
 
 
-SAMPLE_LOG = Path("data/sample.log")
+SAMPLE_LOG = """
+2026-05-01T10:00:00+00:00 10.0.0.4 GET /login 401
+2026-05-01T10:00:05+00:00 10.0.0.4 GET /login 401
+2026-05-01T10:00:10+00:00 10.0.0.4 GET /login 403
+2026-05-01T10:00:15+00:00 10.0.0.4 GET /login 401
+2026-05-01T10:00:20+00:00 10.0.0.4 GET /login 403
+"""
 
 
 def _sample_log_text() -> str:
-    return SAMPLE_LOG.read_text(encoding="utf-8")
+    return SAMPLE_LOG
 
 
 @pytest.fixture(scope="module")

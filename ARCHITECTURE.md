@@ -120,6 +120,10 @@ events_by_ip
 
 The Event Format Adapter owns the boundary between persisted log rows and this runtime input shape.
 
+Internal runtime timestamps are timezone-aware UTC datetimes. The runtime does
+not silently guess missing timezone information; persisted rows with naive
+timestamps are skipped at the Event Format Adapter boundary.
+
 Detection logic must not be placed in `data_layer`.
 
 Masking, sanitization, and AI Guard behavior may be introduced later as a separate boundary before persistence or before AI exposure, but they must not be mixed into detection logic.
@@ -282,7 +286,7 @@ Responsibilities:
 
 * read persisted normalized log records
 * group events by source IP
-* convert timestamp strings back into runtime datetime values
+* convert timezone-aware timestamp strings into UTC runtime datetime values
 * produce `events_by_ip` for `core/v2_pipeline.py`
 
 This adapter exists so that Core Engine does not need to know about SQLite rows or upload formats.
