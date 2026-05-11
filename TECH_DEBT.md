@@ -9,3 +9,12 @@ Many are conscious tradeoffs made to preserve:
 - small runtime surface
 - architecture clarity
 - public alpha simplicity
+
+
+## Data Engine
+
+- Avoid double timestamp parsing in event_format_adapter.py
+- Consider cached policy loading for record_minimizer.py
+- Consider explicit partial parse_status in future
+- Consider runtime eligibility debug export
+- Consider parser warning categorization
