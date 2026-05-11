@@ -206,6 +206,10 @@ datetimes, and produces Canonical Runtime Events.
 
 The adapter must not guess missing timezone information.
 
+Runtime eligibility is determined at the Event Format Adapter boundary.
+Exclusion reasons are Data Engine metadata only and must not become detection
+semantics, scoring inputs, or risk signals.
+
 ### Canonical Runtime Event
 
 Deterministic runtime-safe structure and the only trusted Core input shape.

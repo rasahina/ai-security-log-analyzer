@@ -12,22 +12,55 @@ def _parse_runtime_timestamp(value: str):
     return timestamp.astimezone(timezone.utc)
 
 
+def get_runtime_eligibility(row: dict) -> dict:
+    if row.get("parse_status") != "parsed":
+        return {
+            "is_runtime_eligible": False,
+            "runtime_exclusion_reason": "parse_status_not_parsed",
+        }
+
+    if not row.get("timestamp"):
+        return {
+            "is_runtime_eligible": False,
+            "runtime_exclusion_reason": "timestamp_missing",
+        }
+
+    try:
+        timestamp = _parse_runtime_timestamp(row["timestamp"])
+    except Exception:
+        return {
+            "is_runtime_eligible": False,
+            "runtime_exclusion_reason": "timestamp_malformed",
+        }
+
+    if timestamp is None:
+        return {
+            "is_runtime_eligible": False,
+            "runtime_exclusion_reason": "timezone_missing",
+        }
+
+    if not row.get("ip"):
+        return {
+            "is_runtime_eligible": False,
+            "runtime_exclusion_reason": "source_ip_missing",
+        }
+
+    return {
+        "is_runtime_eligible": True,
+        "runtime_exclusion_reason": None,
+    }
+
+
 def get_ip_events(run_id: int):
     rows = get_raw_logs_by_run(run_id)
     events_by_ip = {}
 
     for row in rows:
-        if row.get("parse_status") != "parsed":
+        eligibility = get_runtime_eligibility(row)
+        if not eligibility["is_runtime_eligible"]:
             continue
 
-        try:
-            timestamp = _parse_runtime_timestamp(row["timestamp"])
-        except Exception:
-            continue
-
-        if timestamp is None:
-            continue
-
+        timestamp = _parse_runtime_timestamp(row["timestamp"])
         ip = row["ip"]
 
         if ip not in events_by_ip:
