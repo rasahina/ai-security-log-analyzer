@@ -11,8 +11,7 @@ api_v2.py
 -> config/v2_detection_rules.yaml
 ```
 
-Archived YAML under `archive/` and environment YAML from dependencies are not active
-V2 runtime inputs.
+Dependency YAML from the local environment is not an active V2 runtime input.
 
 ## Active YAML Files
 

@@ -6,7 +6,7 @@ import pytest
 from api_v2 import AnalyzeV2Request, analyze_v2, health
 
 
-SAMPLE_LOG = Path("data/test_mixed.log")
+SAMPLE_LOG = Path("data/sample.log")
 
 
 def _sample_log_text() -> str:

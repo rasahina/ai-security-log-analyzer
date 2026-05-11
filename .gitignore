@@ -9,6 +9,8 @@ env/
 
 # Local data
 data/*.db
+data/*.log
+!data/sample.log
 logs/
 debug/
 .vscode/

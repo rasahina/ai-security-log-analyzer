@@ -368,16 +368,8 @@ Rules:
 Current structure:
 
 Active V2 runtime
-+
-Archived historical implementations
 
-Legacy implementations are preserved outside active runtime under:
-
-```text
-archive/
-```
-
-Archive contents are reference material, not runtime dependencies.
+Legacy implementations are not part of the public alpha runtime tree.
 
 ---
 

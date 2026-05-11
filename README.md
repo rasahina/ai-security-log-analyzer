@@ -309,7 +309,7 @@ v2-10.0.0.4-brute_force-20260501T110000
 - Minimal Streamlit DetectionReport Viewer
 - Pytest safety net for the V2 API contract
 
-Legacy UI/API/Core/AI implementations have been removed from the active runtime or moved under `archive/` for historical reference.
+Legacy UI/API/Core/AI implementations are not part of the public alpha runtime.
 
 
 ## Architecture
@@ -370,13 +370,7 @@ Rules:
 
 ## AI Runtime Status
 
-The active V2 runtime does not include AI.
-
-Legacy AI/Ollama code has been moved outside active runtime under:
-
-```text
-archive/legacy_ai_path/
-```
+The active V2 runtime does not include AI or legacy AI/Ollama code.
 
 Future AI assistants should read DetectionReport only.
 
@@ -419,8 +413,7 @@ http://localhost:8501
 - V2 Viewer active: `app_v2.py`
 - Minimal schema version: `v2_minimal_0.1`
 - Minimal pytest safety net implemented
-- Legacy UI/API/Core/AI lines removed from active runtime
-- Historical implementations archived under `archive/`
+- Legacy UI/API/Core/AI lines removed from public alpha runtime
 - Notion-based knowledge management direction established
 - Response action reference model established
 - Formal output target: `output/detection_report_v2.json`

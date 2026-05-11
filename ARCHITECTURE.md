@@ -42,7 +42,7 @@ Current schema:
 v2_minimal_0.1
 ```
 
-The legacy UI/API/Core/AI lines have been removed from active runtime. Historical implementations are kept under `archive/`.
+The legacy UI/API/Core/AI lines have been removed from the public alpha runtime.
 
 ---
 
@@ -147,7 +147,7 @@ The previous combined runtime file:
 config/v2_detection_rules.yaml
 ```
 
-has been archived and is no longer used by the active runtime.
+is no longer used by the active runtime.
 
 Current runtime loading is centralized through:
 
@@ -820,14 +820,8 @@ api_v2.py
 app_v2.py
 ```
 
-The previous dashboard UI, legacy API, legacy core line, and old AI/Ollama explanation path are outside active runtime.
-
-Archive locations:
-
-```text
-archive/legacy_ai_path/
-archive/legacy_core_line/
-```
+The previous dashboard UI, legacy API, legacy core line, and old AI/Ollama
+explanation path are outside the public alpha runtime.
 
 ---
 
