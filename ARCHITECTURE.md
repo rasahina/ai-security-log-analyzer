@@ -403,6 +403,8 @@ default.
 
 Canonical Runtime Event must not contain detection semantics. Core Detection
 consumes Canonical Runtime Events only.
+Canonical Runtime Event represents observable runtime telemetry only.
+
 
 ### Data Layer Contract Invariants
 
