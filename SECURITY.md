@@ -19,8 +19,9 @@ branches are not supported.
 
 Please report security issues through GitHub private vulnerability reporting if
 enabled for the repository. If that is unavailable, open a GitHub issue with a
-minimal description and avoid posting exploit details, private logs, secrets, or
-credentials.
+high-level description and avoid posting exploit details, private logs, secrets,
+or credentials.
+
 
 Useful reports include:
 
@@ -34,6 +35,8 @@ Useful reports include:
 
 The active V2 runtime is deterministic. AI/LLM logic is not part of detection,
 scoring, risk evaluation, or response decisions.
+
+Detection results should always be reviewed by humans.
 
 Current non-goals:
 

@@ -4,21 +4,62 @@
 
 AI Security Log Analyzer is a lightweight cybersecurity log analysis tool designed to detect suspicious activity from web access logs and emit a stable, explainable DetectionReport.
 
-This repository is an experimental public alpha and MVP runtime skeleton. It is
-intended for architecture validation, deterministic detection experiments, and
-early feedback. It is not production-ready security infrastructure.
+This repository is an experimental public alpha and MVP runtime skeleton. It is intended for architecture validation, deterministic detection experiments, and early feedback.
+
+It is NOT production-ready security infrastructure.
+
+This project intentionally prioritizes:
+
+* explainability over complexity
+* deterministic evidence over probabilistic confidence
+* understandable detection over opaque automation
 
 The active runtime is the V2 API and DetectionReport Viewer:
 
-- API: `api_v2.py`
-- Viewer: `app_v2.py`
-- Pipeline: `core/v2_pipeline.py`
-- Report contract: `v2_minimal_0.1`
+* API: `api_v2.py`
+* Viewer: `app_v2.py`
+* Pipeline: `core/v2_pipeline.py`
+* Report contract: `v2_minimal_0.1`
 
-This project is both:
-- a learning project for security and AI system design
-- an MVP prototype for a future AI-assisted security monitoring product
+The project aims to make defensive security more understandable, readable, and forkable.
 
+---
+
+## What This Project Is
+
+* deterministic web log detection runtime
+* explainable DetectionReport generator
+* security learning / experimentation project
+* small observable-first analysis pipeline
+* public MVP architecture skeleton
+* foundation for future investigation tooling
+
+---
+
+## What This Project Is NOT
+
+This project is intentionally NOT:
+
+* an autonomous AI SOC
+* an AI-based detection engine
+* a giant SIEM replacement
+* a UEBA platform
+* an endpoint telemetry platform
+* a speculative attack inference engine
+* a production-grade security guarantee
+* a realtime prevention or blocking system
+
+The analyzer only handles activity directly observable from logs.
+
+The system intentionally avoids:
+
+* black-box AI detection
+* probabilistic attacker intent inference
+* opaque scoring systems
+* speculative attack-chain reconstruction
+* fake certainty
+
+---
 
 ## Public Alpha Scope
 
@@ -34,16 +75,15 @@ Upload/Paste log text
 
 Non-goals for this alpha:
 
-- production SOC or SIEM replacement
-- realtime monitoring
-- multi-user workflows or RBAC
-- autonomous blocking or remediation
-- AI/LLM-based detection decisions
-- sanitizer, masking, or AI Guard behavior
-- broad incident response playbooks
+* production SOC or SIEM replacement
+* realtime monitoring
+* multi-user workflows or RBAC
+* autonomous remediation
+* AI/LLM-based detection decisions
+* sanitizer, masking, or AI Guard behavior
+* broad incident response orchestration
 
-The project should be treated as an experimental foundation, not an operational
-security control.
+The project should be treated as an experimental foundation, not an operational security control.
 
 
 ## Key Concept
