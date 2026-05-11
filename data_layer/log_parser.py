@@ -164,13 +164,23 @@ def parse_access_log_line(line: str):
     }
 
 def parse_log_lines(lines):
-    parsed = []
+    records = []
     skipped = []
 
     for line_number, line in enumerate(lines, start=1):
         fmt = detect_log_format(line)
 
-        if fmt == "simple_access":
+        if fmt == "ignore":
+            result = {
+                "line_number": line_number,
+                "parse_status": "ignored",
+            }
+        elif fmt == "unknown":
+            result = {
+                "line_number": line_number,
+                "parse_status": "failed",
+            }
+        elif fmt == "simple_access":
             result = parse_access_log_line(line)
         elif fmt == "common_access":
             result = parse_common_access_log_line(line)
@@ -182,10 +192,15 @@ def parse_log_lines(lines):
             result = None
 
         if result:
-            result["line_number"] = line_number
-            parsed.append(result)
+            result.setdefault("line_number", line_number)
+            result.setdefault("parse_status", "parsed")
+            records.append(result)
         else:
-            skipped.append(line)
+            result = {
+                "line_number": line_number,
+                "parse_status": "failed",
+            }
+            records.append(result)
+            skipped.append(result)
 
-    return parsed, skipped
-
+    return records, skipped

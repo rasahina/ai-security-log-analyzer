@@ -42,7 +42,7 @@ def analyze_v2(request: AnalyzeV2Request):
     run_id = save_analysis_run([], source="api-v2")
     save_raw_logs(run_id, parsed_logs)
 
-    if not parsed_logs:
+    if not any(log.get("parse_status") == "parsed" for log in parsed_logs):
         raise HTTPException(status_code=400, detail="no supported log lines found")
 
     events_by_ip = get_ip_events(run_id)

@@ -3,14 +3,32 @@ from data_layer.log_parser import parse_log_lines
 
 
 def test_parse_log_lines_assigns_original_line_numbers():
-    parsed, _ = parse_log_lines([
+    records, _ = parse_log_lines([
         "# ignored comment",
         "2026-05-01T10:00:00+00:00 10.0.0.1 GET /login 401",
         "",
         "2026-05-01T10:00:05+00:00 10.0.0.1 GET /login 403",
     ])
+    parsed = [record for record in records if record["parse_status"] == "parsed"]
 
     assert [record["line_number"] for record in parsed] == [2, 4]
+
+
+def test_parse_log_lines_adds_stable_parse_status():
+    records, _ = parse_log_lines([
+        "# ignored comment",
+        "2026-05-01T10:00:00+00:00 10.0.0.1 GET /login 401",
+        "malformed",
+    ])
+
+    assert [
+        (record["line_number"], record["parse_status"])
+        for record in records
+    ] == [
+        (1, "ignored"),
+        (2, "parsed"),
+        (3, "failed"),
+    ]
 
 
 def test_raw_log_persistence_preserves_line_number(tmp_path, monkeypatch):
@@ -30,6 +48,7 @@ def test_raw_log_persistence_preserves_line_number(tmp_path, monkeypatch):
                 "status": 401,
                 "log_type": "access",
                 "line_number": 12,
+                "parse_status": "parsed",
                 "error_message": None,
             }
         ],
@@ -38,3 +57,4 @@ def test_raw_log_persistence_preserves_line_number(tmp_path, monkeypatch):
     rows = database.get_raw_logs_by_run(run_id)
 
     assert rows[0]["line_number"] == 12
+    assert rows[0]["parse_status"] == "parsed"

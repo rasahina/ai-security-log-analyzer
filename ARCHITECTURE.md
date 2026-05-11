@@ -298,6 +298,7 @@ Expected fields may include:
 * `url`
 * `status`
 * `line_number`
+* `parse_status`
 * `user_agent`
 * `error_message`
 * `log_type`
@@ -306,6 +307,7 @@ Expected fields may include:
 Responsible for:
 
 * representing extracted parser output
+* marking parser outcome with `parse_status` values such as `parsed`, `ignored`, or `failed`
 * carrying parser limitations explicitly through missing or partial fields
 
 Must not:

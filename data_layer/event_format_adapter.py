@@ -17,6 +17,9 @@ def get_ip_events(run_id: int):
     events_by_ip = {}
 
     for row in rows:
+        if row.get("parse_status") != "parsed":
+            continue
+
         try:
             timestamp = _parse_runtime_timestamp(row["timestamp"])
         except Exception:
