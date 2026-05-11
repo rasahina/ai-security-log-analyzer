@@ -329,7 +329,7 @@ Legacy UI/API/Core/AI implementations are not part of the public alpha runtime.
 
 ## AI Policy (Critical Design Rules)
 
-### AI is strictly limited to explanation and assistance.
+### AI is strictly limited to explanation and assistance outside the project
 
 ### AI is NOT used for:
 - Attack detection
@@ -337,27 +337,15 @@ Legacy UI/API/Core/AI implementations are not part of the public alpha runtime.
 - Decision making
 - Recommended action decisions
 
-### AI may be used in future assistant workflows for:
-- Explaining already-detected results
-- Assisting investigations
-
 ### V2 AI direction
 
 AI is separated from the analyzer.
 
 Rules:
 
-- AI is not part of Core Engine
-- AI does not participate in deterministic detection
-- AI reads DetectionReport
-- AI performs assistance, not detection
-- AI is an assistant, not a decision maker
-- Users should run AI in their own environment
+- Detection, evaluation, and response guidance are deterministic
 - The system must work without AI
-- Explainability evidence must originate from deterministic engine output
-- AI provider independence must be preserved
-- Bring Your Own AI is preferred
-
+- AI provider independence must be preserved: Bring Your Own AI
 
 ### Security Principles
 
@@ -375,7 +363,7 @@ The active V2 runtime does not include AI or legacy AI/Ollama code.
 Future AI assistants should read DetectionReport only.
 
 ## Usage
-
+Tested on WSL/Linux environments.
 ### 1. Clone repository
 
 ```bash
@@ -451,7 +439,6 @@ venv/bin/python -m pytest
 - Minimal schema version: `v2_minimal_0.1`
 - Minimal pytest safety net implemented
 - Legacy UI/API/Core/AI lines removed from public alpha runtime
-- Notion-based knowledge management direction established
 - Response action reference model established
 - Generated output target: `output/detection_report_v2.json`
 
@@ -471,7 +458,7 @@ venv/bin/python -m pytest
 - Expand signal / attack DBs
 - Support multiple log formats (nginx, apache, auth.log)
 - Cross-run analysis (recurring IP detection)
-- Better anomaly detection
+- Observable anomaly heuristics
 
 ### Long-term:
 - Investigation Workspace
@@ -479,7 +466,6 @@ venv/bin/python -m pytest
 - Evidence panel
 - Attack Graph
 - Raw log view
-- AI Copilot
 - Knowledge layer
 - SaaS version
 - Multi-tenant support
