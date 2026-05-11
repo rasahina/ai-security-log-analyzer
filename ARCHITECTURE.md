@@ -367,6 +367,49 @@ Must not:
 Core Detection consumes Canonical Runtime Events only. Detection logic must not
 exist in the parser, persistence layer, or event adapter.
 
+### Canonical Runtime Event v0.1
+
+Canonical Runtime Event v0.1 is the only trusted input shape for Core Detection.
+
+Required fields:
+
+* `timestamp`: timezone-aware UTC `datetime`
+* `ip`: source IP
+* `log_type`: `access` or `error`
+
+Optional fields:
+
+* `method`
+* `url`
+* `status`
+* `error_message`
+* `user_agent`
+* `line_number`
+* `parser_warnings`
+
+Excluded fields:
+
+* `raw_line`
+* `log_format`
+* `file_id`
+* `run_id`
+* `parse_status`
+* `runtime_exclusion_reason`
+* DB row id
+* `score`
+* `risk`
+* `attack_type`
+
+`parse_status` is consumed before Canonical Runtime Event creation.
+`runtime_exclusion_reason` is Data Engine metadata for excluded records only.
+`log_format` is parser-level metadata and should not be Core Detection input by
+default.
+
+Canonical Runtime Event must not contain detection semantics. Core Detection
+consumes Canonical Runtime Events only.
+Canonical Runtime Event represents observable runtime telemetry only.
+
+
 ### Data Layer Contract Invariants
 
 * Same input should produce the same parsed, persisted, and runtime event shape.
