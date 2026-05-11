@@ -374,31 +374,68 @@ The active V2 runtime does not include AI or legacy AI/Ollama code.
 
 Future AI assistants should read DetectionReport only.
 
-
 ## Usage
 
-### 1. Start backend
+### 1. Clone repository
+
+```bash
+git clone <repository-url>
+cd ai-security-log-analyzer
+```
+
+### 2. Create virtual environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Start backend API
 
 ```bash
 uvicorn api_v2:app --reload
 ```
 
-### 2. Start viewer
+The backend API will start on:
+
+```text
+http://127.0.0.1:8000
+```
+
+### 5. Start DetectionReport Viewer
+
+Open a second terminal, activate the same virtual environment, then run:
 
 ```bash
 streamlit run app_v2.py
 ```
 
-### 3. Run tests
-
-```bash
-venv/bin/python -m pytest
-```
-
-### 4. Open viewer
+The viewer will start on:
 
 ```text
 http://localhost:8501
+```
+
+### 6. Analyze sample log
+
+Use the included sample log:
+
+```text
+data/sample.log
+```
+
+Upload or paste the log into the viewer to generate a DetectionReport.
+
+### 7. Run tests
+
+```bash
+venv/bin/python -m pytest
 ```
 
 
