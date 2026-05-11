@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from datetime import datetime, timezone
 from core.config import DB_PATH
@@ -7,6 +8,29 @@ DB_FILE = str(DB_PATH)
 
 def get_connection():
     return sqlite3.connect(DB_FILE)
+
+
+def _serialize_parser_warnings(warnings: list | None) -> str | None:
+    if warnings is None:
+        return None
+
+    stable_warnings = [warning for warning in warnings if isinstance(warning, str)]
+    return json.dumps(stable_warnings, separators=(",", ":"))
+
+
+def _deserialize_parser_warnings(value: str | None) -> list:
+    if value is None:
+        return []
+
+    try:
+        warnings = json.loads(value)
+    except json.JSONDecodeError:
+        return []
+
+    if not isinstance(warnings, list):
+        return []
+
+    return [warning for warning in warnings if isinstance(warning, str)]
 
 
 def init_db():
@@ -52,6 +76,7 @@ def init_db():
         status INTEGER,
         line_number INTEGER,
         parse_status TEXT,
+        parser_warnings TEXT,
         error_message TEXT,
         FOREIGN KEY (run_id) REFERENCES analysis_runs(id),
         FOREIGN KEY (file_id) REFERENCES analysis_files(id)
@@ -70,6 +95,11 @@ def init_db():
 
     try:
         cur.execute("ALTER TABLE raw_logs ADD COLUMN parse_status TEXT")
+    except sqlite3.OperationalError:
+        pass
+
+    try:
+        cur.execute("ALTER TABLE raw_logs ADD COLUMN parser_warnings TEXT")
     except sqlite3.OperationalError:
         pass
 
@@ -248,9 +278,10 @@ def save_raw_logs(run_id: int, raw_logs: list, file_id: int | None = None):
             status,
             line_number,
             parse_status,
+            parser_warnings,
             error_message
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id,
             file_id,
@@ -262,6 +293,7 @@ def save_raw_logs(run_id: int, raw_logs: list, file_id: int | None = None):
             log.get("status"),
             log.get("line_number"),
             log.get("parse_status"),
+            _serialize_parser_warnings(log.get("parser_warnings")),
             log.get("error_message"),
         ))
 
@@ -299,7 +331,7 @@ def get_raw_logs_by_run(run_id: int):
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT ip, timestamp, method, url, status, log_type, line_number, parse_status, error_message
+    SELECT ip, timestamp, method, url, status, log_type, line_number, parse_status, parser_warnings, error_message
     FROM raw_logs
     WHERE run_id = ?
       AND ip IS NOT NULL
@@ -320,7 +352,8 @@ def get_raw_logs_by_run(run_id: int):
             "log_type": log_type,
             "line_number": line_number,
             "parse_status": parse_status,
+            "parser_warnings": _deserialize_parser_warnings(parser_warnings),
             "error_message": error_message,
         }
-        for ip, timestamp, method, url, status, log_type, line_number, parse_status, error_message in rows
+        for ip, timestamp, method, url, status, log_type, line_number, parse_status, parser_warnings, error_message in rows
     ]

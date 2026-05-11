@@ -299,6 +299,7 @@ Expected fields may include:
 * `status`
 * `line_number`
 * `parse_status`
+* `parser_warnings`
 * `user_agent`
 * `error_message`
 * `log_type`
@@ -308,12 +309,14 @@ Responsible for:
 
 * representing extracted parser output
 * marking parser outcome with `parse_status` values such as `parsed`, `ignored`, or `failed`
+* carrying non-fatal parser metadata in `parser_warnings`
 * carrying parser limitations explicitly through missing or partial fields
 
 Must not:
 
 * be treated as a trusted Core runtime event
 * contain detection semantics
+* treat `parser_warnings` as detection semantics
 * perform scoring, risk, or attack interpretation
 
 ### Persisted Raw Log Row

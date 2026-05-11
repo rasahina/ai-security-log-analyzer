@@ -17,6 +17,7 @@ def test_get_ip_events_normalizes_aware_timestamps_to_utc(monkeypatch):
                 "log_type": "access",
                 "line_number": 7,
                 "parse_status": "parsed",
+                "parser_warnings": ["timezone_missing"],
                 "error_message": None,
             }
         ],
@@ -28,6 +29,7 @@ def test_get_ip_events_normalizes_aware_timestamps_to_utc(monkeypatch):
     assert timestamp.tzinfo is timezone.utc
     assert timestamp.isoformat() == "2026-05-01T10:30:00+00:00"
     assert events_by_ip["10.0.0.1"][0]["line_number"] == 7
+    assert events_by_ip["10.0.0.1"][0]["parser_warnings"] == ["timezone_missing"]
 
 
 def test_get_ip_events_skips_naive_timestamps(monkeypatch):
@@ -44,6 +46,7 @@ def test_get_ip_events_skips_naive_timestamps(monkeypatch):
                 "log_type": "access",
                 "line_number": 4,
                 "parse_status": "parsed",
+                "parser_warnings": ["timezone_missing"],
                 "error_message": None,
             }
         ],
@@ -66,6 +69,7 @@ def test_get_ip_events_skips_ignored_and_failed_rows(monkeypatch):
                 "log_type": "access",
                 "line_number": 2,
                 "parse_status": "ignored",
+                "parser_warnings": [],
                 "error_message": None,
             },
             {
@@ -77,6 +81,7 @@ def test_get_ip_events_skips_ignored_and_failed_rows(monkeypatch):
                 "log_type": "access",
                 "line_number": 3,
                 "parse_status": "failed",
+                "parser_warnings": [],
                 "error_message": None,
             },
         ],

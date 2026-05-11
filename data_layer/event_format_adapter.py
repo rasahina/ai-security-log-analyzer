@@ -40,6 +40,7 @@ def get_ip_events(run_id: int):
             "status": row["status"],
             "log_type": row["log_type"],
             "line_number": row["line_number"],
+            "parser_warnings": row.get("parser_warnings", []),
             "error_message": row["error_message"],
         })
 

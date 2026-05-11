@@ -29,6 +29,24 @@ def test_parse_log_lines_adds_stable_parse_status():
         (2, "parsed"),
         (3, "failed"),
     ]
+    assert all("parser_warnings" in record for record in records)
+
+
+def test_parse_log_lines_adds_stable_parser_warnings():
+    records, _ = parse_log_lines([
+        "2026-05-01T10:00:00 10.0.0.1 GET /login 401",
+        "not-a-timestamp 10.0.0.1 GET /login 401",
+        "2026-05-01T10:00:00+00:00 10.0.0.1 GET /login BAD",
+    ])
+
+    assert [
+        record["parser_warnings"]
+        for record in records
+    ] == [
+        ["timezone_missing"],
+        ["malformed_timestamp"],
+        ["malformed_status"],
+    ]
 
 
 def test_raw_log_persistence_preserves_line_number(tmp_path, monkeypatch):
@@ -49,6 +67,7 @@ def test_raw_log_persistence_preserves_line_number(tmp_path, monkeypatch):
                 "log_type": "access",
                 "line_number": 12,
                 "parse_status": "parsed",
+                "parser_warnings": ["timezone_missing"],
                 "error_message": None,
             }
         ],
@@ -58,3 +77,4 @@ def test_raw_log_persistence_preserves_line_number(tmp_path, monkeypatch):
 
     assert rows[0]["line_number"] == 12
     assert rows[0]["parse_status"] == "parsed"
+    assert rows[0]["parser_warnings"] == ["timezone_missing"]

@@ -42,6 +42,18 @@ def parse_timestamp(value: str):
         return datetime.fromisoformat(value).isoformat()
     except ValueError:
         return value
+
+
+def get_timestamp_warnings(value: str):
+    try:
+        timestamp = datetime.fromisoformat(value)
+    except ValueError:
+        return ["malformed_timestamp"]
+
+    if timestamp.tzinfo is None:
+        return ["timezone_missing"]
+
+    return []
     
 
 def parse_error_log_line(line: str):
@@ -59,6 +71,10 @@ def parse_error_log_line(line: str):
     ip = ip_match.group("ip") if ip_match else None
     method = request_match.group("method") if request_match else None
     url = request_match.group("url") if request_match else None
+    parser_warnings = get_timestamp_warnings(timestamp)
+
+    if not (ip and method and url):
+        parser_warnings.append("partial_error_request_extraction")
 
     return {
         "timestamp": timestamp,
@@ -70,6 +86,7 @@ def parse_error_log_line(line: str):
         "error_message": message,
         "log_type": "error",
         "level": match.group("level"),
+        "parser_warnings": parser_warnings,
     }
 
 def parse_common_access_log_line(line: str):
@@ -90,6 +107,7 @@ def parse_common_access_log_line(line: str):
         "error_message": None,
         "log_type": "access",
         "level": None,
+        "parser_warnings": get_timestamp_warnings(timestamp),
     }
 
 def parse_combined_access_log_line(line: str):
@@ -110,6 +128,7 @@ def parse_combined_access_log_line(line: str):
         "error_message": None,
         "log_type": "access",
         "level": None,
+        "parser_warnings": get_timestamp_warnings(timestamp),
     }
 
 def detect_log_format(line: str) -> str:
@@ -151,6 +170,11 @@ def parse_access_log_line(line: str):
     if len(parts) != 5:
         return None
 
+    parser_warnings = get_timestamp_warnings(parts[0])
+
+    if not parts[4].isdigit():
+        parser_warnings.append("malformed_status")
+
     return {
         "timestamp": parts[0],
         "ip": parts[1],
@@ -161,6 +185,7 @@ def parse_access_log_line(line: str):
         "error_message": None,
         "log_type": "access",
         "level": None,
+        "parser_warnings": parser_warnings,
     }
 
 def parse_log_lines(lines):
@@ -174,11 +199,13 @@ def parse_log_lines(lines):
             result = {
                 "line_number": line_number,
                 "parse_status": "ignored",
+                "parser_warnings": [],
             }
         elif fmt == "unknown":
             result = {
                 "line_number": line_number,
                 "parse_status": "failed",
+                "parser_warnings": [],
             }
         elif fmt == "simple_access":
             result = parse_access_log_line(line)
@@ -194,11 +221,13 @@ def parse_log_lines(lines):
         if result:
             result.setdefault("line_number", line_number)
             result.setdefault("parse_status", "parsed")
+            result.setdefault("parser_warnings", [])
             records.append(result)
         else:
             result = {
                 "line_number": line_number,
                 "parse_status": "failed",
+                "parser_warnings": [],
             }
             records.append(result)
             skipped.append(result)
