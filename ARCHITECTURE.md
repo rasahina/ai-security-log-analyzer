@@ -238,6 +238,9 @@ semantics. Excluded records must not be scored, must not produce signals, and
 must not enter attack classification. They may still be useful for parser
 quality, traceability, and future debugging.
 
+Canonical Runtime Event construction occurs at the Event Format Adapter
+boundary after Runtime Eligibility has accepted a persisted record.
+
 ### Canonical Runtime Event
 
 Deterministic runtime-safe structure and the only trusted Core input shape.

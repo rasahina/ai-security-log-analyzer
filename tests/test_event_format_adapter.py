@@ -47,6 +47,8 @@ def test_get_ip_events_normalizes_aware_timestamps_to_utc(monkeypatch):
     assert timestamp.isoformat() == "2026-05-01T10:30:00+00:00"
     assert events_by_ip["10.0.0.1"][0]["line_number"] == 7
     assert events_by_ip["10.0.0.1"][0]["parser_warnings"] == ["timezone_missing"]
+    assert events_by_ip["10.0.0.1"][0]["ip"] == "10.0.0.1"
+    assert "parse_status" not in events_by_ip["10.0.0.1"][0]
 
 
 def test_runtime_eligibility_explains_parse_status_skip():
@@ -99,6 +101,64 @@ def test_runtime_eligibility_accepts_valid_runtime_row():
         "is_runtime_eligible": True,
         "runtime_exclusion_reason": None,
     }
+
+
+def test_build_canonical_runtime_event_creates_v01_shape():
+    event = event_format_adapter.build_canonical_runtime_event(_row(
+        timestamp="2026-05-01T19:30:00+09:00",
+        line_number=7,
+        parser_warnings=["timezone_missing"],
+    ))
+
+    assert event["timestamp"].tzinfo is timezone.utc
+    assert event["timestamp"].isoformat() == "2026-05-01T10:30:00+00:00"
+    assert event["ip"] == "10.0.0.1"
+    assert event["log_type"] == "access"
+    assert event["method"] == "GET"
+    assert event["url"] == "/login"
+    assert event["status"] == 401
+    assert event["line_number"] == 7
+    assert event["parser_warnings"] == ["timezone_missing"]
+
+
+def test_build_canonical_runtime_event_excludes_non_canonical_metadata():
+    row = _row(
+        file_id=99,
+        run_id=100,
+        id=101,
+        parse_status="parsed",
+        runtime_exclusion_reason=None,
+        score=50,
+        risk="HIGH",
+        attack_type="brute_force",
+        log_format="simple_access",
+    )
+
+    event = event_format_adapter.build_canonical_runtime_event(row)
+
+    assert {
+        "file_id",
+        "run_id",
+        "id",
+        "parse_status",
+        "runtime_exclusion_reason",
+        "score",
+        "risk",
+        "attack_type",
+        "log_format",
+    }.isdisjoint(event)
+
+
+def test_build_canonical_runtime_event_returns_none_when_construction_fails():
+    assert event_format_adapter.build_canonical_runtime_event(
+        _row(timestamp="2026-05-01T10:30:00")
+    ) is None
+    assert event_format_adapter.build_canonical_runtime_event(
+        _row(ip=None)
+    ) is None
+    assert event_format_adapter.build_canonical_runtime_event(
+        _row(log_type=None)
+    ) is None
 
 
 def test_get_ip_events_skips_naive_timestamps(monkeypatch):

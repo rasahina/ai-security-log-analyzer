@@ -51,6 +51,41 @@ def get_runtime_eligibility(row: dict) -> dict:
     }
 
 
+def build_canonical_runtime_event(row: dict) -> dict | None:
+    try:
+        timestamp = _parse_runtime_timestamp(row["timestamp"])
+    except Exception:
+        return None
+
+    if timestamp is None:
+        return None
+
+    if not row.get("ip") or not row.get("log_type"):
+        return None
+
+    event = {
+        "timestamp": timestamp,
+        "ip": row["ip"],
+        "log_type": row["log_type"],
+    }
+
+    optional_fields = (
+        "method",
+        "url",
+        "status",
+        "error_message",
+        "user_agent",
+        "line_number",
+        "parser_warnings",
+    )
+
+    for field in optional_fields:
+        if field in row:
+            event[field] = row[field]
+
+    return event
+
+
 def get_ip_events(run_id: int):
     rows = get_raw_logs_by_run(run_id)
     events_by_ip = {}
@@ -60,21 +95,15 @@ def get_ip_events(run_id: int):
         if not eligibility["is_runtime_eligible"]:
             continue
 
-        timestamp = _parse_runtime_timestamp(row["timestamp"])
-        ip = row["ip"]
+        event = build_canonical_runtime_event(row)
+        if event is None:
+            continue
+
+        ip = event["ip"]
 
         if ip not in events_by_ip:
             events_by_ip[ip] = []
 
-        events_by_ip[ip].append({
-            "timestamp": timestamp,
-            "method": row["method"],
-            "url": row["url"],
-            "status": row["status"],
-            "log_type": row["log_type"],
-            "line_number": row["line_number"],
-            "parser_warnings": row.get("parser_warnings", []),
-            "error_message": row["error_message"],
-        })
+        events_by_ip[ip].append(event)
 
     return events_by_ip
