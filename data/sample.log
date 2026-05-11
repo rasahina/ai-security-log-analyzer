@@ -1,4 +1,15 @@
 # AI Security Log Analyzer - Sample Log File
+#This file is a synthetic demonstration and testing log 
+#for the public alpha.
+#It contains:
+#- currently implemented observable signals
+#- false-positive control patterns
+#- future signal exploration examples
+#Some examples may reference concepts that are not yet implemented in the
+#active V2 runtime.
+The active runtime remains deterministic and observable-first.
+
+
 # Format: timestamp ip method url status
 
 # --- Normal Traffic ---
