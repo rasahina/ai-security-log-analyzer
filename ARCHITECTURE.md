@@ -87,6 +87,99 @@ Notion databases are used for knowledge management and reference data, not proce
 
 ---
 
+## Data Engine
+
+The Data Engine prepares deterministic, safe, and consistent runtime events
+before Core Detection.
+
+Responsible for:
+
+* log parsing
+* normalization
+* minimization / sanitization
+* persistence
+* event format adaptation
+* Canonical Runtime Event preparation
+
+Detection logic must not exist in the Data Engine. Detection semantics, scoring,
+and risk evaluation belong to Core Detection and Evaluation layers.
+
+Processing flow:
+
+```text
+Raw Log Input
+↓
+Line Split
+↓
+Format Detection
+↓
+Parser
+↓
+Minimizer / Sanitizer
+↓
+Persistence
+↓
+Event Format Adapter
+↓
+Canonical Runtime Event
+↓
+Detection Engine
+```
+
+### Parser
+
+Extracts minimal observation fields from untrusted input.
+
+Must not:
+
+* perform detection logic
+* assign attack meaning
+* calculate score or risk
+
+### Minimizer / Sanitizer
+
+Removes unnecessary or dangerous retained data, minimizes attacker-controlled
+free text, and supports the AI-safe direction.
+
+Must not:
+
+* decide whether an attack occurred
+* perform scoring or risk evaluation
+* add hidden behavior or procedural logic
+
+### Persistence
+
+Stores minimized records only. Traceability should primarily rely on:
+
+* `file_id`
+* `line_number`
+
+Persistence is not intended as a SIEM-scale raw log warehouse.
+
+### Event Format Adapter
+
+Validates runtime eligibility, converts timestamps to timezone-aware UTC runtime
+datetimes, and produces Canonical Runtime Events.
+
+The adapter must not guess missing timezone information.
+
+### Canonical Runtime Event
+
+Deterministic runtime-safe structure and the only trusted Core input shape.
+
+Core Detection consumes Canonical Runtime Events only.
+
+Design principles:
+
+* no hidden assumptions
+* no timezone guessing
+* attacker-controlled input remains untrusted
+* minimal retention preferred
+* YAML must not contain procedural logic
+* Core Detection consumes Canonical Runtime Events only
+
+---
+
 ## Data Layer Model
 
 The `data_layer` package is responsible for preparing external log input before it reaches the deterministic V2 core.

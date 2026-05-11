@@ -157,6 +157,9 @@ Canonical Runtime Event
 
 Detection semantics must remain outside the Data Layer.
 
+When modifying the Data Engine, preserve Parser → Minimizer/Sanitizer →
+Persistence → Event Adapter → Canonical Runtime Event boundaries.
+
 When adding new Data Layer fields, justify why the field is required for
 deterministic detection, explainability, or minimal traceability.
 
