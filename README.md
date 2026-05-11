@@ -4,6 +4,10 @@
 
 AI Security Log Analyzer is a lightweight cybersecurity log analysis tool designed to detect suspicious activity from web access logs and emit a stable, explainable DetectionReport.
 
+This repository is an experimental public alpha and MVP runtime skeleton. It is
+intended for architecture validation, deterministic detection experiments, and
+early feedback. It is not production-ready security infrastructure.
+
 The active runtime is the V2 API and DetectionReport Viewer:
 
 - API: `api_v2.py`
@@ -14,6 +18,32 @@ The active runtime is the V2 API and DetectionReport Viewer:
 This project is both:
 - a learning project for security and AI system design
 - an MVP prototype for a future AI-assisted security monitoring product
+
+
+## Public Alpha Scope
+
+The current public alpha focuses on a small deterministic runtime path:
+
+```text
+Upload/Paste log text
+-> POST /analyze-v2
+-> Detection Pipeline V2
+-> DetectionReport v2_minimal_0.1
+-> DetectionReport Viewer
+```
+
+Non-goals for this alpha:
+
+- production SOC or SIEM replacement
+- realtime monitoring
+- multi-user workflows or RBAC
+- autonomous blocking or remediation
+- AI/LLM-based detection decisions
+- sanitizer, masking, or AI Guard behavior
+- broad incident response playbooks
+
+The project should be treated as an experimental foundation, not an operational
+security control.
 
 
 ## Key Concept
@@ -340,6 +370,8 @@ http://localhost:8501
 
 ## Current Status
 
+- Public alpha documentation added
+- Licensed under Apache License 2.0
 - Detection Pipeline V2 implemented
 - Core Engine and Interpretation Layer separated
 - DetectionReport generation implemented
@@ -404,3 +436,14 @@ DetectionReport = public contract
 ```
 
 Everything outside the deterministic engine should consume the report contract, not internal engine objects.
+
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).
+
+
+## Security
+
+See [SECURITY.md](SECURITY.md). This project is an experimental public alpha;
+do not use it as the sole basis for security decisions.
