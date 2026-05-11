@@ -463,7 +463,6 @@ Possible future features:
 * Attack Graph
 * Evidence Panel
 * Investigation Workspace
-* AI Copilot
 * Knowledge Layer
 * MITRE Mapping
 * Threat Intelligence

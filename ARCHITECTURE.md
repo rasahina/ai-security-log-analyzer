@@ -741,16 +741,11 @@ Core principles:
 * The system must function without AI
 * Explainability evidence must originate from deterministic runtime logic
 
-Possible AI providers:
-
-* OpenAI
-* Claude
-* Gemini
-* Ollama
-* Local LLM
-* Azure OpenAI
 
 The analyzer itself should remain AI-provider neutral.
+
+Users should be able to use external AI systems without changing the analyzer runtime.
+
 
 ---
 
@@ -781,7 +776,7 @@ debug/
 
 Used for intermediate JSON inspection.
 
-Generated output:
+Generated runtime output:
 
 ```text
 output/detection_report_v2.json
@@ -864,7 +859,6 @@ Investigation Workspace
 ├ Evidence
 ├ Attack Graph
 ├ Raw Logs
-├ AI Copilot
 └ Knowledge
 ```
 
