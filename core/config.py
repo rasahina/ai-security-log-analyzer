@@ -24,4 +24,7 @@ DETECTION_RULES_PATH_V2_ATTACKS = (
 DETECTION_RULES_PATH_V2_EVALUATION = (
     CONFIG_DIR / "v2_evaluation_rules.yaml"
 )
+DATA_ENGINE_POLICY_PATH_V2 = (
+    CONFIG_DIR / "v2_data_engine_policy.yaml"
+)
 DB_PATH = DATA_DIR / "security_analyzer.db"

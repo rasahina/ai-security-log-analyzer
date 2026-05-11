@@ -1,4 +1,11 @@
-from data_layer.record_minimizer import minimize_record
+from data_layer.record_minimizer import load_policy, minimize_record
+
+
+def test_policy_loads_allowed_fields_from_yaml():
+    policy = load_policy()
+
+    assert "timestamp" in policy["allowed_fields"]
+    assert "parser_warnings" in policy["allowed_fields"]
 
 
 def test_minimize_record_removes_unknown_fields():
@@ -48,3 +55,15 @@ def test_minimize_record_normalizes_string_metadata():
         "parse_status": "parsed",
         "parser_warnings": ["timezone_missing"],
     }
+
+
+def test_minimize_record_applies_configured_field_limits():
+    record = minimize_record({
+        "method": "GET-THIS-METHOD-NAME-IS-TOO-LONG",
+        "url": "/" + ("a" * 3000),
+        "error_message": "x" * 600,
+    })
+
+    assert record["method"] == "GET-THIS-METHOD-"
+    assert len(record["url"]) == 2048
+    assert len(record["error_message"]) == 512

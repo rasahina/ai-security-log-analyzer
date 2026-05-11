@@ -1,0 +1,24 @@
+allowed_fields:
+  - timestamp
+  - ip
+  - method
+  - url
+  - status
+  - log_type
+  - level
+  - error_message
+  - user_agent
+  - line_number
+  - parse_status
+  - parser_warnings
+
+string_transforms:
+  trim: true
+
+field_limits:
+  method: 16
+  url: 2048
+  log_type: 32
+  level: 32
+  user_agent: 512
+  error_message: 512

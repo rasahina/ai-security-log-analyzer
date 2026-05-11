@@ -180,10 +180,14 @@ free text, and supports the AI-safe direction.
 The current Record Minimizer selects explicitly retained Parsed Log Record
 fields before persistence.
 
+`config/v2_data_engine_policy.yaml` stores minimization and retention
+configuration only. Python remains responsible for executing minimization.
+
 Must not:
 
 * decide whether an attack occurred
 * perform scoring or risk evaluation
+* place detection logic or procedural execution logic in YAML
 * add hidden behavior or procedural logic
 
 ### Persistence
