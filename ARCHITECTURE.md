@@ -125,7 +125,6 @@ Canonical Runtime Event
 ↓
 Detection Engine
 ```
-
 ### Parser
 
 Extracts minimal observation fields from untrusted input.
@@ -135,6 +134,43 @@ Must not:
 * perform detection logic
 * assign attack meaning
 * calculate score or risk
+
+### Log Format and Log Type Boundary
+
+`log_format` is a parser-level input format classification.
+
+Examples:
+
+* `common_access`
+* `combined_access`
+* `simple_access`
+* `error_log`
+
+It is used for:
+
+* parsing
+* parser debugging
+* traceability
+
+`log_format` is not intended as a Core Detection semantic field.
+
+`log_type` is a runtime-level event category.
+
+Examples:
+
+* `access`
+* `error`
+
+It is used by:
+
+* Canonical Runtime Event
+* Detection Engine
+
+Parser may emit both `log_format` and `log_type`.
+Persistence may store both when useful.
+Canonical Runtime Event should include `log_type`.
+Core Detection should not depend on parser-specific `log_format` by default.
+
 
 ### Minimizer / Sanitizer
 
