@@ -177,6 +177,9 @@ Core Detection should not depend on parser-specific `log_format` by default.
 Removes unnecessary or dangerous retained data, minimizes attacker-controlled
 free text, and supports the AI-safe direction.
 
+The current Record Minimizer selects explicitly retained Parsed Log Record
+fields before persistence.
+
 Must not:
 
 * decide whether an attack occurred

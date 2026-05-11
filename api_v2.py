@@ -8,6 +8,7 @@ from core.v2_pipeline import run_v2_pipeline
 from data_layer.database import init_db, save_analysis_run, save_raw_logs
 from data_layer.event_format_adapter import get_ip_events
 from data_layer.log_parser import parse_log_lines
+from data_layer.record_minimizer import minimize_record
 
 
 app = FastAPI(title="AI Security Log Analyzer API V2")
@@ -39,10 +40,11 @@ def analyze_v2(request: AnalyzeV2Request):
         raise HTTPException(status_code=400, detail="log must not be empty")
 
     parsed_logs, _ = parse_log_lines(request.log.splitlines())
+    minimized_logs = [minimize_record(record) for record in parsed_logs]
     run_id = save_analysis_run([], source="api-v2")
-    save_raw_logs(run_id, parsed_logs)
+    save_raw_logs(run_id, minimized_logs)
 
-    if not any(log.get("parse_status") == "parsed" for log in parsed_logs):
+    if not any(log.get("parse_status") == "parsed" for log in minimized_logs):
         raise HTTPException(status_code=400, detail="no supported log lines found")
 
     events_by_ip = get_ip_events(run_id)
