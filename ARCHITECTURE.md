@@ -210,6 +210,34 @@ Runtime eligibility is determined at the Event Format Adapter boundary.
 Exclusion reasons are Data Engine metadata only and must not become detection
 semantics, scoring inputs, or risk signals.
 
+### Runtime Eligibility Boundary
+
+Record Minimizer decides what may be retained. Runtime Eligibility decides what
+may enter Core Detection. Persistence-safe does not mean Core-safe.
+
+Core Detection must only consume Canonical Runtime Events.
+
+A record may be persisted but not detection-eligible when:
+
+* `parse_status` is not `parsed`
+* `timestamp` is missing
+* `timestamp` is malformed
+* `timestamp` is timezone-naive
+* source IP is missing
+
+This boundary:
+
+* prevents Detection Engine pollution
+* reduces noisy signal input
+* avoids false correlation
+* avoids broken time ordering
+* preserves deterministic Core behavior
+
+Runtime exclusion reasons are Data Engine metadata. They are not detection
+semantics. Excluded records must not be scored, must not produce signals, and
+must not enter attack classification. They may still be useful for parser
+quality, traceability, and future debugging.
+
 ### Canonical Runtime Event
 
 Deterministic runtime-safe structure and the only trusted Core input shape.
