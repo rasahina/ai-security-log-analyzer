@@ -1,2 +1,0 @@
-2026/05/02 10:00:06 [error] 12345#12345: *1 open() "/var/www/html/login" failed, client: 192.168.1.10, server: example.com, request: "POST /login HTTP/1.1"
-2026/05/02 10:01:02 [warn] 12345#12345: *2 access forbidden, client: 192.168.1.20, server: example.com, request: "GET /wp-admin HTTP/1.1"
